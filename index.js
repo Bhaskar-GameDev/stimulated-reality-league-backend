@@ -8,6 +8,7 @@ const { startMatch, pushScorecard } = require("./matchEngine");
 const db = require("./firebase");
 const teamsData = require("./teams.json");
 const { buildHtmlPage } = require("./ui/page");
+const moment = require("moment-timezone");
 
 let PORT = Number(process.env.PORT || 3000);
 const STORAGE_PATH = path.join(__dirname, "schedules.json");
@@ -453,7 +454,12 @@ async function scheduleMatch(payload) {
     throw new Error("Delay must be a valid non-negative number.");
   }
 
-  const startAt = payload.startAt ? new Date(payload.startAt) : null;
+  const startAt = payload.startAt
+  ? moment
+      .tz(payload.startAt, "Asia/Kolkata")
+      .utc()
+      .toDate()
+  : null;
   if (startAt && Number.isNaN(startAt.getTime())) {
     throw new Error("Invalid scheduled start time.");
   }
@@ -464,7 +470,7 @@ const matchSeed =
   `${matchId}_${Date.now()}`;
   const schedule = {
     id: nextScheduleId++,
-    matchId: `${payload.teamA}_vs_${payload.teamB}_${type.key}_${crypto.randomUUID().slice(0,8)}`,
+    matchId,
     teamAName: payload.teamA,
     teamBName: payload.teamB,
     seed: matchSeed,
@@ -508,7 +514,11 @@ const matchSeed =
   schedule.status = "scheduled";
   scheduledJobs[schedule.id] = setTimeout(() => runMatch(schedule), delay);
   updateScheduleList();
-  return `Match ${schedule.matchId} scheduled for ${new Date(schedule.startAt).toLocaleString()} UTC.`;
+return `Match ${schedule.matchId} scheduled for ${
+  moment.utc(schedule.startAt)
+        .tz("Asia/Kolkata")
+        .format("DD MMM YYYY hh:mm A")
+} IST.`;
 }
 
 function runMatch(schedule) {
