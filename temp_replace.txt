@@ -1,0 +1,136 @@
+    let savedLineups = {};
+
+    async function fetchLineups() {
+      try {
+        const res = await fetch("/api/lineups");
+        savedLineups = await res.json();
+      } catch (e) { console.error("Failed to load lineups"); }
+    }
+
+    function getTeamPlayers(teamName) {
+      return teamData.find(team => team.name === teamName)?.players || [];
+    }
+
+    function resetSelection(side, teamName) {
+      if (savedLineups[teamName] && Array.isArray(savedLineups[teamName]) && savedLineups[teamName].length === 11) {
+        selectionState[side] = [...savedLineups[teamName]];
+      } else {
+        selectionState[side] = getTeamPlayers(teamName).slice(0, 11).map(player => player.id);
+      }
+    }
+
+    function sanitizeSelection(side, teamName) {
+      const validIds = new Set(getTeamPlayers(teamName).map(player => player.id));
+      selectionState[side] = (selectionState[side] || []).filter((id, index, ids) =>
+        validIds.has(id) && ids.indexOf(id) === index
+      );
+    }
+
+    function renderLineup(side, teamName, listEl, playingEl, titleEl, countEl) {
+      const players = getTeamPlayers(teamName);
+      sanitizeSelection(side, teamName);
+      const selected = selectionState[side] || [];
+
+      titleEl.textContent = teamName || "Select a team";
+      countEl.textContent = selected.length + "/11 selected";
+      countEl.className = "selection-count " + (selected.length === 11 ? "valid" : "invalid");
+
+      const selectedMap = new Map();
+      players.forEach(p => {
+        if (selected.includes(p.id)) {
+          selectedMap.set(p.id, p);
+        }
+      });
+
+      playingEl.innerHTML = selected.map((id, index) => {
+        const player = selectedMap.get(id);
+        if (!player) return "";
+        const meta = [player.role, player.type].filter(Boolean).join(" &bull; ");
+        return (
+          '<li class="player-option" style="display:flex; align-items:center; gap:0.5rem; padding: 0.5rem; border: 1px solid var(--gray-200); margin-bottom: 0.25rem; border-radius: 4px; background: white;">' +
+            '<div style="display:flex; flex-direction:column; gap:0.25rem;">' +
+              '<button type="button" class="btn-move-up" data-side="'+side+'" data-index="'+index+'" style="cursor:pointer; background:none; border:none; padding:0; font-size: 1.2rem; line-height: 1;">🔼</button>' +
+              '<button type="button" class="btn-move-down" data-side="'+side+'" data-index="'+index+'" style="cursor:pointer; background:none; border:none; padding:0; font-size: 1.2rem; line-height: 1;">🔽</button>' +
+            '</div>' +
+            '<span style="font-weight:bold; min-width: 20px;">'+(index+1)+'.</span>' +
+            '<div style="flex:1;">' +
+              '<div class="player-name" style="font-weight: bold; color: var(--dark);">'+player.name+'</div>' +
+              '<div class="player-meta" style="font-size:0.8rem; color:var(--gray-500);">'+meta+'</div>' +
+            '</div>' +
+            '<button type="button" class="btn-remove" data-side="'+side+'" data-id="'+id+'" style="cursor:pointer; background:var(--danger); color:white; border:none; border-radius:4px; padding:0.25rem 0.5rem; font-size: 0.8rem; font-weight: bold;">REMOVE</button>' +
+          '</li>'
+        );
+      }).join('');
+
+      const bench = players.filter(p => !selected.includes(p.id));
+      listEl.innerHTML = bench.map(player => {
+        const meta = [player.role, player.type].filter(Boolean).join(" &bull; ");
+        return (
+          '<li class="player-option" style="display:flex; align-items:center; justify-content:space-between; padding: 0.5rem; border: 1px solid var(--gray-200); margin-bottom: 0.25rem; border-radius: 4px; background: white;">' +
+            '<div>' +
+              '<div class="player-name" style="font-weight: bold; color: var(--dark);">'+player.name+'</div>' +
+              '<div class="player-meta" style="font-size:0.8rem; color:var(--gray-500);">'+meta+'</div>' +
+            '</div>' +
+            '<button type="button" class="btn-add" data-side="'+side+'" data-id="'+player.id+'" style="cursor:pointer; background:var(--success); color:white; border:none; border-radius:4px; padding:0.25rem 0.5rem; font-size: 0.8rem; font-weight: bold;">ADD</button>' +
+          '</li>'
+        );
+      }).join('');
+    }
+
+    function bindLineupEvents() {
+      document.querySelectorAll(".btn-add").forEach(btn => {
+        btn.addEventListener("click", e => {
+          const side = e.currentTarget.dataset.side;
+          const id = e.currentTarget.dataset.id;
+          if (selectionState[side].length >= 11) {
+            alert("Only 11 players can be selected for a playing XI.");
+            return;
+          }
+          selectionState[side].push(id);
+          renderLineups();
+          updateFormState();
+        });
+      });
+
+      document.querySelectorAll(".btn-remove").forEach(btn => {
+        btn.addEventListener("click", e => {
+          const side = e.currentTarget.dataset.side;
+          const id = e.currentTarget.dataset.id;
+          selectionState[side] = selectionState[side].filter(pid => pid !== id);
+          renderLineups();
+          updateFormState();
+        });
+      });
+
+      document.querySelectorAll(".btn-move-up").forEach(btn => {
+        btn.addEventListener("click", e => {
+          const side = e.currentTarget.dataset.side;
+          const index = Number(e.currentTarget.dataset.index);
+          if (index > 0) {
+            const arr = selectionState[side];
+            [arr[index - 1], arr[index]] = [arr[index], arr[index - 1]];
+            renderLineups();
+          }
+        });
+      });
+
+      document.querySelectorAll(".btn-move-down").forEach(btn => {
+        btn.addEventListener("click", e => {
+          const side = e.currentTarget.dataset.side;
+          const index = Number(e.currentTarget.dataset.index);
+          const arr = selectionState[side];
+          if (index < arr.length - 1) {
+            [arr[index], arr[index + 1]] = [arr[index + 1], arr[index]];
+            renderLineups();
+          }
+        });
+      });
+    }
+
+    function renderLineups() {
+      const playingA = document.getElementById("playingA");
+      const playingB = document.getElementById("playingB");
+      renderLineup("teamA", teamASelect.value, lineupA, playingA, lineupAName, lineupACount);
+      renderLineup("teamB", teamBSelect.value, lineupB, playingB, lineupBName, lineupBCount);
+      bindLineupEvents();
+    }
