@@ -455,8 +455,8 @@ async function scheduleMatch(payload) {
   }
 
   const startAt = payload.startAt
-  ? moment
-      .tz(payload.startAt, "Asia/Kolkata")
+  ? moment(payload.startAt)
+      .tz("Asia/Kolkata", true)
       .utc()
       .toDate()
   : null;
