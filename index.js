@@ -36,7 +36,22 @@ let liveLogs = [];
 let nextScheduleId = schedules.reduce((max, item) => Math.max(max, item.id || 0), 0) + 1;
 
 restoreScheduledJobs();
+setInterval(() => {
+  schedules.forEach(schedule => {
+    if (
+      schedule.status === "scheduled" &&
+      schedule.startAt &&
+      new Date(schedule.startAt).getTime() <= Date.now()
+    ) {
+      schedule.status = "running";
+      schedule.updatedAt = new Date().toISOString();
 
+      updateScheduleList();
+
+      runMatch(schedule);
+    }
+  });
+}, 10000);
 const matchTypes = [
   { key: "T20", label: "T20", overs: 20 },
   { key: "ODI", label: "ODI", overs: 50 },
@@ -522,6 +537,12 @@ return `Match ${schedule.matchId} scheduled for ${
 }
 
 function runMatch(schedule) {
+  if (
+  schedule.status === "completed" ||
+  schedule.status === "aborted"
+) {
+  return;
+}
   const alreadyRunning = Array.from(activeMatches.values()).find(m => m.matchId === schedule.matchId);
   if (alreadyRunning) {
     addLog(`Match ${schedule.matchId} is already running.`);
