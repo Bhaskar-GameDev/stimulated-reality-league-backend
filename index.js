@@ -866,5 +866,7 @@ server.on("error", error => {
 server.listen(PORT, () => {
   const urlToOpen = `http://localhost:${PORT}`;
   console.log(`Advanced scheduler running at ${urlToOpen}`);
-  openBrowser(urlToOpen);
+  if (process.env.NODE_ENV !== "production") {
+    openBrowser(urlToOpen);
+}
 });
