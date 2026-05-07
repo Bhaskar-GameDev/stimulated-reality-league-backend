@@ -4,23 +4,20 @@ const path = require("path");
 const url = require("url");
 const { exec } = require("child_process");
 const crypto = require("crypto");
+const { startMatch, pushScorecard } = require("./matchEngine");
 const db = require("./firebase");
-const teamService = require('./services/teamService');
-const matchService = require('./services/matchService');
+const teamsData = require("./teams.json");
 const { buildHtmlPage } = require("./ui/page");
-
-const moment = require("moment-timezone");
 
 let PORT = Number(process.env.PORT || 3000);
 const STORAGE_PATH = path.join(__dirname, "schedules.json");
 const LINEUPS_PATH = path.join(__dirname, "saved_lineups.json");
 const MAX_LOG_ITEMS = 150;
-const teamCatalog = teamService.teamCatalog;
-
+const teamCatalog = buildTeamCatalog(teamsData);
 const teamOptions = Object.values(teamCatalog)
   .map(team => ({
     name: team.name,
-    gender: team.sourceGroup === 'women' ? 'women' : 'men',
+    gender: team.sourceGroup || "men",
     players: team.players.map(player => ({
       id: player.id,
       name: player.name,
@@ -36,24 +33,41 @@ let savedLineups = loadLineups();
 let scheduledJobs = {};
 let liveLogs = [];
 let nextScheduleId = schedules.reduce((max, item) => Math.max(max, item.id || 0), 0) + 1;
-const serverStartedAt = new Date().toISOString();
 
 restoreScheduledJobs();
-syncLineupsWithFirebase();
-setInterval(() => {
-  const now = Date.now();
+
+const matchTypes = [
+  { key: "T20", label: "T20", overs: 20 },
+  { key: "ODI", label: "ODI", overs: 50 },
+  { key: "Test", label: "Test", overs: 90 }
+];
+
+function loadSchedules() {
+  try {
+    const text = fs.readFileSync(STORAGE_PATH, "utf8");
+    const items = JSON.parse(text);
+    if (Array.isArray(items)) return items;
+  } catch (error) {
+    // ignore missing or invalid storage file
+  }
+  return [];
+}
+
+function restoreScheduledJobs() {
   schedules.forEach(schedule => {
-    if (
-      schedule.status === "scheduled" &&
-      schedule.startAt &&
-      new Date(schedule.startAt).getTime() <= now
-    ) {
-      console.log(`[Interval] Starting match ${schedule.matchId} because its scheduled time ${schedule.startAt} has passed.`);
-      persistScheduleState(schedule, "running");
+    if (schedule.status !== "scheduled" || !schedule.startAt) return;
+
+    const delay = new Date(schedule.startAt).getTime() - Date.now();
+    if (delay <= 0) {
+      schedule.status = "running";
+      schedule.updatedAt = new Date().toISOString();
       runMatch(schedule);
+      return;
     }
+
+    scheduledJobs[schedule.id] = setTimeout(() => runMatch(schedule), delay);
   });
-}, 10000);
+}
 
 function saveSchedules() {
   try {
@@ -76,33 +90,9 @@ function loadLineups() {
 function saveLineups() {
   try {
     fs.writeFileSync(LINEUPS_PATH, JSON.stringify(savedLineups, null, 2), "utf8");
-    // Sync to Firebase for persistence across deployments (Render/etc)
-    db.ref("lineups").set(savedLineups).catch(error => {
-      console.error("Unable to sync lineups to Firebase:", error.message);
-    });
   } catch (error) {
-    console.error("Unable to save lineups locally:", error.message);
+    console.error("Unable to save lineups:", error.message);
   }
-}
-
-function syncLineupsWithFirebase() {
-  // Listen for remote updates and keep local memory state in sync
-  db.ref("lineups").on("value", snapshot => {
-    if (snapshot.exists()) {
-      const remoteLineups = snapshot.val();
-      if (remoteLineups && typeof remoteLineups === "object") {
-        // Merge remote into local, prioritizing remote
-        Object.assign(savedLineups, remoteLineups);
-        // Also update local file for backup
-        try {
-          fs.writeFileSync(LINEUPS_PATH, JSON.stringify(savedLineups, null, 2), "utf8");
-        } catch (e) {}
-      }
-    } else if (Object.keys(savedLineups).length > 0) {
-      // If Firebase is empty but we have local lineups, seed Firebase
-      db.ref("lineups").set(savedLineups).catch(() => {});
-    }
-  });
 }
 
 function openBrowser(urlToOpen) {
@@ -120,60 +110,118 @@ function openBrowser(urlToOpen) {
   });
 }
 
-const matchTypes = [
-  { key: "T20", label: "T20", overs: 20 },
-  { key: "ODI", label: "ODI", overs: 50 },
-  { key: "Test", label: "Test", overs: 90 }
-];
-
-function loadSchedules() {
-  try {
-    const text = fs.readFileSync(STORAGE_PATH, "utf8");
-    const items = JSON.parse(text);
-    if (Array.isArray(items)) return items;
-  } catch (error) {
-    // ignore missing or invalid storage file
-  }
-  return [];
-}
-
-function restoreScheduledJobs() {
-  console.log("Restoring scheduled jobs...");
-  const now = Date.now();
-  schedules.forEach(schedule => {
-    if (schedule.status !== "scheduled" || !schedule.startAt) return;
-
-    const runAt = new Date(schedule.startAt).getTime();
-    const delay = runAt - now;
-    
-    if (delay <= 0) {
-      console.log(`[Restore] Starting match ${schedule.matchId} (scheduled for ${schedule.startAt}) as it was in the past.`);
-      persistScheduleState(schedule, "running");
-      runMatch(schedule);
-    } else {
-      console.log(`[Restore] Rescheduling match ${schedule.matchId} for ${schedule.startAt} (in ${Math.floor(delay / 1000)}s)`);
-      scheduledJobs[schedule.id] = setTimeout(() => {
-        console.log(`[Timeout] Starting restored match ${schedule.matchId}`);
-        runMatch(schedule);
-      }, delay);
-    }
-  });
-}
-
 function getTeamByName(name) {
-  return teamService.getTeamByName(name);
+  return teamCatalog[name] || null;
 }
 
-function buildMatchPlayer(player, format = "T20") {
-  return matchService.buildMatchPlayer(player, format);
+function buildTeamCatalog(source) {
+  const collections = Object.entries(source || {})
+    .filter(([, teams]) => teams && typeof teams === "object" && !Array.isArray(teams));
+  const teamNameCounts = new Map();
+
+  collections.forEach(([, teams]) => {
+    Object.keys(teams).forEach(teamName => {
+      teamNameCounts.set(teamName, (teamNameCounts.get(teamName) || 0) + 1);
+    });
+  });
+
+  const catalog = {};
+
+  collections.forEach(([groupName, teams]) => {
+    Object.entries(teams).forEach(([teamName, players]) => {
+      if (!Array.isArray(players) || players.length === 0) {
+        return;
+      }
+
+      const displayName = teamNameCounts.get(teamName) > 1
+        ? `${teamName} (${groupName})`
+        : teamName;
+
+      catalog[displayName] = {
+        name: displayName,
+        sourceGroup: groupName,
+        sourceTeamName: teamName,
+        players: players.map((player, index) => normalizeSquadPlayer(displayName, player, index))
+      };
+    });
+  });
+
+  return catalog;
 }
 
-function resolvePlayingXI(teamEntry, selectedIds, format = "T20") {
-  return matchService.resolvePlayingXI(teamEntry, selectedIds, format);
+function normalizeSquadPlayer(teamName, player, index) {
+  const name = String(player?.name || `Player ${index + 1}`);
+  return {
+    ...player,
+    id: player?.id || buildPlayerId(teamName, name, index),
+    name,
+    role: player?.role || "player",
+    type: player?.type || "balanced"
+  };
 }
 
+function buildPlayerId(teamName, playerName, index) {
+  return `${slugify(teamName)}_${String(index + 1).padStart(2, "0")}_${slugify(playerName)}`;
+}
 
+function slugify(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "") || "player";
+}
 
+function mapOutcomeProbabilities(probabilities) {
+  return {
+    dot: Number(probabilities?.dot) || 0,
+    single: Number(probabilities?.["1"]) || 0,
+    double: Number(probabilities?.["2"]) || 0,
+    four: Number(probabilities?.["4"]) || 0,
+    six: Number(probabilities?.["6"]) || 0,
+    wicket: Number(probabilities?.wicket) || 0
+  };
+}
+
+function buildMatchPlayer(player) {
+  return {
+    id: player.id,
+    name: player.name,
+    role: player.role,
+    type: player.type,
+    batting_probabilities: mapOutcomeProbabilities(player.batting?.base),
+    bowling_probabilities: mapOutcomeProbabilities(player.bowling?.base),
+    base_probabilities: mapOutcomeProbabilities(player.batting?.base)
+  };
+}
+
+function resolvePlayingXI(teamEntry, selectedIds) {
+  if (!teamEntry) {
+    return null;
+  }
+
+  const squad = Array.isArray(teamEntry.players) ? teamEntry.players : [];
+  if (squad.length < 11) {
+    throw new Error(`${teamEntry.name} does not have enough players to select a playing 11.`);
+  }
+
+  const fallbackIds = squad.slice(0, 11).map(player => player.id);
+  const requestedIds = Array.isArray(selectedIds) && selectedIds.length > 0
+    ? selectedIds.map(id => String(id))
+    : fallbackIds;
+  const uniqueIds = [...new Set(requestedIds)];
+
+  if (uniqueIds.length !== 11) {
+    throw new Error(`Please select exactly 11 unique players for ${teamEntry.name}.`);
+  }
+
+  const squadById = new Map(squad.map(player => [String(player.id), player]));
+  const invalidId = uniqueIds.find(id => !squadById.has(id));
+  if (invalidId) {
+    throw new Error(`One or more selected players for ${teamEntry.name} are invalid.`);
+  }
+
+  return uniqueIds.map(id => squadById.get(id));
+}
 
 function summarizePlayingXI(players) {
   return players.map(player => ({
@@ -193,47 +241,17 @@ function addLog(message) {
   if (liveLogs.length > MAX_LOG_ITEMS) liveLogs.length = MAX_LOG_ITEMS;
 }
 
-function formatResultSummary(result) {
-  if (!result) return null;
-  if (!result.winner) return "Match tied";
-  return `${result.winner} won by ${result.margin}`;
-}
-
-function getScheduleByMatchId(matchId) {
-  return schedules.find(item => item.matchId === matchId) || null;
-}
-
-function updateMatchStatus(matchId, status, extra = {}) {
+function updateMatchStatus(matchId, status) {
   if (!matchId || !status) return;
-  const payload = { status, ...extra };
   db.ref(`matches/${matchId}/status`).set(status).catch(error => {
     console.error(`Unable to update match root status for ${matchId}:`, error);
   });
-  db.ref(`matches/${matchId}/meta`).update(payload).catch(error => {
+  db.ref(`matches/${matchId}/meta`).update({ status }).catch(error => {
     console.error(`Unable to update match meta status for ${matchId}:`, error);
   });
-  db.ref(`matches/list/${matchId}`).update(payload).catch(error => {
+  db.ref(`matches/list/${matchId}`).update({ status }).catch(error => {
     console.error(`Unable to update match list status for ${matchId}:`, error);
   });
-}
-
-function persistScheduleState(schedule, status, extra = {}) {
-  if (!schedule || !status) return;
-
-  schedule.status = status;
-  schedule.updatedAt = new Date().toISOString();
-  Object.assign(schedule, extra);
-  updateScheduleList();
-
-  const remotePayload = { updatedAt: schedule.updatedAt };
-  if (Object.prototype.hasOwnProperty.call(extra, "errorMessage")) {
-    remotePayload.errorMessage = extra.errorMessage;
-  }
-  if (Object.prototype.hasOwnProperty.call(extra, "resultSummary")) {
-    remotePayload.resultSummary = extra.resultSummary;
-  }
-
-  updateMatchStatus(schedule.matchId, status, remotePayload);
 }
 
 function updateCurrentMatch(matchId, update) {
@@ -242,14 +260,7 @@ function updateCurrentMatch(matchId, update) {
   const updated = { ...match, ...update, updatedAt: new Date().toISOString() };
   activeMatches.set(matchId, updated);
   if (update.status) {
-    const statusPayload = { updatedAt: updated.updatedAt };
-    if (Object.prototype.hasOwnProperty.call(update, "error")) {
-      statusPayload.errorMessage = updated.error;
-    }
-    if (Object.prototype.hasOwnProperty.call(update, "resultSummary")) {
-      statusPayload.resultSummary = updated.resultSummary;
-    }
-    updateMatchStatus(matchId, update.status, statusPayload);
+    updateMatchStatus(matchId, update.status);
   }
 }
 
@@ -265,9 +276,7 @@ async function readDb(refPath) {
 
 async function getActiveMatchesSummary() {
   if (activeMatches.size > 0) {
-    return Array.from(activeMatches.values()).sort((a, b) => {
-      return new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime();
-    });
+    return Array.from(activeMatches.values());
   }
   // Fall back to Firebase for any matches that survived a server restart
   const activeSchedules = schedules.filter(item => item.status === "running" || item.status === "paused");
@@ -294,44 +303,6 @@ async function getActiveMatchesSummary() {
     })
   );
   return results.filter(Boolean);
-}
-
-function buildDashboardSummary(activeMatchList) {
-  const statusCounts = {
-    total: schedules.length,
-    scheduled: 0,
-    running: 0,
-    paused: 0,
-    completed: 0,
-    failed: 0,
-    cancelled: 0,
-    aborted: 0
-  };
-
-  schedules.forEach(schedule => {
-    if (Object.prototype.hasOwnProperty.call(statusCounts, schedule.status)) {
-      statusCounts[schedule.status] += 1;
-    }
-  });
-
-  const nextScheduledMatch = schedules
-    .filter(item => item.status === "scheduled" && item.startAt)
-    .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime())[0] || null;
-
-  return {
-    teamCount: teamOptions.length,
-    savedLineupCount: Object.keys(savedLineups).length,
-    activeMatchCount: activeMatchList.length,
-    statusCounts,
-    serverStartedAt,
-    uptimeSeconds: Math.floor(process.uptime()),
-    nextScheduledMatch: nextScheduledMatch ? {
-      matchId: nextScheduledMatch.matchId,
-      teamAName: nextScheduledMatch.teamAName,
-      teamBName: nextScheduledMatch.teamBName,
-      startAt: nextScheduledMatch.startAt
-    } : null
-  };
 }
 
 function jsonResponse(res, status, payload) {
@@ -387,9 +358,7 @@ async function saveMatchRegistryEntry(schedule) {
     delayMs: schedule.delayMs,
     startTime: schedule.startAt ? new Date(schedule.startAt).getTime() : Date.now(),
     createdAt: schedule.createdAt,
-    updatedAt: schedule.updatedAt,
-    resultSummary: schedule.resultSummary || null,
-    errorMessage: schedule.errorMessage || null
+    updatedAt: schedule.updatedAt
   };
 
   try {
@@ -471,14 +440,11 @@ async function scheduleMatch(payload) {
     throw new Error("Team A and Team B must be different.");
   }
 
+  const teamAPlayingXI = resolvePlayingXI(teamAEntry, payload.teamAPlayingXI);
+  const teamBPlayingXI = resolvePlayingXI(teamBEntry, payload.teamBPlayingXI);
+
   const type = getMatchTypeByKey(payload.matchType || "T20");
-  const format = type.key; // T20, ODI, TEST
-
-  const teamAPlayingXI = resolvePlayingXI(teamAEntry, payload.teamAPlayingXI, format);
-  const teamBPlayingXI = resolvePlayingXI(teamBEntry, payload.teamBPlayingXI, format);
-
   const overs = Number(payload.overs) || type.overs;
-
   if (overs <= 0) {
     throw new Error("Invalid overs count.");
   }
@@ -487,107 +453,65 @@ async function scheduleMatch(payload) {
     throw new Error("Delay must be a valid non-negative number.");
   }
 
-  const venue = payload.venue ? payload.venue : require("./utils/venues").getRandomVenue(payload.country || "India");
-  const timezone = venue.timezone || "Asia/Kolkata";
-
-  const startAt = payload.startAt
-    ? moment.tz(payload.startAt, timezone).utc().toDate()
-    : null;
-  
+  const startAt = payload.startAt ? new Date(payload.startAt) : null;
   if (startAt && Number.isNaN(startAt.getTime())) {
     throw new Error("Invalid scheduled start time.");
   }
+const matchId =
+  `${payload.teamA}_vs_${payload.teamB}_${type.key}_${crypto.randomUUID().slice(0,8)}`;
 
-  const matchId =
-    `${payload.teamA}_vs_${payload.teamB}_${type.key}_${crypto.randomUUID().slice(0,8)}`;
-
-  const matchSeed =
-    `${matchId}_${Date.now()}`;
-  
+const matchSeed =
+  `${matchId}_${Date.now()}`;
   const schedule = {
     id: nextScheduleId++,
-    matchId,
+    matchId: `${payload.teamA}_vs_${payload.teamB}_${type.key}_${crypto.randomUUID().slice(0,8)}`,
     teamAName: payload.teamA,
     teamBName: payload.teamB,
     seed: matchSeed,
     matchType: type.key,
     overs,
     delayMs,
-    venue: venue.name,
-    city: venue.city,
-    country: venue.country,
-    timezone: timezone,
     startAt: startAt ? startAt.toISOString() : null,
-    utcTimestamp: startAt ? startAt.toISOString() : null,
-    dayNight: payload.dayNight || (startAt && startAt.getUTCHours() > 13 ? "night" : "day"),
-    environmentalEffects: payload.environmentalEffects || require("./utils/schedulerUtils").ENVIRONMENTAL_EFFECTS[payload.dayNight || "night"],
     teamAPlayingXIIds: teamAPlayingXI.map(player => player.id),
     teamBPlayingXIIds: teamBPlayingXI.map(player => player.id),
     teamAPlayingXI: summarizePlayingXI(teamAPlayingXI),
     teamBPlayingXI: summarizePlayingXI(teamBPlayingXI),
     status: startAt ? "scheduled" : "running",
-    resultSummary: null,
-    errorMessage: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
-
 
   schedules.push(schedule);
   updateScheduleList();
   await saveMatchRegistryEntry(schedule);
 
-  const teamAWithIds = teamAPlayingXI.map(p => buildMatchPlayer(p, format));
-  const teamBWithIds = teamBPlayingXI.map(p => buildMatchPlayer(p, format));
+  const teamAWithIds = teamAPlayingXI.map(buildMatchPlayer);
+  const teamBWithIds = teamBPlayingXI.map(buildMatchPlayer);
 
   await initScorecardsForMatch(schedule.matchId, teamAWithIds, teamBWithIds);
 
-
   if (!schedule.startAt) {
-    console.log(`Match ${schedule.matchId} starting immediately (no startAt).`);
     runMatch(schedule);
     return `Match ${schedule.matchId} started immediately.`;
   }
 
   const runAt = new Date(schedule.startAt).getTime();
-  const now = Date.now();
-  const delay = runAt - now;
-
-  console.log(`Scheduling match ${schedule.matchId}:`);
-  console.log(`  - Scheduled At (UTC): ${schedule.startAt}`);
-  console.log(`  - Current Time (UTC): ${new Date(now).toISOString()}`);
-  console.log(`  - Delay: ${delay}ms`);
-
+  const delay = runAt - Date.now();
   if (delay <= 0) {
-    console.log(`Match ${schedule.matchId} starting immediately (scheduled time in past).`);
-    persistScheduleState(schedule, "running");
+    schedule.status = "running";
+    schedule.updatedAt = new Date().toISOString();
     runMatch(schedule);
+    updateScheduleList();
     return `Scheduled time is in the past, starting match ${schedule.matchId} now.`;
   }
 
-  scheduledJobs[schedule.id] = setTimeout(() => {
-    console.log(`[Timeout] Starting scheduled match ${schedule.matchId}`);
-    runMatch(schedule);
-  }, delay);
+  schedule.status = "scheduled";
+  scheduledJobs[schedule.id] = setTimeout(() => runMatch(schedule), delay);
   updateScheduleList();
-
-  const istLabel = moment.utc(schedule.startAt)
-    .tz("Asia/Kolkata")
-    .format("DD MMM YYYY hh:mm A");
-
-  return `Match ${schedule.matchId} scheduled for ${istLabel} IST.`;
+  return `Match ${schedule.matchId} scheduled for ${new Date(schedule.startAt).toLocaleString()} UTC.`;
 }
 
 function runMatch(schedule) {
-  console.log(`runMatch called for ${schedule.matchId} (Status: ${schedule.status})`);
-  if (
-    schedule.status === "completed" ||
-    schedule.status === "aborted" ||
-    schedule.status === "cancelled"
-  ) {
-    console.log(`runMatch ignored for ${schedule.matchId} because of status: ${schedule.status}`);
-    return;
-  }
   const alreadyRunning = Array.from(activeMatches.values()).find(m => m.matchId === schedule.matchId);
   if (alreadyRunning) {
     addLog(`Match ${schedule.matchId} is already running.`);
@@ -599,10 +523,11 @@ function runMatch(schedule) {
 
   const teamAEntry = getTeamByName(schedule.teamAName);
   const teamBEntry = getTeamByName(schedule.teamBName);
-  const format = schedule.matchType || "T20";
 
   if (!teamAEntry || !teamBEntry) {
-    persistScheduleState(schedule, "failed", { errorMessage: "One or both teams are missing." });
+    schedule.status = "failed";
+    schedule.updatedAt = new Date().toISOString();
+    updateScheduleList();
     addLog(`Match ${schedule.matchId} could not start because one or both teams are missing.`);
     return;
   }
@@ -613,17 +538,16 @@ function runMatch(schedule) {
   try {
     teamA = resolvePlayingXI(
       teamAEntry,
-      schedule.teamAPlayingXIIds || (schedule.teamAPlayingXI && schedule.teamAPlayingXI.map(p => p.id)),
-      format
-    );
+      schedule.teamAPlayingXIIds || schedule.teamAPlayingXI?.map(player => player.id)
+    ).map(buildMatchPlayer);
     teamB = resolvePlayingXI(
       teamBEntry,
-      schedule.teamBPlayingXIIds || (schedule.teamBPlayingXI && schedule.teamBPlayingXI.map(p => p.id)),
-      format
-    );
-
+      schedule.teamBPlayingXIIds || schedule.teamBPlayingXI?.map(player => player.id)
+    ).map(buildMatchPlayer);
   } catch (error) {
-    persistScheduleState(schedule, "failed", { errorMessage: error.message });
+    schedule.status = "failed";
+    schedule.updatedAt = new Date().toISOString();
+    updateScheduleList();
     addLog(`Match ${schedule.matchId} could not start: ${error.message}`);
     return;
   }
@@ -646,9 +570,6 @@ function runMatch(schedule) {
     updatedAt: new Date().toISOString(),
     score: "0/0",
     wickets: 0,
-    inning: null,
-    over: 0,
-    ball: 0,
     lastBall: null,
     target: null,
     abortSignal,
@@ -656,10 +577,14 @@ function runMatch(schedule) {
     error: null
   });
 
+  liveLogs = [];
   addLog(`Match ${matchId} is starting: ${schedule.teamAName} vs ${schedule.teamBName}`);
-  persistScheduleState(schedule, "running", { errorMessage: null });
+  schedule.status = "running";
+  schedule.updatedAt = new Date().toISOString();
+  updateScheduleList();
+  updateMatchStatus(matchId, "running");
 
-  matchService.startMatch(matchId, teamA, teamB, {
+  startMatch(matchId, teamA, teamB, {
     oversLimit: schedule.overs,
     delayMs: schedule.delayMs,
     teamAName: schedule.teamAName,
@@ -667,21 +592,13 @@ function runMatch(schedule) {
     seed: schedule.seed,
     matchType: schedule.matchType,
     startAt: schedule.startAt,
-    venue: schedule.venue,
-    city: schedule.city,
-    dayNight: schedule.dayNight,
-    environmentalEffects: schedule.environmentalEffects,
     status: "running",
     abortSignal,
     pauseSignal,
-
     onBall: ({ ballData }) => {
       updateCurrentMatch(matchId, {
         score: ballData.score,
         wickets: ballData.wickets,
-        inning: ballData.inning,
-        over: ballData.over,
-        ball: ballData.ball,
         lastBall: ballData.ballClock,
         target: ballData.target
       });
@@ -693,28 +610,18 @@ function runMatch(schedule) {
       }
     }
   }).then(result => {
-    const resultSummary = formatResultSummary(result.result);
-    persistScheduleState(schedule, "completed", { resultSummary, errorMessage: null });
-    addLog(`Final result: ${resultSummary || "Match finished."}`);
+    schedule.status = "completed";
+    schedule.updatedAt = new Date().toISOString();
+    updateScheduleList();
+    updateCurrentMatch(matchId, { status: "completed" });
+    addLog(`Final result: ${result.result.winner || "Tie"}`);
     activeMatches.delete(matchId);
-    
-    // Archival: Move heavy match data to cold storage
-    matchService.archiveMatchData(matchId).catch(err => console.error("Archival failed", err));
-
   }).catch(error => {
-    const finalStatus = abortSignal.aborted ? "aborted" : "failed";
-    persistScheduleState(schedule, finalStatus, {
-      errorMessage: finalStatus === "failed" ? error.message : null
-    });
-    updateCurrentMatch(matchId, {
-      status: finalStatus,
-      error: finalStatus === "failed" ? error.message : null
-    });
-    addLog(
-      finalStatus === "aborted"
-        ? `Match ${matchId} was aborted.`
-        : `Match ${matchId} ended with error: ${error.message}`
-    );
+    schedule.status = abortSignal.aborted ? "aborted" : "failed";
+    schedule.updatedAt = new Date().toISOString();
+    updateCurrentMatch(matchId, { status: schedule.status, error: error.message });
+    addLog(`Match ${matchId} ended with error: ${error.message}`);
+    updateScheduleList();
     activeMatches.delete(matchId);
   });
 }
@@ -731,7 +638,9 @@ function cancelSchedule(id) {
   }
   clearTimeout(scheduledJobs[id]);
   delete scheduledJobs[id];
-  persistScheduleState(schedule, "cancelled");
+  schedule.status = "cancelled";
+  schedule.updatedAt = new Date().toISOString();
+  updateScheduleList();
   addLog(`Scheduled match ${schedule.matchId} was cancelled.`);
 }
 
@@ -744,12 +653,7 @@ function pauseCurrentMatch(matchId) {
   match.status = "paused";
   match.updatedAt = new Date().toISOString();
   activeMatches.set(match.matchId, match);
-  const schedule = getScheduleByMatchId(match.matchId);
-  if (schedule) {
-    persistScheduleState(schedule, "paused", { errorMessage: null });
-  } else {
-    updateMatchStatus(match.matchId, "paused", { updatedAt: match.updatedAt });
-  }
+  updateMatchStatus(match.matchId, "paused");
   addLog(`Match ${match.matchId} paused.`);
 }
 
@@ -762,12 +666,7 @@ function resumeCurrentMatch(matchId) {
   match.status = "running";
   match.updatedAt = new Date().toISOString();
   activeMatches.set(match.matchId, match);
-  const schedule = getScheduleByMatchId(match.matchId);
-  if (schedule) {
-    persistScheduleState(schedule, "running", { errorMessage: null });
-  } else {
-    updateMatchStatus(match.matchId, "running", { updatedAt: match.updatedAt });
-  }
+  updateMatchStatus(match.matchId, "running");
   addLog(`Match ${match.matchId} resumed.`);
 }
 
@@ -780,17 +679,12 @@ function abortCurrentMatch(matchId) {
   match.status = "aborted";
   match.updatedAt = new Date().toISOString();
   activeMatches.set(match.matchId, match);
-  const schedule = getScheduleByMatchId(match.matchId);
-  if (schedule) {
-    persistScheduleState(schedule, "aborted");
-  } else {
-    updateMatchStatus(match.matchId, "aborted", { updatedAt: match.updatedAt });
-  }
+  updateMatchStatus(match.matchId, "aborted");
   addLog(`Match ${match.matchId} abort requested.`);
 }
 
 const server = http.createServer(async (req, res) => {
-  const baseUrl = `http://${req.headers.host || `localhost:${PORT}`}`;
+  const baseUrl = `http://${req.headers.host}`;
   const requestUrl = new URL(req.url, baseUrl);
 
   if (req.method === "GET" && requestUrl.pathname === "/") {
@@ -816,12 +710,7 @@ const server = http.createServer(async (req, res) => {
     const activeMatchList = await getActiveMatchesSummary();
     // Keep backward-compatible shape: currentMatch is the first active match (or null)
     const currentMatch = activeMatchList.length > 0 ? activeMatchList[0] : null;
-    jsonResponse(res, 200, {
-      currentMatch,
-      activeMatches: activeMatchList,
-      liveLogs,
-      summary: buildDashboardSummary(activeMatchList)
-    });
+    jsonResponse(res, 200, { currentMatch, activeMatches: activeMatchList, liveLogs });
     return;
   }
 
@@ -843,7 +732,7 @@ const server = http.createServer(async (req, res) => {
       jsonResponse(res, 400, { error: "Missing matchId parameter." });
       return;
     }
-    if (/[.#$[\]/]/.test(matchId)) {
+    if (!/^[a-zA-Z0-9_-]+$/.test(matchId)) {
       jsonResponse(res, 400, { error: "Invalid matchId format." });
       return;
     }
@@ -957,117 +846,9 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // --- Tournament API Endpoints ---
-  if (req.method === "POST" && requestUrl.pathname === "/api/tournaments/generate") {
-    try {
-      const payload = await parseRequestBody(req);
-      const fixtureGenerator = require("./tournaments/fixturegenerator");
-      const templates = require("./tournaments/tournamenttemplates");
-      const template = templates[payload.templateKey];
-      
-      const fixtures = fixtureGenerator.createFullTournamentSchedule(payload.teams, {
-        format: template.format,
-        rounds: template.rounds || 1,
-        groupCount: template.groupCount,
-        startDate: payload.startDate || new Date(),
-        country: payload.country || template.defaultCountry || "India"
-      });
-
-      jsonResponse(res, 200, { fixtures });
-    } catch (error) {
-      jsonResponse(res, 400, { error: error.message });
-    }
-    return;
-  }
-
-  if (req.method === "POST" && requestUrl.pathname === "/api/tournaments/save") {
-    try {
-      const payload = await parseRequestBody(req);
-      const tournamentEngine = require("./tournaments/tournamentengine");
-      const tournamentId = await tournamentEngine.createTournament({
-        ...payload,
-        templateKey: payload.templateKey
-      });
-      addLog(`Tournament ${payload.tournamentName || "New"} created and scheduled.`);
-      jsonResponse(res, 200, { message: "Tournament saved", tournamentId });
-    } catch (error) {
-      jsonResponse(res, 400, { error: error.message });
-    }
-    return;
-  }
-
-  if (req.method === "GET" && requestUrl.pathname === "/api/tournaments/list") {
-    try {
-      const snapshot = await db.ref("tournaments").limitToLast(10).once("value");
-      const tournaments = [];
-      snapshot.forEach(child => {
-        const val = child.val();
-        tournaments.push({
-          id: val.id,
-          name: val.name,
-          status: val.status,
-          season: val.season,
-          format: val.format
-        });
-      });
-      jsonResponse(res, 200, tournaments.reverse());
-    } catch (error) {
-      jsonResponse(res, 400, { error: error.message });
-    }
-    return;
-  }
-
-  if (req.method === "GET" && requestUrl.pathname.startsWith("/api/tournaments/standings/")) {
-    try {
-      const tid = requestUrl.pathname.split("/").pop();
-      const standingsEngine = require("./tournaments/standingsengine");
-      const snapshot = await db.ref(`tournaments/${tid}/standings`).once("value");
-      if (!snapshot.exists()) throw new Error("Standings not found");
-      const sorted = standingsEngine.sortStandings(snapshot.val());
-      jsonResponse(res, 200, sorted);
-    } catch (error) {
-      jsonResponse(res, 400, { error: error.message });
-    }
-    return;
-  }
-
   res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
   res.end("Not found");
 });
-
-// Automated Tournament Match Runner
-setInterval(async () => {
-  try {
-    const tournamentEngine = require("./tournaments/tournamentengine");
-    const activeTournamentsSnap = await db.ref("tournaments").orderByChild("status").equalTo("live").once("value");
-    const upcomingTournamentsSnap = await db.ref("tournaments").orderByChild("status").equalTo("upcoming").once("value");
-    
-    const tids = [];
-    activeTournamentsSnap.forEach(t => tids.push(t.key));
-    upcomingTournamentsSnap.forEach(t => tids.push(t.key));
-
-    for (const tid of tids) {
-      // Try running next match
-      const runResult = await tournamentEngine.runNextMatch(tid);
-      
-      // Step B: Match Completion Trigger
-      if (runResult && runResult.status === "completed") {
-        console.log(`[EventFlow] Match ${runResult.matchId} completed in tournament ${tid}. Cascading updates...`);
-        // Additional event logic can go here (e.g. Detect qualification)
-      }
-
-      // Step C: Tournament Archival
-      const updatedTournSnap = await db.ref(`tournaments/${tid}`).once("value");
-      const updatedTourn = updatedTournSnap.val();
-      if (updatedTourn && updatedTourn.status === "completed") {
-        await tournamentEngine.archiveTournament(tid);
-      }
-    }
-
-  } catch (err) {
-    // console.error("Tournament auto-runner error:", err);
-  }
-}, 30000); // Check every 30 seconds
 
 server.on("error", error => {
   if (error.code === "EADDRINUSE") {
@@ -1085,44 +866,5 @@ server.on("error", error => {
 server.listen(PORT, () => {
   const urlToOpen = `http://localhost:${PORT}`;
   console.log(`Advanced scheduler running at ${urlToOpen}`);
-  if (process.env.NODE_ENV !== "production") {
-    openBrowser(urlToOpen);
-}
+  openBrowser(urlToOpen);
 });
-
-const tournamentEngine = require("./tournaments/tournamentengine");
-
-/**
- * Player Synchronization: Move players from JSON to relational Firebase nodes
- */
-async function syncPlayersToFirebase() {
-  console.log("Syncing players to relational database...");
-  for (const team of Object.values(teamCatalog)) {
-    for (const player of team.players) {
-      const playerRef = db.ref(`players/${player.id}`);
-      const snap = await playerRef.once("value");
-      if (!snap.exists()) {
-        await playerRef.set({
-          ...player,
-          batting_probabilities: null, // Don't store engine-specific probs in relational profile
-          bowling_probabilities: null,
-          teamId: team.name,
-          updatedAt: new Date().toISOString()
-        });
-      }
-    }
-  }
-}
-
-syncPlayersToFirebase();
-
-module.exports = { 
-  startMatch: matchService.startMatch, 
-  getTeamByName: teamService.getTeamByName, 
-  resolvePlayingXI: matchService.resolvePlayingXI, 
-  buildMatchPlayer: matchService.buildMatchPlayer,
-  archiveTournament: tournamentEngine.archiveTournament
-};
-
-
-

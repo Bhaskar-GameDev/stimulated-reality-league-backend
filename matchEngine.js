@@ -1,7 +1,5 @@
 const db = require("./firebase");
 const { createSeededRandom } = require("./utils/random");
-const commentaryEngine = require("./utils/commentaryEngine");
-const formatManager = require('./utils/formatManager');
 const DEFAULT_PROBABILITIES = {
   dot: 0.35,
   single: 0.30,
@@ -12,190 +10,115 @@ const DEFAULT_PROBABILITIES = {
 };
 
 function getMatchPhase(context) {
-  const over = context.currentOver + 1; // 1-indexed for logic
-  if (over <= 6) return "powerplay";
-  if (over <= 15) return "middle";
+  const overRatio = context.currentOver / context.totalOvers;
+  if (overRatio < 0.3) return "powerplay";
+  if (overRatio < 0.75) return "middle";
   return "death";
 }
 
-/**
- * Momentum Engine: Calculates the shift in momentum after each ball
- * Scale: -100 (Bowling Team Dominance) to +100 (Batting Team Dominance)
- */
-function calculateMomentum(currentMomentum, result, context) {
-  let shift = 0;
-  if (result === "6") shift = 15;
-  else if (result === "4") shift = 8;
-  else if (result === "W") shift = -25;
-  else if (result === "dot") shift = -2;
-  else if (result === "1" || result === "2") shift = 1;
-
-  // Contextual modifiers
-  if (context.isChasing) {
-    const rrr = context.runsRequired / (context.ballsRemaining / 6);
-    if (rrr > 12) shift *= 0.5; // Harder to gain momentum under extreme RRR
-  }
-
-  let newMomentum = (currentMomentum || 0) + shift;
-  return Math.max(-100, Math.min(100, newMomentum));
-}
-
-/**
- * Win Probability Engine (Simplified)
- */
-function calculateWinProbability(context) {
-  if (!context.isChasing) return 50; // Balanced at start
-
-  const ballsRemaining = context.ballsRemaining;
-  const runsRequired = context.runsRequired;
-  const wicketsFallen = context.wicketsFallen;
-
-  if (runsRequired <= 0) return 100;
-  if (wicketsFallen >= 10 || ballsRemaining <= 0) return 0;
-
-  // Simple heuristic
-  const rrr = (runsRequired / ballsRemaining) * 6;
-  let prob = 100 - (rrr * 5); // Base probability drops as RRR increases
-  prob += (10 - wicketsFallen) * 3; // Boost for having wickets in hand
-  
-  return Math.max(1, Math.min(99, prob));
-}
-
-
 function calculateAdjustedProbabilities(batsman, bowler, context) {
-  const format = context.matchType || "T20";
-  const phase = getMatchPhase(context);
-  const phaseMultiplier = formatManager.getPhaseMultiplier(format, context.currentOver);
-  const effects = context.environmentalEffects || {};
+  const batBase = batsman.batting?.base || batsman.batting_probabilities || batsman.base_probabilities || DEFAULT_PROBABILITIES;
   
-  // 1. Load Base Probabilities
-  const batBase = batsman.batting?.base || batsman.batting_probabilities || DEFAULT_PROBABILITIES;
   const probs = {
-    "dot": Number(batBase.dot) || 0.35,
-    "1": Number(batBase["1"] || batBase.single) || 0.3,
-    "2": Number(batBase["2"] || batBase.double) || 0.08,
-    "4": Number(batBase["4"] || batBase.four) || 0.14,
-    "6": Number(batBase["6"] || batBase.six) || 0.08,
-    "wicket": Number(batBase.wicket) || 0.05
+    "dot": batBase.dot || batBase["dot"] || 0.35,
+    "1": batBase["1"] || batBase.single || 0.3,
+    "2": batBase["2"] || batBase.double || 0.08,
+    "4": batBase["4"] || batBase.four || 0.14,
+    "6": batBase["6"] || batBase.six || 0.08,
+    "wicket": batBase.wicket || batBase["wicket"] || 0.05
   };
 
-  // 2. Apply Phase Aggression & Format Modifiers
-  const batsmanAggression = (batsman.batting?.aggression?.[phase] ?? 0.5) * phaseMultiplier;
-  const bowlerAggression = (bowler.bowling?.aggression?.[phase] ?? 0.5);
-
-  const formatModifiers = formatManager.getFormatModifiers(format);
-
-  if (phase === "powerplay") {
-    probs["dot"] *= (1.0 - (batsmanAggression * 0.3));
-    probs["4"] *= (1.0 + batsmanAggression * 0.4);
-    probs["6"] *= (1.0 + batsmanAggression * 0.2);
-    probs["wicket"] *= (1.0 + (batsmanAggression * 0.2) + (bowlerAggression * 0.3) * formatModifiers.wicketRisk);
-
-
-    // Environmental: Swing Factor
-    if (effects.swing) {
-      probs["wicket"] *= effects.swing;
-      probs["dot"] *= (1.0 + (effects.swing - 1.0) * 0.5);
-    }
-  } else if (phase === "middle") {
-    const temperament = batsman.batting?.temperament ?? 0.5;
-    probs["1"] *= (1.0 + temperament * 0.2);
-    probs["2"] *= (1.0 + temperament * 0.1);
-    probs["wicket"] *= (1.0 - temperament * 0.3);
-    probs["4"] *= (1.0 - (1.0 - batsmanAggression) * 0.2);
-
-    // Environmental: Spin Assistance
-    if (effects.spinAssistance && context.bowlerType === "Spin") {
-      probs["dot"] *= effects.spinAssistance;
-      probs["wicket"] *= (1.0 + (effects.spinAssistance - 1.0) * 0.5);
-    }
-  } else if (phase === "death") {
-    const finishing = batsman.behavior?.deathFinishing ?? 0.5;
-    const slogging = batsman.behavior?.sloggingAbility ?? 0.5;
-    const power = (finishing + slogging) / 2;
-    
-    probs["dot"] *= 0.7;
-    probs["6"] *= (1.2 + power * 0.8);
-    probs["4"] *= (1.1 + power * 0.4);
-    probs["wicket"] *= (1.3 + (1.0 - power) * 0.5);
+  if (!batsman.batting || !bowler.bowling) {
+    const bowlBase = bowler.bowling_probabilities || bowler.base_probabilities || DEFAULT_PROBABILITIES;
+    return {
+      "dot": (probs["dot"] + (bowlBase.dot || 0.35)) / 2,
+      "1": (probs["1"] + (bowlBase.single || bowlBase["1"] || 0.3)) / 2,
+      "2": (probs["2"] + (bowlBase.double || bowlBase["2"] || 0.08)) / 2,
+      "4": (probs["4"] + (bowlBase.four || bowlBase["4"] || 0.14)) / 2,
+      "6": (probs["6"] + (bowlBase.six || bowlBase["6"] || 0.08)) / 2,
+      "wicket": (probs["wicket"] + (bowlBase.wicket || 0.05)) / 2
+    };
   }
 
-  // 3. Apply Bowler Influence
-  const economy = bowler.bowling?.economyControl ?? 0.5;
-  const strike = bowler.bowling?.wicketTaking ?? 0.5;
-  const accuracy = bowler.bowling?.accuracy ?? 0.5;
+  const phase = getMatchPhase(context);
 
-  probs["dot"] *= (1.0 + economy * 0.4 + accuracy * 0.2);
-  probs["4"] *= (1.0 - economy * 0.3);
-  probs["6"] *= (1.0 - economy * 0.4);
-  probs["wicket"] *= (1.0 + strike * 0.6);
+  const aggMultiplier = batsman.batting.aggression?.[phase] ?? 1.0;
+  probs["4"] *= (1.0 + aggMultiplier * 0.5);
+  probs["6"] *= (1.0 + aggMultiplier * 0.8);
+  probs["wicket"] *= (1.0 + aggMultiplier * 0.3);
+  probs["dot"] *= Math.max(0.1, 1.0 - (aggMultiplier * 0.2));
 
-  // 4. Matchup Modifiers (vsPace / vsSpin)
+  const bowlerAggression = bowler.bowling.aggression?.[phase] ?? 1.0;
+  const restrictiveFactor = ((bowler.bowling.economyControl ?? 0.5) + (bowler.bowling.accuracy ?? 0.5)) / 2.0;
+  probs["dot"] *= (1.0 + restrictiveFactor * 0.5);
+  probs["4"] *= Math.max(0.1, 1.0 - restrictiveFactor * 0.4);
+  probs["6"] *= Math.max(0.1, 1.0 - restrictiveFactor * 0.6);
+  probs["wicket"] *= (1.0 + (bowler.bowling.wicketTaking ?? 0.5) * 0.6 + bowlerAggression * 0.2);
+
+  if (phase === "death") {
+    probs["dot"] *= (1.0 + (bowler.behavior?.deathOverSkill ?? 0.5) * 0.3);
+    probs["wicket"] *= (1.0 + (bowler.behavior?.deathOverSkill ?? 0.5) * 0.3);
+  }
+
   const matchupMultiplier = context.bowlerType === "Pace" 
-    ? (batsman.batting?.vsPace ?? 1.0) 
-    : (batsman.batting?.vsSpin ?? 1.0);
+    ? (batsman.batting.vsPace ?? 1.0) 
+    : (batsman.batting.vsSpin ?? 1.0);
   
   probs["1"] *= matchupMultiplier;
+  probs["2"] *= matchupMultiplier;
   probs["4"] *= matchupMultiplier;
-  probs["6"] *= matchupMultiplier;
+  probs["6"] *= (matchupMultiplier * 1.2);
 
-  // 5. Match Context Modifiers (Pressure, Run Rate)
-  if (context.isChasing && context.runsRequired !== null) {
-    const ballsRemaining = context.ballsRemaining || 1;
-    const rrr = (context.runsRequired / ballsRemaining) * 6;
-
-    // Environmental: Dew Factor (Easier chasing)
-    const dewBoost = effects.dew ? (1.0 + (effects.dew - 1.0) * 0.5) : 1.0;
-    
-    if (rrr > 9.0) {
-      const pressure = Math.min(1.0, (rrr - 9.0) / 6.0);
-      const handling = batsman.behavior?.pressureHandling ?? 0.5;
-      const chaseBoost = batsman.behavior?.chaseBoost ?? 0.5;
-      
-      probs["6"] *= (1.0 + pressure * chaseBoost * 0.6 * dewBoost);
-      probs["4"] *= (1.0 + pressure * chaseBoost * 0.3 * dewBoost);
-      probs["wicket"] *= (1.0 + pressure * (1.0 - handling) * 0.8 / dewBoost);
-    } else {
-      // Normal chasing with dew
-      probs["1"] *= dewBoost;
-      probs["4"] *= dewBoost;
-    }
-  }
-
-  // 6. Batting Collapse Resistance
-  if (context.wicketsFallen >= 3) {
-    const resistance = batsman.behavior?.collapseResistance ?? 0.5;
-    probs["wicket"] *= (1.2 - resistance * 0.5);
-    if (resistance > 0.7) {
-      probs["dot"] *= 1.1;
-    }
-  }
-
-  // 7. Form and Stamina Decay
   const form = batsman.form ?? 1.0;
-  probs["1"] *= (0.9 + form * 0.2);
-  probs["4"] *= (0.9 + form * 0.2);
+  const consistency = batsman.batting.consistency ?? 0.5;
+  const reliability = (form + consistency) / 2.0;
+  probs["wicket"] *= Math.max(0.2, 1.5 - reliability);
+  probs["1"] *= (1.0 + reliability * 0.2);
+  probs["2"] *= (1.0 + reliability * 0.3);
 
   if (batsman.stamina) {
-    // Environmental: Heat Fatigue
-    const fatigueMultiplier = effects.heatFatigue ?? 1.0;
-    const decayRate = (batsman.stamina.decayRate ?? 0.01) * fatigueMultiplier;
-    const faced = context.batsmanBallsFaced || 0;
-    const currentStamina = Math.max(0.2, (batsman.stamina.initial ?? 1.0) - (faced * decayRate));
-    
-    probs["6"] *= (0.5 + currentStamina * 0.5);
-    probs["4"] *= (0.7 + currentStamina * 0.3);
-    probs["wicket"] *= (1.0 + (1.0 - currentStamina) * 0.4);
+    const staminaDecay = (batsman.stamina.decayRate ?? 0.01) * context.batsmanBallsFaced;
+    const currentStamina = Math.max(0.1, (batsman.stamina.initial ?? 1.0) - staminaDecay);
+    probs["2"] *= currentStamina;
+    probs["4"] *= (0.5 + currentStamina * 0.5);
+    probs["6"] *= currentStamina;
+    const fatigue = 1.0 - currentStamina;
+    probs["dot"] *= (1.0 + fatigue * 0.5);
+    probs["wicket"] *= (1.0 + fatigue * 0.3);
   }
 
-  // Ensure no negative probabilities
+  if (batsman.behavior) {
+    if (context.isChasing && context.runsRequired !== null) {
+      const ballsRemaining = (context.totalOvers * 6) - ((context.currentOver * 6) + context.currentBallInOver);
+      const rrr = ballsRemaining > 0 ? (context.runsRequired / ballsRemaining) * 6 : 0;
+      
+      if (rrr > 9.0) {
+        const rrrPressure = (rrr - 9.0) / 5.0;
+        const boost = batsman.behavior.chaseBoost ?? 0.5;
+        const pressureHandling = batsman.behavior.pressureHandling ?? 0.5;
+        
+        probs["4"] *= (1.0 + rrrPressure * boost);
+        probs["6"] *= (1.0 + rrrPressure * boost * 1.5);
+        probs["wicket"] *= (1.0 + rrrPressure * Math.max(0.1, 1.5 - pressureHandling));
+      }
+    }
+
+    if (context.wicketsFallen >= 3) {
+      const collapseRisk = Math.max(0.1, 1.5 - (batsman.behavior.collapseResistance ?? 0.5));
+      probs["wicket"] *= collapseRisk;
+      if ((batsman.behavior.collapseResistance ?? 0.5) > 0.6) {
+        probs["dot"] *= 1.2;
+        probs["1"] *= 1.1;
+      }
+    }
+  }
+
   for (const key of Object.keys(probs)) {
     probs[key] = Math.max(0.001, probs[key]);
   }
 
   return probs;
 }
-
 
 function normalizeProbabilities(p) {
   const categories = ["dot", "1", "2", "4", "6", "wicket"];
@@ -239,12 +162,6 @@ function simulateBall(batsman, bowler, context) {
 
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-function createAbortError(matchId) {
-  const error = new Error(`Match ${matchId} was aborted.`);
-  error.code = "MATCH_ABORTED";
-  return error;
 }
 
 function waitWhilePaused(pauseSignal) {
@@ -459,8 +376,6 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
   let nonStriker = 1;
   let nextBatsman = 2;
   let ballsBowled = 0;
-  let partnershipRuns = 0;
-  let partnershipBalls = 0;
   const recentBalls = {};
   let scorecard = await readDb(`matches/${matchId}/scorecard/${inningNumber}`) || { batting: {}, bowling: {} };
 
@@ -475,16 +390,8 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
 
   await writeDb(`matches/${matchId}/innings/${inningNumber}/meta`, inningMeta);
 
-  const validBowlers = bowling.filter(p => {
-    const role = (p.role || "").toLowerCase();
-    const type = (p.type || "").toLowerCase();
-    return role === "bowler" || role === "allrounder" || type.includes("bowler") || type === "tailender";
-  });
-  const bowlersToUse = validBowlers.length > 0 ? validBowlers : bowling;
-
   for (let over = 0; over < oversLimit; over++) {
-    const bowler = bowlersToUse[over % bowlersToUse.length];
-    let runsInOver = 0;
+    const bowler = bowling[over % bowling.length];
 
     for (let ball = 0; ball < 6; ball++) {
       if (abortSignal?.aborted) break;
@@ -505,17 +412,17 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
         currentScore: runs,
         batsmanBallsFaced: scorecard.batting[batsman.id || batsman.name]?.balls || 0,
         bowlerType: bowler.type && bowler.type.toLowerCase().includes("spin") ? "Spin" : "Pace",
-        runsRequired: chaseTarget !== null ? Math.max(chaseTarget - runs, 0) : null,
-        ballsRemaining: (oversLimit * 6) - ballsBowled,
-        partnershipRuns,
-        partnershipBalls,
-        environmentalEffects: options.environmentalEffects || {},
-        rng
+        runsRequired: chaseTarget !== null ? Math.max(chaseTarget - runs, 0) : null
       };
 
-      const result = simulateBall(batsman, bowler, context);
-
-
+      const result = simulateBall(
+    batsman,
+    bowler,
+    {
+        ...context,
+        rng
+    }
+);
       let ballRuns = 0;
 
       if (result === "1") {
@@ -534,13 +441,8 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
       } else if (result === "W") {
         wickets += 1;
         striker = nextBatsman < batting.length ? nextBatsman++ : -1;
-        partnershipRuns = 0;
-        partnershipBalls = 0;
       }
 
-      runsInOver += ballRuns;
-      partnershipRuns += ballRuns;
-      partnershipBalls += 1;
       ballsBowled += 1;
       const { over: currentOver, ball: currentBall } = getBallPosition(ballsBowled);
       const currentBatsman = batting[striker];
@@ -553,12 +455,6 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
       };
       recentBalls[buildBallKey(currentOver, currentBall)] = result;
 
-      // Calculate Momentum and Win Probability
-      const momentum = calculateMomentum(options.currentMomentum, result, context);
-      options.currentMomentum = momentum;
-      const winProbability = calculateWinProbability(context);
-
-      // Enhanced Ball Data (Relational & Analytical)
       const ballData = {
         inning: inningNumber,
         over: currentOver,
@@ -571,93 +467,41 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
         score,
         target: chaseTarget !== null ? chaseTarget : null,
         runsRequired,
+        batsman: batsman.name,
         batsmanId: batsman.id,
+        striker: batsman.name,
         strikerId: batsman.id,
+        nonStriker: currentNonStriker?.name || null,
         nonStrikerId: currentNonStriker?.id || null,
+        bowler: bowler.name,
         bowlerId: bowler.id,
-        // Narrative & Analytics placeholders
-        shotType: result === "4" || result === "6" ? "Aggressive" : "Defensive",
-        wagonWheel: Math.floor(context.rng.next() * 360), // Degree of shot
-        momentum,
-        winProbability,
-        timestamp: new Date().toISOString() // Professional UTC format
+        timestamp: Date.now()
       };
 
-      // FAST PATH: Update Live Snapshot (Lightweight & High-Frequency)
-      await writeDb(`matches/${matchId}/snapshot`, {
-        matchId,
-        inning: inningNumber,
-        runs,
-        wickets,
-        over: currentOver,
-        ball: currentBall,
-        score,
-        strikerId: batsman.id,
-        nonStrikerId: currentNonStriker?.id || null,
-        bowlerId: bowler.id,
-        winProbability,
-        momentum,
-        crr: Number((runs / (ballsBowled / 6)).toFixed(2)),
-        rrr: chaseTarget !== null ? Number((runsRequired / ((oversLimit * 6 - ballsBowled) / 6)).toFixed(2)) : null,
-        status: "live",
-        timestamp: Date.now()
-      });
-
-      // DEEP PATH: Ball-by-Ball Partitioned (History)
-      const ballKey = buildBallKey(currentOver, currentBall);
-      await writeDb(`matches/${matchId}/balls/${inningNumber}/${ballKey}`, {
-        over: currentOver,
-        ball: currentBall,
-        result,
-        ballRuns,
-        score,
-        batsmanId: batsman.id,
-        bowlerId: bowler.id
-      });
-
-      // ANALYTICS PATH: Heavy visual/mathematical data
-      await writeDb(`matches/${matchId}/analytics/${inningNumber}/${ballKey}`, {
-        wagonWheel: Math.floor(context.rng.next() * 360),
-        momentum,
-        winProbability,
-        partnershipRuns,
-        partnershipBalls
-      });
-      
-      // Update scorecards separately
+      await writeDb(`matches/${matchId}/balls/${inningNumber}/${buildBallKey(currentOver, currentBall)}`, ballData);
       updateBattingStats(scorecard, batsman, ballRuns, result);
       updateBowlingStats(scorecard, bowler, ballRuns, result);
-      await writeDb(`matches/${matchId}/scorecard/${inningNumber}`, scorecard);
-
-
-      let wicketType = null;
-      if (result === "W") {
-        const wr = rng.next();
-        if (wr < 0.2) wicketType = "bowled";
-        else if (wr < 0.4) wicketType = "lbw";
-        else if (wr < 0.1) wicketType = "stumped";
-        else wicketType = "caught";
-      }
-
-      const commentaryText = commentaryEngine.generate(matchId, {
-        result,
-        batsman: batsman,
+      await pushScorecard(matchId, inningNumber, scorecard);
+      await pushCurrentState(matchId, inningNumber, {
+        over: currentOver,
+        ball: currentBall,
+        runs,
+        wickets,
+        striker: currentBatsman,
+        nonStriker: currentNonStriker,
         bowler: bowler,
-        battingTeam: battingTeamName,
-        bowlingTeam: bowlingTeamName,
-        wicketType,
-        state: {
-          runs,
-          wickets,
-          over: currentOver,
-          ball: currentBall,
-          totalOvers: oversLimit,
-          target: chaseTarget,
-          isChasing: chaseTarget !== null
-        }
+        result: result
       });
-
-      await pushCommentary(matchId, String(ballsBowled).padStart(3, "0"), commentaryText);
+      await pushRecentBalls(matchId, recentBalls);
+      await pushCommentary(matchId, String(ballsBowled).padStart(3, "0"),
+        result === "W"
+          ? `WICKET! ${bowler.name} to ${currentBatsman?.name}`
+          : result === "6"
+            ? `SIX! ${currentBatsman?.name} clears the rope`
+            : result === "4"
+              ? `FOUR! ${currentBatsman?.name} finds the boundary`
+              : `${ballRuns} run${ballRuns === 1 ? "" : "s"} from ${currentBatsman?.name}`
+      );
 
       if (typeof onBall === "function") {
         onBall({ matchId, inningNumber, ballData, status: { runs, wickets, over: currentOver, ball: currentBall, score, result, target: chaseTarget } });
@@ -674,24 +518,6 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
       if (wickets >= 10 || striker < 0 || (chaseTarget !== null && runs >= chaseTarget)) {
         break;
       }
-    }
-
-    // Over Summary Commentary
-    if (!abortSignal?.aborted) {
-      const overSummaryText = commentaryEngine.generate(matchId, {
-        isOverEnd: true,
-        runsInOver,
-        battingTeam: battingTeamName,
-        bowlingTeam: bowlingTeamName,
-        bowler: bowler,
-        state: {
-          runs,
-          wickets,
-          over: over,
-          totalOvers: oversLimit
-        }
-      });
-      await pushCommentary(matchId, String(ballsBowled).padStart(3, "1"), overSummaryText);
     }
 
     if (wickets >= 10 || striker < 0 || (chaseTarget !== null && runs >= chaseTarget)) {
@@ -768,6 +594,7 @@ async function startMatch(matchId, teamA, teamB, options = {}) {
   }
 
   const firstInnings = await simulateInnings(matchId, 1, teamA, teamB, {
+    
     oversLimit,
     delayMs,
     rng,
@@ -776,15 +603,11 @@ async function startMatch(matchId, teamA, teamB, options = {}) {
     onBall,
     onStatusUpdate,
     abortSignal,
-    pauseSignal,
-    environmentalEffects: options.environmentalEffects
+    pauseSignal
   });
 
-  if (abortSignal?.aborted) {
-    throw createAbortError(matchId);
-  }
-
   const secondInnings = await simulateInnings(matchId, 2, teamB, teamA, {
+    
     oversLimit,
     delayMs,
     rng,
@@ -794,14 +617,8 @@ async function startMatch(matchId, teamA, teamB, options = {}) {
     onBall,
     onStatusUpdate,
     abortSignal,
-    pauseSignal,
-    environmentalEffects: options.environmentalEffects
+    pauseSignal
   });
-
-
-  if (abortSignal?.aborted) {
-    throw createAbortError(matchId);
-  }
 
   const result = determineResult(firstInnings, secondInnings, teamAName, teamBName);
   await pushMatchResult(matchId, result);
@@ -820,28 +637,4 @@ async function startMatch(matchId, teamA, teamB, options = {}) {
   };
 }
 
-async function archiveMatchData(matchId) {
-  const matchSnap = await db.ref(`matches/${matchId}`).once("value");
-  const data = matchSnap.val();
-  if (!data) return;
-
-  // Move heavy history to archive
-  await db.ref(`history/matches/${matchId}`).set({
-    meta: data.meta || {},
-    result: data.result || {},
-    scorecard: data.scorecard || {},
-    balls: data.balls || {},
-    commentary: data.commentary || {},
-    analytics: data.analytics || {},
-    archivedAt: new Date().toISOString()
-  });
-
-  // Cleanup live node (keep only snapshot/meta for reference if needed, or delete entirely)
-  // We'll keep the meta and result for the 'completed' list but remove heavy sub-trees
-  await db.ref(`matches/${matchId}/balls`).remove();
-  await db.ref(`matches/${matchId}/commentary`).remove();
-  await db.ref(`matches/${matchId}/analytics`).remove();
-}
-
-module.exports = { startMatch, pushScorecard, archiveMatchData };
-
+module.exports = { startMatch, pushScorecard };
