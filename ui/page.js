@@ -30,10 +30,16 @@ ${styles}
         <h1>Simulated Reality League</h1>
         <p>Professional cricket simulation dashboard & tournament engine</p>
       </div>
+      <div id="summaryGrid" class="summary-grid">
+        <!-- Stats injected via JS -->
+      </div>
       <div class="status-badge idle" id="server-status">
         <span class="loading">Connecting</span>
       </div>
     </header>
+    <div id="summaryNote" class="note" style="margin-bottom: 1.5rem; text-align: center; opacity: 0.8;">
+      Initializing system...
+    </div>
 
     <nav class="nav-tabs" style="display: flex; gap: 1rem; margin-bottom: 2rem; padding: 0.65rem; background: rgba(255,255,255,0.05); border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); box-shadow: var(--shadow-lg);">
       <button class="btn tab-btn active" data-tab="matches" style="flex: 1; border-radius: 10px; font-size: 0.9rem;">Match Management</button>
