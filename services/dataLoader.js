@@ -3,7 +3,7 @@
  */
 const fs = require('fs');
 const path = require('path');
-const formatManager = require('./formatManager');
+const formatManager = require('../utils/formatManager');
 
 /**
  * Loads and normalizes a player profile based on the requested format
