@@ -33,5 +33,7 @@ function resolvePlayingXI(teamEntry, selectedIds, format = "T20") {
 module.exports = {
   startMatch,
   buildMatchPlayer,
-  resolvePlayingXI
+  resolvePlayingXI,
+  archiveMatchData: require('../matchEngine').archiveMatchData
 };
+

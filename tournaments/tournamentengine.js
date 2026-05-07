@@ -137,7 +137,12 @@ async function processMatchResult(tournamentId, fixtureIndex, rawResult) {
 
   // Narrative Trigger (Placeholder for Step B)
   await generateNarrative(tournamentId, rawResult);
+
+  // Archival: Move heavy match data to cold storage
+  const { archiveMatchData } = require("../matchEngine");
+  await archiveMatchData(rawResult.matchId);
 }
+
 
 async function generateNarrative(tournamentId, result) {
   const headline = result.result.margin 

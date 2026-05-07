@@ -20,7 +20,7 @@ const teamCatalog = teamService.teamCatalog;
 const teamOptions = Object.values(teamCatalog)
   .map(team => ({
     name: team.name,
-    gender: team.sourceGroup || "men",
+    gender: team.sourceGroup === 'women' ? 'women' : 'men',
     players: team.players.map(player => ({
       id: player.id,
       name: player.name,
@@ -659,7 +659,7 @@ function runMatch(schedule) {
   addLog(`Match ${matchId} is starting: ${schedule.teamAName} vs ${schedule.teamBName}`);
   persistScheduleState(schedule, "running", { errorMessage: null });
 
-  startMatch(matchId, teamA, teamB, {
+  matchService.startMatch(matchId, teamA, teamB, {
     oversLimit: schedule.overs,
     delayMs: schedule.delayMs,
     teamAName: schedule.teamAName,
@@ -697,6 +697,10 @@ function runMatch(schedule) {
     persistScheduleState(schedule, "completed", { resultSummary, errorMessage: null });
     addLog(`Final result: ${resultSummary || "Match finished."}`);
     activeMatches.delete(matchId);
+    
+    // Archival: Move heavy match data to cold storage
+    matchService.archiveMatchData(matchId).catch(err => console.error("Archival failed", err));
+
   }).catch(error => {
     const finalStatus = abortSignal.aborted ? "aborted" : "failed";
     persistScheduleState(schedule, finalStatus, {

@@ -583,7 +583,7 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
         timestamp: new Date().toISOString() // Professional UTC format
       };
 
-      // FAST PATH: Update Live Snapshot (Lightweight)
+      // FAST PATH: Update Live Snapshot (Lightweight & High-Frequency)
       await writeDb(`matches/${matchId}/snapshot`, {
         matchId,
         inning: inningNumber,
@@ -597,17 +597,38 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
         bowlerId: bowler.id,
         winProbability,
         momentum,
-        status: "live"
+        crr: Number((runs / (ballsBowled / 6)).toFixed(2)),
+        rrr: chaseTarget !== null ? Number((runsRequired / ((oversLimit * 6 - ballsBowled) / 6)).toFixed(2)) : null,
+        status: "live",
+        timestamp: Date.now()
       });
 
-      // DEEP PATH: Ball-by-Ball Partitioned
-      await writeDb(`matches/${matchId}/balls/${inningNumber}/${buildBallKey(currentOver, currentBall)}`, ballData);
+      // DEEP PATH: Ball-by-Ball Partitioned (History)
+      const ballKey = buildBallKey(currentOver, currentBall);
+      await writeDb(`matches/${matchId}/balls/${inningNumber}/${ballKey}`, {
+        over: currentOver,
+        ball: currentBall,
+        result,
+        ballRuns,
+        score,
+        batsmanId: batsman.id,
+        bowlerId: bowler.id
+      });
+
+      // ANALYTICS PATH: Heavy visual/mathematical data
+      await writeDb(`matches/${matchId}/analytics/${inningNumber}/${ballKey}`, {
+        wagonWheel: Math.floor(context.rng.next() * 360),
+        momentum,
+        winProbability,
+        partnershipRuns,
+        partnershipBalls
+      });
       
-      // Update scorecards and analytics in separate nodes
+      // Update scorecards separately
       updateBattingStats(scorecard, batsman, ballRuns, result);
       updateBowlingStats(scorecard, bowler, ballRuns, result);
       await writeDb(`matches/${matchId}/scorecard/${inningNumber}`, scorecard);
-      await writeDb(`matches/${matchId}/recentBalls`, recentBalls);
+
 
       let wicketType = null;
       if (result === "W") {
@@ -799,4 +820,28 @@ async function startMatch(matchId, teamA, teamB, options = {}) {
   };
 }
 
-module.exports = { startMatch, pushScorecard };
+async function archiveMatchData(matchId) {
+  const matchSnap = await db.ref(`matches/${matchId}`).once("value");
+  const data = matchSnap.val();
+  if (!data) return;
+
+  // Move heavy history to archive
+  await db.ref(`history/matches/${matchId}`).set({
+    meta: data.meta || {},
+    result: data.result || {},
+    scorecard: data.scorecard || {},
+    balls: data.balls || {},
+    commentary: data.commentary || {},
+    analytics: data.analytics || {},
+    archivedAt: new Date().toISOString()
+  });
+
+  // Cleanup live node (keep only snapshot/meta for reference if needed, or delete entirely)
+  // We'll keep the meta and result for the 'completed' list but remove heavy sub-trees
+  await db.ref(`matches/${matchId}/balls`).remove();
+  await db.ref(`matches/${matchId}/commentary`).remove();
+  await db.ref(`matches/${matchId}/analytics`).remove();
+}
+
+module.exports = { startMatch, pushScorecard, archiveMatchData };
+
