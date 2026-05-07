@@ -1142,6 +1142,7 @@ setInterval(async () => {
     activeTournamentsSnap.forEach(t => tids.push(t.key));
     upcomingTournamentsSnap.forEach(t => tids.push(t.key));
 
+    for (const tid of tids) {
       // Try running next match
       const runResult = await tournamentEngine.runNextMatch(tid);
       
