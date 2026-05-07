@@ -509,17 +509,12 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
         ballsRemaining: (oversLimit * 6) - ballsBowled,
         partnershipRuns,
         partnershipBalls,
-        environmentalEffects: options.environmentalEffects || {}
+        environmentalEffects: options.environmentalEffects || {},
+        rng
       };
 
-      const result = simulateBall(
-        batsman,
-        bowler,
-        {
-          ...context,
-          rng
-        }
-      );
+      const result = simulateBall(batsman, bowler, context);
+
 
       let ballRuns = 0;
 
