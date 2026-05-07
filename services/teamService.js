@@ -13,15 +13,28 @@ function loadTeamCatalog() {
     
     // Normalize and flatten teams
     if (data.men) {
-      Object.entries(data.men).forEach(([name, team]) => {
-        teamCatalog[name] = { ...team, name };
+      Object.entries(data.men).forEach(([name, teamData]) => {
+        const players = Array.isArray(teamData) ? teamData : (teamData.players || []);
+        teamCatalog[name] = { 
+          name, 
+          players, 
+          sourceGroup: 'men',
+          ...(Array.isArray(teamData) ? {} : teamData) 
+        };
       });
     }
     if (data.women) {
-      Object.entries(data.women).forEach(([name, team]) => {
-        teamCatalog[name] = { ...team, name };
+      Object.entries(data.women).forEach(([name, teamData]) => {
+        const players = Array.isArray(teamData) ? teamData : (teamData.players || []);
+        teamCatalog[name] = { 
+          name, 
+          players, 
+          sourceGroup: 'women',
+          ...(Array.isArray(teamData) ? {} : teamData) 
+        };
       });
     }
+
     console.log(`Loaded ${Object.keys(teamCatalog).length} teams into catalog.`);
   } catch (error) {
     console.error("Error loading team catalog:", error);
