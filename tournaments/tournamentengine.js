@@ -1,5 +1,7 @@
 const db = require("../firebase");
-const { startMatch, getTeamByName, resolvePlayingXI, buildMatchPlayer } = require("../index"); // Existing match starter
+const { startMatch, resolvePlayingXI, buildMatchPlayer } = require("../services/matchService");
+const { getTeamByName } = require("../services/teamService");
+
 const standingsEngine = require("./standingsengine");
 const statsEngine = require("./statsengine");
 const fixtureGenerator = require("./fixturegenerator");

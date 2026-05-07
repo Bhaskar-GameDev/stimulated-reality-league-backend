@@ -4,17 +4,19 @@ const path = require("path");
 const url = require("url");
 const { exec } = require("child_process");
 const crypto = require("crypto");
-const { startMatch, pushScorecard } = require("./matchEngine");
 const db = require("./firebase");
-const teamsData = require("./teams.json");
+const teamService = require('./services/teamService');
+const matchService = require('./services/matchService');
 const { buildHtmlPage } = require("./ui/page");
+
 const moment = require("moment-timezone");
 
 let PORT = Number(process.env.PORT || 3000);
 const STORAGE_PATH = path.join(__dirname, "schedules.json");
 const LINEUPS_PATH = path.join(__dirname, "saved_lineups.json");
 const MAX_LOG_ITEMS = 150;
-const teamCatalog = buildTeamCatalog(teamsData);
+const teamCatalog = teamService.teamCatalog;
+
 const teamOptions = Object.values(teamCatalog)
   .map(team => ({
     name: team.name,
@@ -248,31 +250,16 @@ function mapOutcomeProbabilities(probabilities) {
 }
 const dataLoader = require('./services/dataLoader');
 
-function buildMatchPlayer(player, format = "T20") {
-  return dataLoader.loadPlayerProfile(player, format);
-}
+const matchService = require('./services/matchService');
 
+function buildMatchPlayer(player, format = "T20") {
+  return matchService.buildMatchPlayer(player, format);
+}
 
 function resolvePlayingXI(teamEntry, selectedIds, format = "T20") {
-  if (!teamEntry) return null;
-
-  const squad = Array.isArray(teamEntry.players) ? teamEntry.players : [];
-  if (squad.length < 11) {
-    throw new Error(`${teamEntry.name} does not have enough players.`);
-  }
-
-  const fallbackIds = squad.slice(0, 11).map(player => String(player.id));
-  const requestedIds = Array.isArray(selectedIds) && selectedIds.length === 11
-    ? selectedIds.map(id => String(id))
-    : fallbackIds;
-
-  const squadById = new Map(squad.map(p => [String(p.id), p]));
-  
-  return requestedIds.map(id => {
-    const player = squadById.get(id) || squad[0];
-    return buildMatchPlayer(player, format);
-  });
+  return matchService.resolvePlayingXI(teamEntry, selectedIds, format);
 }
+
 
 
 function summarizePlayingXI(players) {
@@ -1213,11 +1200,12 @@ async function syncPlayersToFirebase() {
 syncPlayersToFirebase();
 
 module.exports = { 
-  startMatch, 
-  getTeamByName, 
-  resolvePlayingXI, 
-  buildMatchPlayer,
+  startMatch: matchService.startMatch, 
+  getTeamByName: teamService.getTeamByName, 
+  resolvePlayingXI: matchService.resolvePlayingXI, 
+  buildMatchPlayer: matchService.buildMatchPlayer,
   archiveTournament: tournamentEngine.archiveTournament
 };
+
 
 
