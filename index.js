@@ -510,11 +510,16 @@ const matchSeed =
   schedule.status = "scheduled";
   scheduledJobs[schedule.id] = setTimeout(() => runMatch(schedule), delay);
   updateScheduleList();
-  return `Match ${schedule.matchId} scheduled for ${new Date(schedule.startAt).toLocaleString()} UTC.`;
+  return `Match ${schedule.matchId} scheduled successfully for your selected time.`;
 }
 
+
 function runMatch(schedule) {
-  const alreadyRunning = Array.from(activeMatches.values()).find(m => m.matchId === schedule.matchId);
+  const matchId = schedule.matchId;
+  console.log(`[${new Date().toISOString()}] Attempting to start scheduled match: ${matchId}`);
+  
+  const alreadyRunning = Array.from(activeMatches.values()).find(m => m.matchId === matchId);
+
   if (alreadyRunning) {
     addLog(`Match ${schedule.matchId} is already running.`);
     return;
