@@ -34,6 +34,7 @@ let savedLineups = loadLineups();
 let scheduledJobs = {};
 let liveLogs = [];
 let nextScheduleId = schedules.reduce((max, item) => Math.max(max, item.id || 0), 0) + 1;
+const serverStartedAt = new Date().toISOString();
 
 restoreScheduledJobs();
 setInterval(() => {
@@ -43,11 +44,7 @@ setInterval(() => {
       schedule.startAt &&
       new Date(schedule.startAt).getTime() <= Date.now()
     ) {
-      schedule.status = "running";
-      schedule.updatedAt = new Date().toISOString();
-
-      updateScheduleList();
-
+      persistScheduleState(schedule, "running");
       runMatch(schedule);
     }
   });
@@ -75,8 +72,7 @@ function restoreScheduledJobs() {
 
     const delay = new Date(schedule.startAt).getTime() - Date.now();
     if (delay <= 0) {
-      schedule.status = "running";
-      schedule.updatedAt = new Date().toISOString();
+      persistScheduleState(schedule, "running");
       runMatch(schedule);
       return;
     }
@@ -257,17 +253,47 @@ function addLog(message) {
   if (liveLogs.length > MAX_LOG_ITEMS) liveLogs.length = MAX_LOG_ITEMS;
 }
 
-function updateMatchStatus(matchId, status) {
+function formatResultSummary(result) {
+  if (!result) return null;
+  if (!result.winner) return "Match tied";
+  return `${result.winner} won by ${result.margin}`;
+}
+
+function getScheduleByMatchId(matchId) {
+  return schedules.find(item => item.matchId === matchId) || null;
+}
+
+function updateMatchStatus(matchId, status, extra = {}) {
   if (!matchId || !status) return;
+  const payload = { status, ...extra };
   db.ref(`matches/${matchId}/status`).set(status).catch(error => {
     console.error(`Unable to update match root status for ${matchId}:`, error);
   });
-  db.ref(`matches/${matchId}/meta`).update({ status }).catch(error => {
+  db.ref(`matches/${matchId}/meta`).update(payload).catch(error => {
     console.error(`Unable to update match meta status for ${matchId}:`, error);
   });
-  db.ref(`matches/list/${matchId}`).update({ status }).catch(error => {
+  db.ref(`matches/list/${matchId}`).update(payload).catch(error => {
     console.error(`Unable to update match list status for ${matchId}:`, error);
   });
+}
+
+function persistScheduleState(schedule, status, extra = {}) {
+  if (!schedule || !status) return;
+
+  schedule.status = status;
+  schedule.updatedAt = new Date().toISOString();
+  Object.assign(schedule, extra);
+  updateScheduleList();
+
+  const remotePayload = { updatedAt: schedule.updatedAt };
+  if (Object.prototype.hasOwnProperty.call(extra, "errorMessage")) {
+    remotePayload.errorMessage = extra.errorMessage;
+  }
+  if (Object.prototype.hasOwnProperty.call(extra, "resultSummary")) {
+    remotePayload.resultSummary = extra.resultSummary;
+  }
+
+  updateMatchStatus(schedule.matchId, status, remotePayload);
 }
 
 function updateCurrentMatch(matchId, update) {
@@ -276,7 +302,14 @@ function updateCurrentMatch(matchId, update) {
   const updated = { ...match, ...update, updatedAt: new Date().toISOString() };
   activeMatches.set(matchId, updated);
   if (update.status) {
-    updateMatchStatus(matchId, update.status);
+    const statusPayload = { updatedAt: updated.updatedAt };
+    if (Object.prototype.hasOwnProperty.call(update, "error")) {
+      statusPayload.errorMessage = updated.error;
+    }
+    if (Object.prototype.hasOwnProperty.call(update, "resultSummary")) {
+      statusPayload.resultSummary = updated.resultSummary;
+    }
+    updateMatchStatus(matchId, update.status, statusPayload);
   }
 }
 
@@ -292,7 +325,9 @@ async function readDb(refPath) {
 
 async function getActiveMatchesSummary() {
   if (activeMatches.size > 0) {
-    return Array.from(activeMatches.values());
+    return Array.from(activeMatches.values()).sort((a, b) => {
+      return new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime();
+    });
   }
   // Fall back to Firebase for any matches that survived a server restart
   const activeSchedules = schedules.filter(item => item.status === "running" || item.status === "paused");
@@ -319,6 +354,44 @@ async function getActiveMatchesSummary() {
     })
   );
   return results.filter(Boolean);
+}
+
+function buildDashboardSummary(activeMatchList) {
+  const statusCounts = {
+    total: schedules.length,
+    scheduled: 0,
+    running: 0,
+    paused: 0,
+    completed: 0,
+    failed: 0,
+    cancelled: 0,
+    aborted: 0
+  };
+
+  schedules.forEach(schedule => {
+    if (Object.prototype.hasOwnProperty.call(statusCounts, schedule.status)) {
+      statusCounts[schedule.status] += 1;
+    }
+  });
+
+  const nextScheduledMatch = schedules
+    .filter(item => item.status === "scheduled" && item.startAt)
+    .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime())[0] || null;
+
+  return {
+    teamCount: teamOptions.length,
+    savedLineupCount: Object.keys(savedLineups).length,
+    activeMatchCount: activeMatchList.length,
+    statusCounts,
+    serverStartedAt,
+    uptimeSeconds: Math.floor(process.uptime()),
+    nextScheduledMatch: nextScheduledMatch ? {
+      matchId: nextScheduledMatch.matchId,
+      teamAName: nextScheduledMatch.teamAName,
+      teamBName: nextScheduledMatch.teamBName,
+      startAt: nextScheduledMatch.startAt
+    } : null
+  };
 }
 
 function jsonResponse(res, status, payload) {
@@ -374,7 +447,9 @@ async function saveMatchRegistryEntry(schedule) {
     delayMs: schedule.delayMs,
     startTime: schedule.startAt ? new Date(schedule.startAt).getTime() : Date.now(),
     createdAt: schedule.createdAt,
-    updatedAt: schedule.updatedAt
+    updatedAt: schedule.updatedAt,
+    resultSummary: schedule.resultSummary || null,
+    errorMessage: schedule.errorMessage || null
   };
 
   try {
@@ -498,6 +573,8 @@ const matchSeed =
     teamAPlayingXI: summarizePlayingXI(teamAPlayingXI),
     teamBPlayingXI: summarizePlayingXI(teamBPlayingXI),
     status: startAt ? "scheduled" : "running",
+    resultSummary: null,
+    errorMessage: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
@@ -519,14 +596,11 @@ const matchSeed =
   const runAt = new Date(schedule.startAt).getTime();
   const delay = runAt - Date.now();
   if (delay <= 0) {
-    schedule.status = "running";
-    schedule.updatedAt = new Date().toISOString();
+    persistScheduleState(schedule, "running");
     runMatch(schedule);
-    updateScheduleList();
     return `Scheduled time is in the past, starting match ${schedule.matchId} now.`;
   }
 
-  schedule.status = "scheduled";
   scheduledJobs[schedule.id] = setTimeout(() => runMatch(schedule), delay);
   updateScheduleList();
 return `Match ${schedule.matchId} scheduled for ${
@@ -539,7 +613,8 @@ return `Match ${schedule.matchId} scheduled for ${
 function runMatch(schedule) {
   if (
   schedule.status === "completed" ||
-  schedule.status === "aborted"
+  schedule.status === "aborted" ||
+  schedule.status === "cancelled"
 ) {
   return;
 }
@@ -556,9 +631,7 @@ function runMatch(schedule) {
   const teamBEntry = getTeamByName(schedule.teamBName);
 
   if (!teamAEntry || !teamBEntry) {
-    schedule.status = "failed";
-    schedule.updatedAt = new Date().toISOString();
-    updateScheduleList();
+    persistScheduleState(schedule, "failed", { errorMessage: "One or both teams are missing." });
     addLog(`Match ${schedule.matchId} could not start because one or both teams are missing.`);
     return;
   }
@@ -576,9 +649,7 @@ function runMatch(schedule) {
       schedule.teamBPlayingXIIds || schedule.teamBPlayingXI?.map(player => player.id)
     ).map(buildMatchPlayer);
   } catch (error) {
-    schedule.status = "failed";
-    schedule.updatedAt = new Date().toISOString();
-    updateScheduleList();
+    persistScheduleState(schedule, "failed", { errorMessage: error.message });
     addLog(`Match ${schedule.matchId} could not start: ${error.message}`);
     return;
   }
@@ -601,6 +672,9 @@ function runMatch(schedule) {
     updatedAt: new Date().toISOString(),
     score: "0/0",
     wickets: 0,
+    inning: null,
+    over: 0,
+    ball: 0,
     lastBall: null,
     target: null,
     abortSignal,
@@ -608,12 +682,8 @@ function runMatch(schedule) {
     error: null
   });
 
-  liveLogs = [];
   addLog(`Match ${matchId} is starting: ${schedule.teamAName} vs ${schedule.teamBName}`);
-  schedule.status = "running";
-  schedule.updatedAt = new Date().toISOString();
-  updateScheduleList();
-  updateMatchStatus(matchId, "running");
+  persistScheduleState(schedule, "running", { errorMessage: null });
 
   startMatch(matchId, teamA, teamB, {
     oversLimit: schedule.overs,
@@ -630,6 +700,9 @@ function runMatch(schedule) {
       updateCurrentMatch(matchId, {
         score: ballData.score,
         wickets: ballData.wickets,
+        inning: ballData.inning,
+        over: ballData.over,
+        ball: ballData.ball,
         lastBall: ballData.ballClock,
         target: ballData.target
       });
@@ -641,18 +714,24 @@ function runMatch(schedule) {
       }
     }
   }).then(result => {
-    schedule.status = "completed";
-    schedule.updatedAt = new Date().toISOString();
-    updateScheduleList();
-    updateCurrentMatch(matchId, { status: "completed" });
-    addLog(`Final result: ${result.result.winner || "Tie"}`);
+    const resultSummary = formatResultSummary(result.result);
+    persistScheduleState(schedule, "completed", { resultSummary, errorMessage: null });
+    addLog(`Final result: ${resultSummary || "Match finished."}`);
     activeMatches.delete(matchId);
   }).catch(error => {
-    schedule.status = abortSignal.aborted ? "aborted" : "failed";
-    schedule.updatedAt = new Date().toISOString();
-    updateCurrentMatch(matchId, { status: schedule.status, error: error.message });
-    addLog(`Match ${matchId} ended with error: ${error.message}`);
-    updateScheduleList();
+    const finalStatus = abortSignal.aborted ? "aborted" : "failed";
+    persistScheduleState(schedule, finalStatus, {
+      errorMessage: finalStatus === "failed" ? error.message : null
+    });
+    updateCurrentMatch(matchId, {
+      status: finalStatus,
+      error: finalStatus === "failed" ? error.message : null
+    });
+    addLog(
+      finalStatus === "aborted"
+        ? `Match ${matchId} was aborted.`
+        : `Match ${matchId} ended with error: ${error.message}`
+    );
     activeMatches.delete(matchId);
   });
 }
@@ -669,9 +748,7 @@ function cancelSchedule(id) {
   }
   clearTimeout(scheduledJobs[id]);
   delete scheduledJobs[id];
-  schedule.status = "cancelled";
-  schedule.updatedAt = new Date().toISOString();
-  updateScheduleList();
+  persistScheduleState(schedule, "cancelled");
   addLog(`Scheduled match ${schedule.matchId} was cancelled.`);
 }
 
@@ -684,7 +761,12 @@ function pauseCurrentMatch(matchId) {
   match.status = "paused";
   match.updatedAt = new Date().toISOString();
   activeMatches.set(match.matchId, match);
-  updateMatchStatus(match.matchId, "paused");
+  const schedule = getScheduleByMatchId(match.matchId);
+  if (schedule) {
+    persistScheduleState(schedule, "paused", { errorMessage: null });
+  } else {
+    updateMatchStatus(match.matchId, "paused", { updatedAt: match.updatedAt });
+  }
   addLog(`Match ${match.matchId} paused.`);
 }
 
@@ -697,7 +779,12 @@ function resumeCurrentMatch(matchId) {
   match.status = "running";
   match.updatedAt = new Date().toISOString();
   activeMatches.set(match.matchId, match);
-  updateMatchStatus(match.matchId, "running");
+  const schedule = getScheduleByMatchId(match.matchId);
+  if (schedule) {
+    persistScheduleState(schedule, "running", { errorMessage: null });
+  } else {
+    updateMatchStatus(match.matchId, "running", { updatedAt: match.updatedAt });
+  }
   addLog(`Match ${match.matchId} resumed.`);
 }
 
@@ -710,12 +797,17 @@ function abortCurrentMatch(matchId) {
   match.status = "aborted";
   match.updatedAt = new Date().toISOString();
   activeMatches.set(match.matchId, match);
-  updateMatchStatus(match.matchId, "aborted");
+  const schedule = getScheduleByMatchId(match.matchId);
+  if (schedule) {
+    persistScheduleState(schedule, "aborted");
+  } else {
+    updateMatchStatus(match.matchId, "aborted", { updatedAt: match.updatedAt });
+  }
   addLog(`Match ${match.matchId} abort requested.`);
 }
 
 const server = http.createServer(async (req, res) => {
-  const baseUrl = `http://${req.headers.host}`;
+  const baseUrl = `http://${req.headers.host || `localhost:${PORT}`}`;
   const requestUrl = new URL(req.url, baseUrl);
 
   if (req.method === "GET" && requestUrl.pathname === "/") {
@@ -741,7 +833,12 @@ const server = http.createServer(async (req, res) => {
     const activeMatchList = await getActiveMatchesSummary();
     // Keep backward-compatible shape: currentMatch is the first active match (or null)
     const currentMatch = activeMatchList.length > 0 ? activeMatchList[0] : null;
-    jsonResponse(res, 200, { currentMatch, activeMatches: activeMatchList, liveLogs });
+    jsonResponse(res, 200, {
+      currentMatch,
+      activeMatches: activeMatchList,
+      liveLogs,
+      summary: buildDashboardSummary(activeMatchList)
+    });
     return;
   }
 
@@ -763,7 +860,7 @@ const server = http.createServer(async (req, res) => {
       jsonResponse(res, 400, { error: "Missing matchId parameter." });
       return;
     }
-    if (!/^[a-zA-Z0-9_-]+$/.test(matchId)) {
+    if (/[.#$[\]/]/.test(matchId)) {
       jsonResponse(res, 400, { error: "Invalid matchId format." });
       return;
     }

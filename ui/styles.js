@@ -193,10 +193,109 @@
     .pill.running { background: rgba(16, 185, 129, 0.16); color: #047857; }
     .pill.paused { background: rgba(234, 179, 8, 0.16); color: #b45309; }
     .pill.cancelled { background: rgba(239, 68, 68, 0.14); color: #b91c1c; }
+    .pill.aborted { background: rgba(239, 68, 68, 0.14); color: #b91c1c; }
+    .pill.failed { background: rgba(120, 113, 108, 0.14); color: #44403c; }
 
     .match-card button {
       min-width: 120px;
       justify-self: end;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.9rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .summary-stat {
+      background: linear-gradient(180deg, white 0%, var(--gray-50) 100%);
+      border-radius: var(--border-radius-lg);
+      border: 1px solid var(--gray-200);
+      padding: 1rem;
+      display: grid;
+      gap: 0.35rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .summary-label {
+      color: var(--gray-500);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .summary-value {
+      color: var(--dark);
+      font-size: 1.8rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .summary-helper {
+      color: var(--gray-500);
+      font-size: 0.82rem;
+      margin: 0;
+    }
+
+    .active-match-list {
+      display: grid;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .active-match-card {
+      width: 100%;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--border-radius-lg);
+      background: linear-gradient(135deg, var(--gray-50) 0%, white 100%);
+      padding: 1rem;
+      display: grid;
+      gap: 0.45rem;
+      text-align: left;
+      cursor: pointer;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .active-match-card:hover {
+      transform: translateY(-1px);
+      border-color: rgba(59, 130, 246, 0.35);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .active-match-card.selected {
+      border-color: rgba(59, 130, 246, 0.55);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+    }
+
+    .active-match-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .active-match-card h4 {
+      margin: 0;
+      color: var(--dark);
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .active-match-card p {
+      margin: 0;
+      color: var(--gray-600);
+      font-size: 0.92rem;
+    }
+
+    .active-match-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      color: var(--gray-500);
+      font-size: 0.82rem;
+      font-weight: 600;
     }
 
     .card.small-card {
@@ -462,19 +561,42 @@
       background: linear-gradient(135deg, var(--gray-50) 0%, white 100%);
       border-radius: var(--border-radius-lg);
       padding: 1.5rem;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1rem;
       border: 1px solid var(--gray-200);
     }
 
-    .match-info p {
-      margin: 0.5rem 0;
-      color: var(--gray-700);
-      font-weight: 500;
+    .match-info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.9rem 1rem;
     }
 
-    .match-info strong {
+    .match-info-item {
+      padding: 0.9rem 1rem;
+      border-radius: var(--border-radius);
+      border: 1px solid var(--gray-200);
+      background: white;
+    }
+
+    .match-info-label {
+      display: block;
+      margin-bottom: 0.3rem;
+      color: var(--gray-500);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .match-info-value {
       color: var(--dark);
       font-weight: 700;
+      font-size: 1rem;
+    }
+
+    .match-info-value.subtle {
+      color: var(--gray-700);
+      font-weight: 600;
     }
 
     .control-buttons {
@@ -617,6 +739,15 @@
 
       .control-buttons {
         grid-template-columns: 1fr;
+      }
+
+      .summary-grid,
+      .match-info-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .active-match-card-header {
+        flex-direction: column;
       }
 
       .schedule-table {

@@ -164,6 +164,12 @@ function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function createAbortError(matchId) {
+  const error = new Error(`Match ${matchId} was aborted.`);
+  error.code = "MATCH_ABORTED";
+  return error;
+}
+
 function waitWhilePaused(pauseSignal) {
   if (!pauseSignal || !pauseSignal.paused) {
     return Promise.resolve();
@@ -606,6 +612,10 @@ async function startMatch(matchId, teamA, teamB, options = {}) {
     pauseSignal
   });
 
+  if (abortSignal?.aborted) {
+    throw createAbortError(matchId);
+  }
+
   const secondInnings = await simulateInnings(matchId, 2, teamB, teamA, {
     
     oversLimit,
@@ -619,6 +629,10 @@ async function startMatch(matchId, teamA, teamB, options = {}) {
     abortSignal,
     pauseSignal
   });
+
+  if (abortSignal?.aborted) {
+    throw createAbortError(matchId);
+  }
 
   const result = determineResult(firstInnings, secondInnings, teamAName, teamBName);
   await pushMatchResult(matchId, result);

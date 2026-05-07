@@ -121,7 +121,33 @@ ${styles}
 
       <div class="secondary-column">
         <div class="card small-card">
-          <h2 class="card-title">Current Match</h2>
+          <h2 class="card-title">Dashboard Snapshot</h2>
+          <div id="summaryGrid" class="summary-grid">
+            <div class="summary-stat">
+              <span class="summary-label">Live Matches</span>
+              <strong class="summary-value">-</strong>
+            </div>
+            <div class="summary-stat">
+              <span class="summary-label">Scheduled</span>
+              <strong class="summary-value">-</strong>
+            </div>
+            <div class="summary-stat">
+              <span class="summary-label">Completed</span>
+              <strong class="summary-value">-</strong>
+            </div>
+            <div class="summary-stat">
+              <span class="summary-label">Saved XIs</span>
+              <strong class="summary-value">-</strong>
+            </div>
+          </div>
+          <p id="summaryNote" class="note">Loading dashboard summary...</p>
+        </div>
+
+        <div class="card small-card">
+          <h2 class="card-title">Active Matches</h2>
+          <div id="activeMatchList" class="active-match-list">
+            <p class="note">No active matches right now.</p>
+          </div>
           <div id="currentMatchPanel" class="match-info">
             <p class="note">No active match in progress</p>
           </div>
@@ -138,7 +164,7 @@ ${styles}
         </div>
 
         <div class="card">
-          <h2 class="card-title">Completed Matches</h2>
+          <h2 class="card-title">Recent Match History</h2>
           <div id="completedMatchesList" class="match-card-list">Loading completed matches...</div>
         </div>
 
