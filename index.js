@@ -1032,8 +1032,8 @@ const server = http.createServer(async (req, res) => {
   if (req.method === "POST" && requestUrl.pathname === "/api/tournaments/generate") {
     try {
       const payload = await parseRequestBody(req);
-      const fixtureGenerator = require("./tournaments/fixtureGenerator");
-      const templates = require("./tournaments/tournamentTemplates");
+      const fixtureGenerator = require("./tournaments/fixturegenerator");
+      const templates = require("./tournaments/tournamenttemplates");
       const template = templates[payload.templateKey];
       
       let fixtures = [];
@@ -1053,7 +1053,7 @@ const server = http.createServer(async (req, res) => {
   if (req.method === "POST" && requestUrl.pathname === "/api/tournaments/save") {
     try {
       const payload = await parseRequestBody(req);
-      const tournamentEngine = require("./tournaments/tournamentEngine");
+      const tournamentEngine = require("./tournaments/tournamentengine");
       const tournamentId = await tournamentEngine.createTournament({
         ...payload,
         templateKey: payload.templateKey
@@ -1090,7 +1090,7 @@ const server = http.createServer(async (req, res) => {
   if (req.method === "GET" && requestUrl.pathname.startsWith("/api/tournaments/standings/")) {
     try {
       const tid = requestUrl.pathname.split("/").pop();
-      const standingsEngine = require("./tournaments/standingsEngine");
+      const standingsEngine = require("./tournaments/standingsengine");
       const snapshot = await db.ref(`tournaments/${tid}/standings`).once("value");
       if (!snapshot.exists()) throw new Error("Standings not found");
       const sorted = standingsEngine.sortStandings(snapshot.val());
@@ -1108,7 +1108,7 @@ const server = http.createServer(async (req, res) => {
 // Automated Tournament Match Runner
 setInterval(async () => {
   try {
-    const tournamentEngine = require("./tournaments/tournamentEngine");
+    const tournamentEngine = require("./tournaments/tournamentengine");
     const activeTournamentsSnap = await db.ref("tournaments").orderByChild("status").equalTo("live").once("value");
     const upcomingTournamentsSnap = await db.ref("tournaments").orderByChild("status").equalTo("upcoming").once("value");
     
