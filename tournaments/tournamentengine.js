@@ -5,10 +5,21 @@ const statsEngine = require("./statsengine");
 const fixtureGenerator = require("./fixturegenerator");
 const templates = require("./tournamenttemplates");
 
-async function createTournament({ templateKey, season, teams, tournamentName, fixtures }) {
+async function createTournament({ templateKey, season, teams, tournamentName, fixtures, startDate, country }) {
   const template = templates[templateKey];
   const tournamentId = `TOURN_${Date.now()}`;
   
+  // Generate fixtures if not provided
+  let tournamentFixtures = fixtures;
+  if (!tournamentFixtures || tournamentFixtures.length === 0) {
+    tournamentFixtures = fixtureGenerator.createFullTournamentSchedule(teams, {
+      format: template.format,
+      rounds: template.rounds || 1,
+      startDate: startDate || new Date(),
+      country: country || template.defaultCountry || "India"
+    });
+  }
+
   const tournamentData = {
     id: tournamentId,
     name: tournamentName || `${template.name} ${season}`,
@@ -17,7 +28,7 @@ async function createTournament({ templateKey, season, teams, tournamentName, fi
     templateKey,
     format: template.format,
     teams,
-    fixtures: fixtures || [],
+    fixtures: tournamentFixtures,
     standings: {},
     stats: { playerStats: {} },
     currentRound: 1,
@@ -35,7 +46,6 @@ async function runNextMatch(tournamentId) {
 
   const nextFixtureIndex = tournament.fixtures.findIndex(f => f.status === "scheduled");
   if (nextFixtureIndex === -1) {
-    // If no more league matches, check for playoffs or finish
     if (tournament.stage === "league") {
       return advanceToPlayoffs(tournamentId);
     }
@@ -45,22 +55,35 @@ async function runNextMatch(tournamentId) {
 
   const fixture = tournament.fixtures[nextFixtureIndex];
   
-  // Start the actual simulation
+  // REAL-TIME CHECK: Only run if the match is due
+  const now = new Date();
+  const scheduledTime = new Date(fixture.utcTimestamp);
+  
+  if (now < scheduledTime) {
+    console.log(`Match ${fixture.matchId} is scheduled for ${fixture.utcTimestamp}. Waiting...`);
+    return { status: "waiting", scheduledTime: fixture.utcTimestamp };
+  }
+
   try {
     await db.ref(`tournaments/${tournamentId}/status`).set("live");
     await db.ref(`tournaments/${tournamentId}/fixtures/${nextFixtureIndex}/status`).set("live");
     
-    // Call existing matchEngine startMatch logic (this is a simplified placeholder call)
-    // In index.js, we should export a way to trigger a match with these params
+    // Pass timing and environmental effects to the match engine
     const result = await startMatch(fixture.teamA, fixture.teamB, fixture.matchId, {
       matchType: tournament.overs === 20 ? "T20" : "ODI",
-      overs: tournament.overs || 20
+      overs: tournament.overs || 20,
+      venue: fixture.venue,
+      city: fixture.city,
+      dayNight: fixture.dayNight,
+      environmentalEffects: fixture.environmentalEffects
     });
 
     await processMatchResult(tournamentId, nextFixtureIndex, result);
+    return { status: "completed", matchId: fixture.matchId };
   } catch (error) {
     console.error("Match simulation failed", error);
     await db.ref(`tournaments/${tournamentId}/fixtures/${nextFixtureIndex}/status`).set("failed");
+    return { status: "failed", error: error.message };
   }
 }
 

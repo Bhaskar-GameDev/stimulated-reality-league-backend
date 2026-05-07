@@ -19,6 +19,7 @@ function getMatchPhase(context) {
 
 function calculateAdjustedProbabilities(batsman, bowler, context) {
   const phase = getMatchPhase(context);
+  const effects = context.environmentalEffects || {};
   
   // 1. Load Base Probabilities
   const batBase = batsman.batting?.base || batsman.batting_probabilities || DEFAULT_PROBABILITIES;
@@ -36,20 +37,29 @@ function calculateAdjustedProbabilities(batsman, bowler, context) {
   const bowlerAggression = bowler.bowling?.aggression?.[phase] ?? 0.5;
 
   if (phase === "powerplay") {
-    // Increase attacking intent, reduce dots
     probs["dot"] *= (1.0 - (batsmanAggression * 0.3));
     probs["4"] *= (1.0 + batsmanAggression * 0.4);
     probs["6"] *= (1.0 + batsmanAggression * 0.2);
     probs["wicket"] *= (1.0 + (batsmanAggression * 0.2) + (bowlerAggression * 0.3));
+
+    // Environmental: Swing Factor
+    if (effects.swing) {
+      probs["wicket"] *= effects.swing;
+      probs["dot"] *= (1.0 + (effects.swing - 1.0) * 0.5);
+    }
   } else if (phase === "middle") {
-    // Focus on strike rotation and stabilization
     const temperament = batsman.batting?.temperament ?? 0.5;
     probs["1"] *= (1.0 + temperament * 0.2);
     probs["2"] *= (1.0 + temperament * 0.1);
     probs["wicket"] *= (1.0 - temperament * 0.3);
     probs["4"] *= (1.0 - (1.0 - batsmanAggression) * 0.2);
+
+    // Environmental: Spin Assistance
+    if (effects.spinAssistance && context.bowlerType === "Spin") {
+      probs["dot"] *= effects.spinAssistance;
+      probs["wicket"] *= (1.0 + (effects.spinAssistance - 1.0) * 0.5);
+    }
   } else if (phase === "death") {
-    // Max risk-reward, finishers active
     const finishing = batsman.behavior?.deathFinishing ?? 0.5;
     const slogging = batsman.behavior?.sloggingAbility ?? 0.5;
     const power = (finishing + slogging) / 2;
@@ -83,17 +93,22 @@ function calculateAdjustedProbabilities(batsman, bowler, context) {
   if (context.isChasing && context.runsRequired !== null) {
     const ballsRemaining = context.ballsRemaining || 1;
     const rrr = (context.runsRequired / ballsRemaining) * 6;
+
+    // Environmental: Dew Factor (Easier chasing)
+    const dewBoost = effects.dew ? (1.0 + (effects.dew - 1.0) * 0.5) : 1.0;
     
     if (rrr > 9.0) {
       const pressure = Math.min(1.0, (rrr - 9.0) / 6.0);
       const handling = batsman.behavior?.pressureHandling ?? 0.5;
       const chaseBoost = batsman.behavior?.chaseBoost ?? 0.5;
       
-      // High RRR force aggression
-      probs["6"] *= (1.0 + pressure * chaseBoost * 0.6);
-      probs["4"] *= (1.0 + pressure * chaseBoost * 0.3);
-      // Poor handling leads to more wickets under pressure
-      probs["wicket"] *= (1.0 + pressure * (1.0 - handling) * 0.8);
+      probs["6"] *= (1.0 + pressure * chaseBoost * 0.6 * dewBoost);
+      probs["4"] *= (1.0 + pressure * chaseBoost * 0.3 * dewBoost);
+      probs["wicket"] *= (1.0 + pressure * (1.0 - handling) * 0.8 / dewBoost);
+    } else {
+      // Normal chasing with dew
+      probs["1"] *= dewBoost;
+      probs["4"] *= dewBoost;
     }
   }
 
@@ -102,7 +117,7 @@ function calculateAdjustedProbabilities(batsman, bowler, context) {
     const resistance = batsman.behavior?.collapseResistance ?? 0.5;
     probs["wicket"] *= (1.2 - resistance * 0.5);
     if (resistance > 0.7) {
-      probs["dot"] *= 1.1; // Anchors defend more during collapse
+      probs["dot"] *= 1.1;
     }
   }
 
@@ -112,11 +127,12 @@ function calculateAdjustedProbabilities(batsman, bowler, context) {
   probs["4"] *= (0.9 + form * 0.2);
 
   if (batsman.stamina) {
-    const decayRate = batsman.stamina.decayRate ?? 0.01;
+    // Environmental: Heat Fatigue
+    const fatigueMultiplier = effects.heatFatigue ?? 1.0;
+    const decayRate = (batsman.stamina.decayRate ?? 0.01) * fatigueMultiplier;
     const faced = context.batsmanBallsFaced || 0;
     const currentStamina = Math.max(0.2, (batsman.stamina.initial ?? 1.0) - (faced * decayRate));
     
-    // Fatigue reduces boundary power and increases wicket risk
     probs["6"] *= (0.5 + currentStamina * 0.5);
     probs["4"] *= (0.7 + currentStamina * 0.3);
     probs["wicket"] *= (1.0 + (1.0 - currentStamina) * 0.4);
@@ -129,6 +145,7 @@ function calculateAdjustedProbabilities(batsman, bowler, context) {
 
   return probs;
 }
+
 
 function normalizeProbabilities(p) {
   const categories = ["dot", "1", "2", "4", "6", "wicket"];
@@ -441,17 +458,19 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
         runsRequired: chaseTarget !== null ? Math.max(chaseTarget - runs, 0) : null,
         ballsRemaining: (oversLimit * 6) - ballsBowled,
         partnershipRuns,
-        partnershipBalls
+        partnershipBalls,
+        environmentalEffects: options.environmentalEffects || {}
       };
 
       const result = simulateBall(
-    batsman,
-    bowler,
-    {
-        ...context,
-        rng
-    }
-);
+        batsman,
+        bowler,
+        {
+          ...context,
+          rng
+        }
+      );
+
       let ballRuns = 0;
 
       if (result === "1") {
@@ -665,7 +684,6 @@ async function startMatch(matchId, teamA, teamB, options = {}) {
   }
 
   const firstInnings = await simulateInnings(matchId, 1, teamA, teamB, {
-    
     oversLimit,
     delayMs,
     rng,
@@ -674,7 +692,8 @@ async function startMatch(matchId, teamA, teamB, options = {}) {
     onBall,
     onStatusUpdate,
     abortSignal,
-    pauseSignal
+    pauseSignal,
+    environmentalEffects: options.environmentalEffects
   });
 
   if (abortSignal?.aborted) {
@@ -682,7 +701,6 @@ async function startMatch(matchId, teamA, teamB, options = {}) {
   }
 
   const secondInnings = await simulateInnings(matchId, 2, teamB, teamA, {
-    
     oversLimit,
     delayMs,
     rng,
@@ -692,8 +710,10 @@ async function startMatch(matchId, teamA, teamB, options = {}) {
     onBall,
     onStatusUpdate,
     abortSignal,
-    pauseSignal
+    pauseSignal,
+    environmentalEffects: options.environmentalEffects
   });
+
 
   if (abortSignal?.aborted) {
     throw createAbortError(matchId);

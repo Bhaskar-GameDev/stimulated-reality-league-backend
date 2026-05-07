@@ -586,17 +586,23 @@ async function scheduleMatch(payload) {
     throw new Error("Delay must be a valid non-negative number.");
   }
 
-    const startAt = payload.startAt
-    ? moment.tz(payload.startAt, "Asia/Kolkata").utc().toDate()
+  const venue = payload.venue ? payload.venue : require("./utils/venues").getRandomVenue(payload.country || "India");
+  const timezone = venue.timezone || "Asia/Kolkata";
+
+  const startAt = payload.startAt
+    ? moment.tz(payload.startAt, timezone).utc().toDate()
     : null;
+  
   if (startAt && Number.isNaN(startAt.getTime())) {
     throw new Error("Invalid scheduled start time.");
   }
-const matchId =
-  `${payload.teamA}_vs_${payload.teamB}_${type.key}_${crypto.randomUUID().slice(0,8)}`;
 
-const matchSeed =
-  `${matchId}_${Date.now()}`;
+  const matchId =
+    `${payload.teamA}_vs_${payload.teamB}_${type.key}_${crypto.randomUUID().slice(0,8)}`;
+
+  const matchSeed =
+    `${matchId}_${Date.now()}`;
+  
   const schedule = {
     id: nextScheduleId++,
     matchId,
@@ -606,7 +612,14 @@ const matchSeed =
     matchType: type.key,
     overs,
     delayMs,
+    venue: venue.name,
+    city: venue.city,
+    country: venue.country,
+    timezone: timezone,
     startAt: startAt ? startAt.toISOString() : null,
+    utcTimestamp: startAt ? startAt.toISOString() : null,
+    dayNight: payload.dayNight || (startAt && startAt.getUTCHours() > 13 ? "night" : "day"),
+    environmentalEffects: payload.environmentalEffects || require("./utils/schedulerUtils").ENVIRONMENTAL_EFFECTS[payload.dayNight || "night"],
     teamAPlayingXIIds: teamAPlayingXI.map(player => player.id),
     teamBPlayingXIIds: teamBPlayingXI.map(player => player.id),
     teamAPlayingXI: summarizePlayingXI(teamAPlayingXI),
@@ -617,6 +630,7 @@ const matchSeed =
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
+
 
   schedules.push(schedule);
   updateScheduleList();
@@ -747,9 +761,14 @@ function runMatch(schedule) {
     seed: schedule.seed,
     matchType: schedule.matchType,
     startAt: schedule.startAt,
+    venue: schedule.venue,
+    city: schedule.city,
+    dayNight: schedule.dayNight,
+    environmentalEffects: schedule.environmentalEffects,
     status: "running",
     abortSignal,
     pauseSignal,
+
     onBall: ({ ballData }) => {
       updateCurrentMatch(matchId, {
         score: ballData.score,

@@ -1,3 +1,5 @@
+const { scheduleFixtures } = require('../utils/schedulerUtils');
+
 function generateRoundRobin(teams, rounds = 1) {
   const fixtures = [];
   const teamList = [...teams];
@@ -41,4 +43,28 @@ function generateGroups(teams, groupCount) {
   return { groups, fixtures };
 }
 
-module.exports = { generateRoundRobin, generateGroups };
+/**
+ * Main entry point for generating a fully scheduled tournament
+ */
+function createFullTournamentSchedule(teams, options = {}) {
+  const { format = "round_robin", rounds = 1, startDate = new Date(), country = "India" } = options;
+  
+  let rawFixtures;
+  if (format === "groups") {
+    const { fixtures } = generateGroups(teams, options.groupCount || 2);
+    rawFixtures = fixtures;
+  } else {
+    rawFixtures = generateRoundRobin(teams, rounds);
+  }
+
+  // Assign dates, times, venues, and timezones
+  return scheduleFixtures(rawFixtures, startDate, {
+    country,
+    doubleHeaderWeekends: true,
+    matchesPerDay: 1,
+    restDayFrequency: 8
+  });
+}
+
+module.exports = { generateRoundRobin, generateGroups, createFullTournamentSchedule };
+
