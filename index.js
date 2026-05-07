@@ -39,12 +39,14 @@ const serverStartedAt = new Date().toISOString();
 restoreScheduledJobs();
 syncLineupsWithFirebase();
 setInterval(() => {
+  const now = Date.now();
   schedules.forEach(schedule => {
     if (
       schedule.status === "scheduled" &&
       schedule.startAt &&
-      new Date(schedule.startAt).getTime() <= Date.now()
+      new Date(schedule.startAt).getTime() <= now
     ) {
+      console.log(`[Interval] Starting match ${schedule.matchId} because its scheduled time ${schedule.startAt} has passed.`);
       persistScheduleState(schedule, "running");
       runMatch(schedule);
     }
@@ -134,14 +136,24 @@ function loadSchedules() {
 }
 
 function restoreScheduledJobs() {
+  console.log("Restoring scheduled jobs...");
+  const now = Date.now();
   schedules.forEach(schedule => {
     if (schedule.status !== "scheduled" || !schedule.startAt) return;
 
-    const delay = new Date(schedule.startAt).getTime() - Date.now();
+    const runAt = new Date(schedule.startAt).getTime();
+    const delay = runAt - now;
+    
     if (delay <= 0) {
+      console.log(`[Restore] Starting match ${schedule.matchId} (scheduled for ${schedule.startAt}) as it was in the past.`);
       persistScheduleState(schedule, "running");
       runMatch(schedule);
-      return;
+    } else {
+      console.log(`[Restore] Rescheduling match ${schedule.matchId} for ${schedule.startAt} (in ${Math.floor(delay / 1000)}s)`);
+      scheduledJobs[schedule.id] = setTimeout(() => {
+        console.log(`[Timeout] Starting restored match ${schedule.matchId}`);
+        runMatch(schedule);
+      }, delay);
     }
   });
 }
@@ -568,12 +580,9 @@ async function scheduleMatch(payload) {
     throw new Error("Delay must be a valid non-negative number.");
   }
 
-  const startAt = payload.startAt
-  ? moment(payload.startAt)
-      .tz("Asia/Kolkata", true)
-      .utc()
-      .toDate()
-  : null;
+    const startAt = payload.startAt
+    ? moment.tz(payload.startAt, "Asia/Kolkata").utc().toDate()
+    : null;
   if (startAt && Number.isNaN(startAt.getTime())) {
     throw new Error("Invalid scheduled start time.");
   }
@@ -613,35 +622,50 @@ const matchSeed =
   await initScorecardsForMatch(schedule.matchId, teamAWithIds, teamBWithIds);
 
   if (!schedule.startAt) {
+    console.log(`Match ${schedule.matchId} starting immediately (no startAt).`);
     runMatch(schedule);
     return `Match ${schedule.matchId} started immediately.`;
   }
 
   const runAt = new Date(schedule.startAt).getTime();
-  const delay = runAt - Date.now();
+  const now = Date.now();
+  const delay = runAt - now;
+
+  console.log(`Scheduling match ${schedule.matchId}:`);
+  console.log(`  - Scheduled At (UTC): ${schedule.startAt}`);
+  console.log(`  - Current Time (UTC): ${new Date(now).toISOString()}`);
+  console.log(`  - Delay: ${delay}ms`);
+
   if (delay <= 0) {
+    console.log(`Match ${schedule.matchId} starting immediately (scheduled time in past).`);
     persistScheduleState(schedule, "running");
     runMatch(schedule);
     return `Scheduled time is in the past, starting match ${schedule.matchId} now.`;
   }
 
-  scheduledJobs[schedule.id] = setTimeout(() => runMatch(schedule), delay);
+  scheduledJobs[schedule.id] = setTimeout(() => {
+    console.log(`[Timeout] Starting scheduled match ${schedule.matchId}`);
+    runMatch(schedule);
+  }, delay);
   updateScheduleList();
-return `Match ${schedule.matchId} scheduled for ${
-  moment.utc(schedule.startAt)
-        .tz("Asia/Kolkata")
-        .format("DD MMM YYYY hh:mm A")
-} IST.`;
+
+  const istLabel = moment.utc(schedule.startAt)
+    .tz("Asia/Kolkata")
+    .format("DD MMM YYYY hh:mm A");
+
+  return `Match ${schedule.matchId} scheduled for ${istLabel} IST.`;
 }
 
 function runMatch(schedule) {
+  console.log(`runMatch called for ${schedule.matchId} (Status: ${schedule.status})`);
   if (
-  schedule.status === "completed" ||
-  schedule.status === "aborted" ||
-  schedule.status === "cancelled"
-) {
-  return;
-}
+    schedule.status === "completed" ||
+    schedule.status === "aborted" ||
+    schedule.status === "cancelled"
+  ) {
+    console.log(`runMatch ignored for ${schedule.matchId} because of status: ${schedule.status}`);
+    return;
+  }
   const alreadyRunning = Array.from(activeMatches.values()).find(m => m.matchId === schedule.matchId);
   if (alreadyRunning) {
     addLog(`Match ${schedule.matchId} is already running.`);
