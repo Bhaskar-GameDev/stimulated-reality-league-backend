@@ -266,10 +266,29 @@ const playerMappings = {
     "Lockie Ferguson": "LH Ferguson"
   },
   "Bangladesh": {
+    "Litton Das": "Liton Das",
     "Najmul Hossain Shanto": "Nazmul Hossain Shanto"
   },
   "Netherlands": {
-    "Max O'Dowd": "MP O'Dowd"
+    "Max O'Dowd": "MP O'Dowd",
+    "Bas de Leede": "BFW de Leede",
+    "Scott Edwards": "SA Edwards",
+    "Sybrand Engelbrecht": "SA Engelbrecht",
+    "Teja Nidamanuru": "AT Nidamanuru",
+    "Logan van Beek": "LV van Beek",
+    "Tim Pringle": "TJG Pringle",
+    "Paul van Meekeren": "PA van Meekeren",
+    "Vivian Kingma": "VJ Kingma",
+    "Aryan Dutt": "A Dutt"
+  },
+  "Nepal": {
+    "Kushal Bhurtel": "K Bhurtel",
+    "Rohit Paudel": "RK Paudel",
+    "Dipendra Singh Airee": "DS Airee",
+    "Sundeep Jora": "S Jora",
+    "Gulshan Jha": "Gulsan Jha",
+    "Sandeep Lamichhane": "S Lamichhane",
+    "Lalit Rajbanshi": "LN Rajbanshi"
   }
 };
 
@@ -286,6 +305,13 @@ function buildPlayerId(teamName, playerName, index) {
 
 const teamsJson = JSON.parse(fs.readFileSync('teams.json', 'utf8'));
 const savedLineups = JSON.parse(fs.readFileSync('saved_lineups.json', 'utf8'));
+
+const teamNameCounts = new Map();
+for (const group in teamsJson) {
+  for (const team in teamsJson[group]) {
+    teamNameCounts.set(team, (teamNameCounts.get(team) || 0) + 1);
+  }
+}
 
 const lines = inputData.trim().split('\n');
 let currentTeam = null;
@@ -317,12 +343,14 @@ for (const line of lines) {
         const squad = teamsJson.men[teamKey];
         const selectedIds = [];
         
+        const displayName = teamNameCounts.get(teamKey) > 1
+            ? `${teamKey} (men)`
+            : teamKey;
+
         for (const playerName of currentTeamPlayers) {
           let targetName = playerName;
           if (playerMappings[teamKey] && playerMappings[teamKey][playerName]) {
             targetName = playerMappings[teamKey][playerName];
-          } else if (playerMappings[currentTeam] && playerMappings[currentTeam][playerName]) {
-            targetName = playerMappings[currentTeam][playerName];
           }
 
           let player = squad.find(p => p.name.toLowerCase() === targetName.toLowerCase());
@@ -332,15 +360,19 @@ for (const line of lines) {
           
           if (player) {
             const index = squad.indexOf(player);
-            const id = player.id || buildPlayerId(teamKey, player.name, index);
+            const id = player.id || buildPlayerId(displayName, player.name, index);
             selectedIds.push(id);
           } else {
             console.warn(`Could not find player: ${playerName} (target: ${targetName}) in team: ${teamKey}`);
-            selectedIds.push(buildPlayerId(teamKey, playerName, 99)); 
+            // If player not found, try to use a fallback from the squad to avoid breaking the lineup
+            const fallbackPlayer = squad.find(p => !selectedIds.includes(p.id)) || squad[0];
+            const fallbackIndex = squad.indexOf(fallbackPlayer);
+            const fallbackId = fallbackPlayer.id || buildPlayerId(displayName, fallbackPlayer.name, fallbackIndex);
+            selectedIds.push(fallbackId);
           }
         }
         
-        const lineupKey = teamKey + " (men)";
+        const lineupKey = displayName;
         savedLineups[lineupKey] = selectedIds;
         console.log(`Updated lineup for ${lineupKey}`);
       } else {
