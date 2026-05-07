@@ -10,7 +10,9 @@ const teamsData = require("./teams.json");
 const { buildHtmlPage } = require("./ui/page");
 
 let PORT = Number(process.env.PORT || 3000);
+const serverStartedAt = new Date().toISOString();
 const STORAGE_PATH = path.join(__dirname, "schedules.json");
+
 const LINEUPS_PATH = path.join(__dirname, "saved_lineups.json");
 const MAX_LOG_ITEMS = 150;
 const teamCatalog = buildTeamCatalog(teamsData);
@@ -708,11 +710,27 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === "GET" && requestUrl.pathname === "/api/status") {
     const activeMatchList = await getActiveMatchesSummary();
-    // Keep backward-compatible shape: currentMatch is the first active match (or null)
+    const statusCounts = schedules.reduce((acc, s) => {
+      acc[s.status] = (acc[s.status] || 0) + 1;
+      return acc;
+    }, {});
+    
+    const summary = {
+      activeMatchCount: activeMatchList.length,
+      statusCounts,
+      savedLineupCount: Object.keys(savedLineups).length,
+      teamCount: Object.keys(teamCatalog).length,
+      uptimeSeconds: Math.floor((Date.now() - new Date(serverStartedAt).getTime()) / 1000),
+      nextScheduledMatch: schedules
+        .filter(s => s.status === "scheduled" && s.startAt)
+        .sort((a, b) => new Date(a.startAt) - new Date(b.startAt))[0] || null
+    };
+
     const currentMatch = activeMatchList.length > 0 ? activeMatchList[0] : null;
-    jsonResponse(res, 200, { currentMatch, activeMatches: activeMatchList, liveLogs });
+    jsonResponse(res, 200, { currentMatch, activeMatches: activeMatchList, liveLogs, summary });
     return;
   }
+
 
   if (req.method === "GET" && requestUrl.pathname === "/api/matches") {
     const list = await readDb("matches/list");

@@ -587,8 +587,9 @@ module.exports = `
         teamAPlayingXI: [...selectionState.teamA],
         teamBPlayingXI: [...selectionState.teamB],
         delayMs: Number(formData.get("delayMs")),
-        startAt: formData.get("startAt") || null
+        startAt: formData.get("startAt") ? new Date(formData.get("startAt")).toISOString() : null
       };
+
 
       if (payload.teamA === payload.teamB) {
         alert("Please select two different teams.");
