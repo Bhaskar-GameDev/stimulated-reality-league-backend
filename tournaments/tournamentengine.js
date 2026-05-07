@@ -76,8 +76,10 @@ async function runNextMatch(tournamentId) {
       throw new Error(`Teams ${fixture.teamA.name} or ${fixture.teamB.name} not found in catalog.`);
     }
 
-    const teamAPlayers = resolvePlayingXI(teamAEntry, []).map(buildMatchPlayer);
-    const teamBPlayers = resolvePlayingXI(teamBEntry, []).map(buildMatchPlayer);
+    const format = tournament.overs === 20 ? "T20" : (tournament.overs === 50 ? "ODI" : "TEST");
+    const teamAPlayers = resolvePlayingXI(teamAEntry, [], format);
+    const teamBPlayers = resolvePlayingXI(teamBEntry, [], format);
+
 
     // Call match engine with correct parameter order: (matchId, teamA, teamB, options)
     const result = await startMatch(fixture.matchId, teamAPlayers, teamBPlayers, {
@@ -116,11 +118,13 @@ async function processMatchResult(tournamentId, fixtureIndex, rawResult) {
     teamBOvers: parseFloat(rawResult.secondInnings.overs)
   };
 
-  // Update Standings
+  // Update Standings (Decoupled Path)
   const newStandings = standingsEngine.updateStandings(tournament.standings || {}, standingsResult);
+  await db.ref(`tournaments/${tournamentId}/standings`).set(newStandings);
   
-  // Update Stats
+  // Update Stats (Decoupled Path)
   const newStats = statsEngine.updateTournamentStats(tournament.stats || { playerStats: {} }, rawResult);
+  await db.ref(`tournaments/${tournamentId}/stats`).set(newStats);
 
   // Update Fixture Status
   await db.ref(`tournaments/${tournamentId}/fixtures/${fixtureIndex}`).update({
@@ -129,9 +133,42 @@ async function processMatchResult(tournamentId, fixtureIndex, rawResult) {
     resultSummary: rawResult.result.margin ? `${rawResult.result.winner} won by ${rawResult.result.margin}` : "Match tied"
   });
 
-  await db.ref(`tournaments/${tournamentId}/standings`).set(newStandings);
-  await db.ref(`tournaments/${tournamentId}/stats`).set(newStats);
+  // Narrative Trigger (Placeholder for Step B)
+  await generateNarrative(tournamentId, rawResult);
 }
+
+async function generateNarrative(tournamentId, result) {
+  const headline = result.result.margin 
+    ? `${result.result.winner} dominant in victory over ${result.teamBName}`
+    : `Thriller ends in tie between ${result.teamAName} and ${result.teamBName}`;
+  
+  await db.ref(`narratives/${tournamentId}`).push({
+    headline,
+    timestamp: new Date().toISOString(),
+    type: "match_report"
+  });
+}
+
+async function archiveTournament(tournamentId) {
+  const tournamentSnap = await db.ref(`tournaments/${tournamentId}`).once("value");
+  const tournament = tournamentSnap.val();
+  if (!tournament) return;
+
+  const season = tournament.season || "2026";
+  const archivePath = `history/seasons/${season}/${tournamentId}`;
+
+  // Snapshot and Move
+  await db.ref(archivePath).set({
+    ...tournament,
+    archivedAt: new Date().toISOString(),
+    finalStatus: "completed"
+  });
+
+  // Clean up live node
+  await db.ref(`tournaments/${tournamentId}`).remove();
+  console.log(`Tournament ${tournamentId} archived to ${archivePath}`);
+}
+
 
 async function advanceToPlayoffs(tournamentId) {
   const tournamentSnap = await db.ref(`tournaments/${tournamentId}`).once("value");

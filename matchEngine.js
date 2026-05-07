@@ -1,6 +1,7 @@
 const db = require("./firebase");
 const { createSeededRandom } = require("./utils/random");
 const commentaryEngine = require("./utils/commentaryEngine");
+const formatManager = require('./utils/formatManager');
 const DEFAULT_PROBABILITIES = {
   dot: 0.35,
   single: 0.30,
@@ -17,8 +18,54 @@ function getMatchPhase(context) {
   return "death";
 }
 
+/**
+ * Momentum Engine: Calculates the shift in momentum after each ball
+ * Scale: -100 (Bowling Team Dominance) to +100 (Batting Team Dominance)
+ */
+function calculateMomentum(currentMomentum, result, context) {
+  let shift = 0;
+  if (result === "6") shift = 15;
+  else if (result === "4") shift = 8;
+  else if (result === "W") shift = -25;
+  else if (result === "dot") shift = -2;
+  else if (result === "1" || result === "2") shift = 1;
+
+  // Contextual modifiers
+  if (context.isChasing) {
+    const rrr = context.runsRequired / (context.ballsRemaining / 6);
+    if (rrr > 12) shift *= 0.5; // Harder to gain momentum under extreme RRR
+  }
+
+  let newMomentum = (currentMomentum || 0) + shift;
+  return Math.max(-100, Math.min(100, newMomentum));
+}
+
+/**
+ * Win Probability Engine (Simplified)
+ */
+function calculateWinProbability(context) {
+  if (!context.isChasing) return 50; // Balanced at start
+
+  const ballsRemaining = context.ballsRemaining;
+  const runsRequired = context.runsRequired;
+  const wicketsFallen = context.wicketsFallen;
+
+  if (runsRequired <= 0) return 100;
+  if (wicketsFallen >= 10 || ballsRemaining <= 0) return 0;
+
+  // Simple heuristic
+  const rrr = (runsRequired / ballsRemaining) * 6;
+  let prob = 100 - (rrr * 5); // Base probability drops as RRR increases
+  prob += (10 - wicketsFallen) * 3; // Boost for having wickets in hand
+  
+  return Math.max(1, Math.min(99, prob));
+}
+
+
 function calculateAdjustedProbabilities(batsman, bowler, context) {
+  const format = context.matchType || "T20";
   const phase = getMatchPhase(context);
+  const phaseMultiplier = formatManager.getPhaseMultiplier(format, context.currentOver);
   const effects = context.environmentalEffects || {};
   
   // 1. Load Base Probabilities
@@ -32,15 +79,18 @@ function calculateAdjustedProbabilities(batsman, bowler, context) {
     "wicket": Number(batBase.wicket) || 0.05
   };
 
-  // 2. Apply Phase Aggression Modifiers
-  const batsmanAggression = batsman.batting?.aggression?.[phase] ?? 0.5;
-  const bowlerAggression = bowler.bowling?.aggression?.[phase] ?? 0.5;
+  // 2. Apply Phase Aggression & Format Modifiers
+  const batsmanAggression = (batsman.batting?.aggression?.[phase] ?? 0.5) * phaseMultiplier;
+  const bowlerAggression = (bowler.bowling?.aggression?.[phase] ?? 0.5);
+
+  const formatModifiers = formatManager.getFormatModifiers(format);
 
   if (phase === "powerplay") {
     probs["dot"] *= (1.0 - (batsmanAggression * 0.3));
     probs["4"] *= (1.0 + batsmanAggression * 0.4);
     probs["6"] *= (1.0 + batsmanAggression * 0.2);
-    probs["wicket"] *= (1.0 + (batsmanAggression * 0.2) + (bowlerAggression * 0.3));
+    probs["wicket"] *= (1.0 + (batsmanAggression * 0.2) + (bowlerAggression * 0.3) * formatModifiers.wicketRisk);
+
 
     // Environmental: Swing Factor
     if (effects.swing) {
@@ -508,6 +558,12 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
       };
       recentBalls[buildBallKey(currentOver, currentBall)] = result;
 
+      // Calculate Momentum and Win Probability
+      const momentum = calculateMomentum(options.currentMomentum, result, context);
+      options.currentMomentum = momentum;
+      const winProbability = calculateWinProbability(context);
+
+      // Enhanced Ball Data (Relational & Analytical)
       const ballData = {
         inning: inningNumber,
         over: currentOver,
@@ -520,32 +576,44 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
         score,
         target: chaseTarget !== null ? chaseTarget : null,
         runsRequired,
-        batsman: batsman.name,
         batsmanId: batsman.id,
-        striker: batsman.name,
         strikerId: batsman.id,
-        nonStriker: currentNonStriker?.name || null,
         nonStrikerId: currentNonStriker?.id || null,
-        bowler: bowler.name,
         bowlerId: bowler.id,
-        timestamp: Date.now()
+        // Narrative & Analytics placeholders
+        shotType: result === "4" || result === "6" ? "Aggressive" : "Defensive",
+        wagonWheel: Math.floor(context.rng.next() * 360), // Degree of shot
+        momentum,
+        winProbability,
+        timestamp: new Date().toISOString() // Professional UTC format
       };
 
-      await writeDb(`matches/${matchId}/balls/${inningNumber}/${buildBallKey(currentOver, currentBall)}`, ballData);
-      updateBattingStats(scorecard, batsman, ballRuns, result);
-      updateBowlingStats(scorecard, bowler, ballRuns, result);
-      await pushScorecard(matchId, inningNumber, scorecard);
-      await pushCurrentState(matchId, inningNumber, {
-        over: currentOver,
-        ball: currentBall,
+      // FAST PATH: Update Live Snapshot (Lightweight)
+      await writeDb(`matches/${matchId}/snapshot`, {
+        matchId,
+        inning: inningNumber,
         runs,
         wickets,
-        striker: currentBatsman,
-        nonStriker: currentNonStriker,
-        bowler: bowler,
-        result: result
+        over: currentOver,
+        ball: currentBall,
+        score,
+        strikerId: batsman.id,
+        nonStrikerId: currentNonStriker?.id || null,
+        bowlerId: bowler.id,
+        winProbability,
+        momentum,
+        status: "live"
       });
-      await pushRecentBalls(matchId, recentBalls);
+
+      // DEEP PATH: Ball-by-Ball Partitioned
+      await writeDb(`matches/${matchId}/balls/${inningNumber}/${buildBallKey(currentOver, currentBall)}`, ballData);
+      
+      // Update scorecards and analytics in separate nodes
+      updateBattingStats(scorecard, batsman, ballRuns, result);
+      updateBowlingStats(scorecard, bowler, ballRuns, result);
+      await writeDb(`matches/${matchId}/scorecard/${inningNumber}`, scorecard);
+      await writeDb(`matches/${matchId}/recentBalls`, recentBalls);
+
       let wicketType = null;
       if (result === "W") {
         const wr = rng.next();

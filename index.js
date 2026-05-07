@@ -159,7 +159,24 @@ function restoreScheduledJobs() {
 }
 
 function getTeamByName(name) {
-  return teamCatalog[name] || null;
+  if (!name) return null;
+  
+  // 1. Exact match
+  if (teamCatalog[name]) return teamCatalog[name];
+
+  // 2. Case-insensitive match
+  const lowerName = name.toLowerCase();
+  const entry = Object.values(teamCatalog).find(t => t.name.toLowerCase() === lowerName);
+  if (entry) return entry;
+
+  // 3. Match without (group) suffix
+  const cleanName = name.replace(/\s*\(.*?\)\s*/, "").trim().toLowerCase();
+  const entry2 = Object.values(teamCatalog).find(t => {
+    const tClean = t.name.replace(/\s*\(.*?\)\s*/, "").trim().toLowerCase();
+    return tClean === cleanName;
+  });
+
+  return entry2 || null;
 }
 
 function buildTeamCatalog(source) {
@@ -229,53 +246,34 @@ function mapOutcomeProbabilities(probabilities) {
     wicket: Number(probabilities?.wicket) || 0
   };
 }
+const dataLoader = require('./services/dataLoader');
 
-function buildMatchPlayer(player) {
-  return {
-    id: player.id,
-    name: player.name,
-    role: player.role,
-    type: player.type,
-    batting: player.batting || {},
-    bowling: player.bowling || {},
-    behavior: player.behavior || {},
-    stamina: player.stamina || {},
-    form: player.form || 1.0,
-    experience: player.experience || 0.5,
-    batting_probabilities: mapOutcomeProbabilities(player.batting?.base),
-    bowling_probabilities: mapOutcomeProbabilities(player.bowling?.base),
-    base_probabilities: mapOutcomeProbabilities(player.batting?.base)
-  };
+function buildMatchPlayer(player, format = "T20") {
+  return dataLoader.loadPlayerProfile(player, format);
 }
 
-function resolvePlayingXI(teamEntry, selectedIds) {
-  if (!teamEntry) {
-    return null;
-  }
+
+function resolvePlayingXI(teamEntry, selectedIds, format = "T20") {
+  if (!teamEntry) return null;
 
   const squad = Array.isArray(teamEntry.players) ? teamEntry.players : [];
   if (squad.length < 11) {
-    throw new Error(`${teamEntry.name} does not have enough players to select a playing 11.`);
+    throw new Error(`${teamEntry.name} does not have enough players.`);
   }
 
-  const fallbackIds = squad.slice(0, 11).map(player => player.id);
-  const requestedIds = Array.isArray(selectedIds) && selectedIds.length > 0
+  const fallbackIds = squad.slice(0, 11).map(player => String(player.id));
+  const requestedIds = Array.isArray(selectedIds) && selectedIds.length === 11
     ? selectedIds.map(id => String(id))
     : fallbackIds;
-  const uniqueIds = [...new Set(requestedIds)];
 
-  if (uniqueIds.length !== 11) {
-    throw new Error(`Please select exactly 11 unique players for ${teamEntry.name}.`);
-  }
-
-  const squadById = new Map(squad.map(player => [String(player.id), player]));
-  const invalidId = uniqueIds.find(id => !squadById.has(id));
-  if (invalidId) {
-    throw new Error(`One or more selected players for ${teamEntry.name} are invalid.`);
-  }
-
-  return uniqueIds.map(id => squadById.get(id));
+  const squadById = new Map(squad.map(p => [String(p.id), p]));
+  
+  return requestedIds.map(id => {
+    const player = squadById.get(id) || squad[0];
+    return buildMatchPlayer(player, format);
+  });
 }
+
 
 function summarizePlayingXI(players) {
   return players.map(player => ({
@@ -573,11 +571,14 @@ async function scheduleMatch(payload) {
     throw new Error("Team A and Team B must be different.");
   }
 
-  const teamAPlayingXI = resolvePlayingXI(teamAEntry, payload.teamAPlayingXI);
-  const teamBPlayingXI = resolvePlayingXI(teamBEntry, payload.teamBPlayingXI);
-
   const type = getMatchTypeByKey(payload.matchType || "T20");
+  const format = type.key; // T20, ODI, TEST
+
+  const teamAPlayingXI = resolvePlayingXI(teamAEntry, payload.teamAPlayingXI, format);
+  const teamBPlayingXI = resolvePlayingXI(teamBEntry, payload.teamBPlayingXI, format);
+
   const overs = Number(payload.overs) || type.overs;
+
   if (overs <= 0) {
     throw new Error("Invalid overs count.");
   }
@@ -636,10 +637,11 @@ async function scheduleMatch(payload) {
   updateScheduleList();
   await saveMatchRegistryEntry(schedule);
 
-  const teamAWithIds = teamAPlayingXI.map(buildMatchPlayer);
-  const teamBWithIds = teamBPlayingXI.map(buildMatchPlayer);
+  const teamAWithIds = teamAPlayingXI.map(p => buildMatchPlayer(p, format));
+  const teamBWithIds = teamBPlayingXI.map(p => buildMatchPlayer(p, format));
 
   await initScorecardsForMatch(schedule.matchId, teamAWithIds, teamBWithIds);
+
 
   if (!schedule.startAt) {
     console.log(`Match ${schedule.matchId} starting immediately (no startAt).`);
@@ -697,6 +699,7 @@ function runMatch(schedule) {
 
   const teamAEntry = getTeamByName(schedule.teamAName);
   const teamBEntry = getTeamByName(schedule.teamBName);
+  const format = schedule.matchType || "T20";
 
   if (!teamAEntry || !teamBEntry) {
     persistScheduleState(schedule, "failed", { errorMessage: "One or both teams are missing." });
@@ -710,12 +713,15 @@ function runMatch(schedule) {
   try {
     teamA = resolvePlayingXI(
       teamAEntry,
-      schedule.teamAPlayingXIIds || schedule.teamAPlayingXI?.map(player => player.id)
-    ).map(buildMatchPlayer);
+      schedule.teamAPlayingXIIds || (schedule.teamAPlayingXI && schedule.teamAPlayingXI.map(p => p.id)),
+      format
+    );
     teamB = resolvePlayingXI(
       teamBEntry,
-      schedule.teamBPlayingXIIds || schedule.teamBPlayingXI?.map(player => player.id)
-    ).map(buildMatchPlayer);
+      schedule.teamBPlayingXIIds || (schedule.teamBPlayingXI && schedule.teamBPlayingXI.map(p => p.id)),
+      format
+    );
+
   } catch (error) {
     persistScheduleState(schedule, "failed", { errorMessage: error.message });
     addLog(`Match ${schedule.matchId} could not start: ${error.message}`);
@@ -1136,14 +1142,23 @@ setInterval(async () => {
     activeTournamentsSnap.forEach(t => tids.push(t.key));
     upcomingTournamentsSnap.forEach(t => tids.push(t.key));
 
-    for (const tid of tids) {
-      // Check if there's a live match already in this tournament
-      const fixturesSnap = await db.ref(`tournaments/${tid}/fixtures`).orderByChild("status").equalTo("live").once("value");
-      if (fixturesSnap.exists()) continue; // One match at a time for simplicity
-
       // Try running next match
-      await tournamentEngine.runNextMatch(tid);
+      const runResult = await tournamentEngine.runNextMatch(tid);
+      
+      // Step B: Match Completion Trigger
+      if (runResult && runResult.status === "completed") {
+        console.log(`[EventFlow] Match ${runResult.matchId} completed in tournament ${tid}. Cascading updates...`);
+        // Additional event logic can go here (e.g. Detect qualification)
+      }
+
+      // Step C: Tournament Archival
+      const updatedTournSnap = await db.ref(`tournaments/${tid}`).once("value");
+      const updatedTourn = updatedTournSnap.val();
+      if (updatedTourn && updatedTourn.status === "completed") {
+        await tournamentEngine.archiveTournament(tid);
+      }
     }
+
   } catch (err) {
     // console.error("Tournament auto-runner error:", err);
   }
@@ -1170,5 +1185,38 @@ server.listen(PORT, () => {
 }
 });
 
-module.exports = { startMatch, getTeamByName, resolvePlayingXI, buildMatchPlayer };
+const tournamentEngine = require("./tournaments/tournamentengine");
+
+/**
+ * Player Synchronization: Move players from JSON to relational Firebase nodes
+ */
+async function syncPlayersToFirebase() {
+  console.log("Syncing players to relational database...");
+  for (const team of Object.values(teamCatalog)) {
+    for (const player of team.players) {
+      const playerRef = db.ref(`players/${player.id}`);
+      const snap = await playerRef.once("value");
+      if (!snap.exists()) {
+        await playerRef.set({
+          ...player,
+          batting_probabilities: null, // Don't store engine-specific probs in relational profile
+          bowling_probabilities: null,
+          teamId: team.name,
+          updatedAt: new Date().toISOString()
+        });
+      }
+    }
+  }
+}
+
+syncPlayersToFirebase();
+
+module.exports = { 
+  startMatch, 
+  getTeamByName, 
+  resolvePlayingXI, 
+  buildMatchPlayer,
+  archiveTournament: tournamentEngine.archiveTournament
+};
+
 

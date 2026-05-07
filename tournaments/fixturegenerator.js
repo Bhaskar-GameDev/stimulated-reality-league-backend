@@ -2,8 +2,9 @@ const { scheduleFixtures } = require('../utils/schedulerUtils');
 
 function generateRoundRobin(teams, rounds = 1) {
   const fixtures = [];
-  const teamList = [...teams];
+  const teamList = teams.filter(t => t && (t.id || t.name));
   if (teamList.length % 2 !== 0) teamList.push({ id: "BYE", name: "BYE" });
+
 
   const numTeams = teamList.length;
   const numRounds = (numTeams - 1) * rounds;
@@ -31,8 +32,10 @@ function generateRoundRobin(teams, rounds = 1) {
 }
 
 function generateGroups(teams, groupCount) {
+  const validTeams = teams.filter(t => t && (t.id || t.name));
   const groups = Array.from({ length: groupCount }, () => []);
-  teams.forEach((team, i) => groups[i % groupCount].push(team));
+  validTeams.forEach((team, i) => groups[i % groupCount].push(team));
+
 
   let fixtures = [];
   groups.forEach((group, i) => {
