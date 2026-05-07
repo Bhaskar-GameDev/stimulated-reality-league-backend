@@ -1,4 +1,4 @@
-﻿const http = require("http");
+const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const url = require("url");
@@ -37,6 +37,7 @@ let nextScheduleId = schedules.reduce((max, item) => Math.max(max, item.id || 0)
 const serverStartedAt = new Date().toISOString();
 
 restoreScheduledJobs();
+syncLineupsWithFirebase();
 setInterval(() => {
   schedules.forEach(schedule => {
     if (
@@ -49,6 +50,72 @@ setInterval(() => {
     }
   });
 }, 10000);
+
+function saveSchedules() {
+  try {
+    fs.writeFileSync(STORAGE_PATH, JSON.stringify(schedules, null, 2), 'utf8');
+  } catch (error) {
+    console.error('Unable to save schedules:', error.message);
+  }
+}
+
+function loadLineups() {
+  try {
+    const text = fs.readFileSync(LINEUPS_PATH, "utf8");
+    const items = JSON.parse(text);
+    if (items && typeof items === "object") return items;
+  } catch (error) {
+  }
+  return {};
+}
+
+function saveLineups() {
+  try {
+    fs.writeFileSync(LINEUPS_PATH, JSON.stringify(savedLineups, null, 2), "utf8");
+    // Sync to Firebase for persistence across deployments (Render/etc)
+    db.ref("lineups").set(savedLineups).catch(error => {
+      console.error("Unable to sync lineups to Firebase:", error.message);
+    });
+  } catch (error) {
+    console.error("Unable to save lineups locally:", error.message);
+  }
+}
+
+function syncLineupsWithFirebase() {
+  // Listen for remote updates and keep local memory state in sync
+  db.ref("lineups").on("value", snapshot => {
+    if (snapshot.exists()) {
+      const remoteLineups = snapshot.val();
+      if (remoteLineups && typeof remoteLineups === "object") {
+        // Merge remote into local, prioritizing remote
+        Object.assign(savedLineups, remoteLineups);
+        // Also update local file for backup
+        try {
+          fs.writeFileSync(LINEUPS_PATH, JSON.stringify(savedLineups, null, 2), "utf8");
+        } catch (e) {}
+      }
+    } else if (Object.keys(savedLineups).length > 0) {
+      // If Firebase is empty but we have local lineups, seed Firebase
+      db.ref("lineups").set(savedLineups).catch(() => {});
+    }
+  });
+}
+
+function openBrowser(urlToOpen) {
+  const platform = process.platform;
+  const command = platform === "win32"
+    ? `start "" "${urlToOpen}"`
+    : platform === "darwin"
+      ? `open "${urlToOpen}"`
+      : `xdg-open "${urlToOpen}"`;
+
+  exec(command, err => {
+    if (err) {
+      console.error("Could not open browser:", err.message);
+    }
+  });
+}
+
 const matchTypes = [
   { key: "T20", label: "T20", overs: 20 },
   { key: "ODI", label: "ODI", overs: 50 },
@@ -75,49 +142,6 @@ function restoreScheduledJobs() {
       persistScheduleState(schedule, "running");
       runMatch(schedule);
       return;
-    }
-
-    scheduledJobs[schedule.id] = setTimeout(() => runMatch(schedule), delay);
-  });
-}
-
-function saveSchedules() {
-  try {
-    fs.writeFileSync(STORAGE_PATH, JSON.stringify(schedules, null, 2), 'utf8');
-  } catch (error) {
-    console.error('Unable to save schedules:', error.message);
-  }
-}
-
-function loadLineups() {
-  try {
-    const text = fs.readFileSync(LINEUPS_PATH, "utf8");
-    const items = JSON.parse(text);
-    if (items && typeof items === "object") return items;
-  } catch (error) {
-  }
-  return {};
-}
-
-function saveLineups() {
-  try {
-    fs.writeFileSync(LINEUPS_PATH, JSON.stringify(savedLineups, null, 2), "utf8");
-  } catch (error) {
-    console.error("Unable to save lineups:", error.message);
-  }
-}
-
-function openBrowser(urlToOpen) {
-  const platform = process.platform;
-  const command = platform === "win32"
-    ? `start "" "${urlToOpen}"`
-    : platform === "darwin"
-      ? `open "${urlToOpen}"`
-      : `xdg-open "${urlToOpen}"`;
-
-  exec(command, err => {
-    if (err) {
-      console.error("Could not open browser:", err.message);
     }
   });
 }
