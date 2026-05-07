@@ -50,7 +50,7 @@ function createFullTournamentSchedule(teams, options = {}) {
   const { format = "round_robin", rounds = 1, startDate = new Date(), country = "India" } = options;
   
   let rawFixtures;
-  if (format === "groups") {
+  if (format === "groups" || format === "group_knockout") {
     const { fixtures } = generateGroups(teams, options.groupCount || 2);
     rawFixtures = fixtures;
   } else {

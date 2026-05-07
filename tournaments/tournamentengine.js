@@ -1,5 +1,5 @@
 const db = require("../firebase");
-const { startMatch } = require("../index"); // Existing match starter
+const { startMatch, getTeamByName, resolvePlayingXI, buildMatchPlayer } = require("../index"); // Existing match starter
 const standingsEngine = require("./standingsengine");
 const statsEngine = require("./statsengine");
 const fixtureGenerator = require("./fixturegenerator");
@@ -68,10 +68,23 @@ async function runNextMatch(tournamentId) {
     await db.ref(`tournaments/${tournamentId}/status`).set("live");
     await db.ref(`tournaments/${tournamentId}/fixtures/${nextFixtureIndex}/status`).set("live");
     
-    // Pass timing and environmental effects to the match engine
-    const result = await startMatch(fixture.teamA, fixture.teamB, fixture.matchId, {
+    // Resolve players for both teams
+    const teamAEntry = getTeamByName(fixture.teamA.name);
+    const teamBEntry = getTeamByName(fixture.teamB.name);
+    
+    if (!teamAEntry || !teamBEntry) {
+      throw new Error(`Teams ${fixture.teamA.name} or ${fixture.teamB.name} not found in catalog.`);
+    }
+
+    const teamAPlayers = resolvePlayingXI(teamAEntry, []).map(buildMatchPlayer);
+    const teamBPlayers = resolvePlayingXI(teamBEntry, []).map(buildMatchPlayer);
+
+    // Call match engine with correct parameter order: (matchId, teamA, teamB, options)
+    const result = await startMatch(fixture.matchId, teamAPlayers, teamBPlayers, {
+      teamAName: fixture.teamA.name,
+      teamBName: fixture.teamB.name,
       matchType: tournament.overs === 20 ? "T20" : "ODI",
-      overs: tournament.overs || 20,
+      oversLimit: tournament.overs || 20,
       venue: fixture.venue,
       city: fixture.city,
       dayNight: fixture.dayNight,

@@ -1170,4 +1170,5 @@ server.listen(PORT, () => {
 }
 });
 
-module.exports = { startMatch };
+module.exports = { startMatch, getTeamByName, resolvePlayingXI, buildMatchPlayer };
+
