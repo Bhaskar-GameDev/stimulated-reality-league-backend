@@ -466,8 +466,9 @@ const matchSeed =
   `${matchId}_${Date.now()}`;
   const schedule = {
     id: nextScheduleId++,
-    matchId: `${payload.teamA}_vs_${payload.teamB}_${type.key}_${crypto.randomUUID().slice(0,8)}`,
+    matchId: matchId,
     teamAName: payload.teamA,
+
     teamBName: payload.teamB,
     seed: matchSeed,
     matchType: type.key,
@@ -561,7 +562,7 @@ function runMatch(schedule) {
 
   const abortSignal = { aborted: false };
   const pauseSignal = { paused: false };
-  const matchId = schedule.matchId;
+
 
   activeMatches.set(matchId, {
     status: "running",
