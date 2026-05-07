@@ -2,4 +2,3 @@ node_modules
 serviceAccountKey.json
 .env
 schedules.json
-saved_lineups.json
