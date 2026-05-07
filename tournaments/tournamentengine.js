@@ -87,21 +87,33 @@ async function runNextMatch(tournamentId) {
   }
 }
 
-async function processMatchResult(tournamentId, fixtureIndex, result) {
+async function processMatchResult(tournamentId, fixtureIndex, rawResult) {
   const tournamentSnap = await db.ref(`tournaments/${tournamentId}`).once("value");
   const tournament = tournamentSnap.val();
+  const fixture = tournament.fixtures[fixtureIndex];
+
+  // Map raw result to standings engine format
+  const standingsResult = {
+    teamA: { id: fixture.teamA.id, name: fixture.teamA.name },
+    teamB: { id: fixture.teamB.id, name: fixture.teamB.name },
+    winner: rawResult.result.winner,
+    teamAScore: rawResult.firstInnings.runs,
+    teamBScore: rawResult.secondInnings.runs,
+    teamAOvers: parseFloat(rawResult.firstInnings.overs),
+    teamBOvers: parseFloat(rawResult.secondInnings.overs)
+  };
 
   // Update Standings
-  const newStandings = standingsEngine.updateStandings(tournament.standings || {}, result);
+  const newStandings = standingsEngine.updateStandings(tournament.standings || {}, standingsResult);
   
   // Update Stats
-  const newStats = statsEngine.updateTournamentStats(tournament.stats || { playerStats: {} }, result);
+  const newStats = statsEngine.updateTournamentStats(tournament.stats || { playerStats: {} }, rawResult);
 
   // Update Fixture Status
   await db.ref(`tournaments/${tournamentId}/fixtures/${fixtureIndex}`).update({
     status: "completed",
-    winner: result.winner,
-    resultSummary: result.summary
+    winner: rawResult.result.winner,
+    resultSummary: rawResult.result.margin ? `${rawResult.result.winner} won by ${rawResult.result.margin}` : "Match tied"
   });
 
   await db.ref(`tournaments/${tournamentId}/standings`).set(newStandings);

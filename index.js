@@ -1055,12 +1055,13 @@ const server = http.createServer(async (req, res) => {
       const templates = require("./tournaments/tournamenttemplates");
       const template = templates[payload.templateKey];
       
-      let fixtures = [];
-      if (template.format === "league") {
-        fixtures = fixtureGenerator.generateRoundRobin(payload.teams, template.rounds || 1);
-      } else if (template.format === "group_knockout") {
-        fixtures = fixtureGenerator.generateGroups(payload.teams, template.groupCount).fixtures;
-      }
+      const fixtures = fixtureGenerator.createFullTournamentSchedule(payload.teams, {
+        format: template.format,
+        rounds: template.rounds || 1,
+        groupCount: template.groupCount,
+        startDate: payload.startDate || new Date(),
+        country: payload.country || template.defaultCountry || "India"
+      });
 
       jsonResponse(res, 200, { fixtures });
     } catch (error) {
