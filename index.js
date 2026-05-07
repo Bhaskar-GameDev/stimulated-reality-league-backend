@@ -161,96 +161,8 @@ function restoreScheduledJobs() {
 }
 
 function getTeamByName(name) {
-  if (!name) return null;
-  
-  // 1. Exact match
-  if (teamCatalog[name]) return teamCatalog[name];
-
-  // 2. Case-insensitive match
-  const lowerName = name.toLowerCase();
-  const entry = Object.values(teamCatalog).find(t => t.name.toLowerCase() === lowerName);
-  if (entry) return entry;
-
-  // 3. Match without (group) suffix
-  const cleanName = name.replace(/\s*\(.*?\)\s*/, "").trim().toLowerCase();
-  const entry2 = Object.values(teamCatalog).find(t => {
-    const tClean = t.name.replace(/\s*\(.*?\)\s*/, "").trim().toLowerCase();
-    return tClean === cleanName;
-  });
-
-  return entry2 || null;
+  return teamService.getTeamByName(name);
 }
-
-function buildTeamCatalog(source) {
-  const collections = Object.entries(source || {})
-    .filter(([, teams]) => teams && typeof teams === "object" && !Array.isArray(teams));
-  const teamNameCounts = new Map();
-
-  collections.forEach(([, teams]) => {
-    Object.keys(teams).forEach(teamName => {
-      teamNameCounts.set(teamName, (teamNameCounts.get(teamName) || 0) + 1);
-    });
-  });
-
-  const catalog = {};
-
-  collections.forEach(([groupName, teams]) => {
-    Object.entries(teams).forEach(([teamName, players]) => {
-      if (!Array.isArray(players) || players.length === 0) {
-        return;
-      }
-
-      const displayName = teamNameCounts.get(teamName) > 1
-        ? `${teamName} (${groupName})`
-        : teamName;
-
-      catalog[displayName] = {
-        name: displayName,
-        sourceGroup: groupName,
-        sourceTeamName: teamName,
-        players: players.map((player, index) => normalizeSquadPlayer(displayName, player, index))
-      };
-    });
-  });
-
-  return catalog;
-}
-
-function normalizeSquadPlayer(teamName, player, index) {
-  const name = String(player?.name || `Player ${index + 1}`);
-  return {
-    ...player,
-    id: player?.id || buildPlayerId(teamName, name, index),
-    name,
-    role: player?.role || "player",
-    type: player?.type || "balanced"
-  };
-}
-
-function buildPlayerId(teamName, playerName, index) {
-  return `${slugify(teamName)}_${String(index + 1).padStart(2, "0")}_${slugify(playerName)}`;
-}
-
-function slugify(value) {
-  return String(value || "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_+|_+$/g, "") || "player";
-}
-
-function mapOutcomeProbabilities(probabilities) {
-  return {
-    dot: Number(probabilities?.dot) || 0,
-    single: Number(probabilities?.["1"]) || 0,
-    double: Number(probabilities?.["2"]) || 0,
-    four: Number(probabilities?.["4"]) || 0,
-    six: Number(probabilities?.["6"]) || 0,
-    wicket: Number(probabilities?.wicket) || 0
-  };
-}
-const dataLoader = require('./services/dataLoader');
-
-const matchService = require('./services/matchService');
 
 function buildMatchPlayer(player, format = "T20") {
   return matchService.buildMatchPlayer(player, format);
@@ -259,6 +171,7 @@ function buildMatchPlayer(player, format = "T20") {
 function resolvePlayingXI(teamEntry, selectedIds, format = "T20") {
   return matchService.resolvePlayingXI(teamEntry, selectedIds, format);
 }
+
 
 
 
