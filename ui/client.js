@@ -700,6 +700,202 @@ module.exports = `
       }
     });
 
+    // Tournament Engine Logic
+    const tabBtns = document.querySelectorAll(".tab-btn");
+    const matchSection = document.getElementById("matchSection");
+    const tournamentSection = document.getElementById("tournamentSection");
+    const tournamentTeamListEl = document.getElementById("tournamentTeamList");
+    const teamCountLabel = document.getElementById("teamCountLabel");
+    const generateTournamentBtn = document.getElementById("generateTournamentBtn");
+    const tournamentFixturesCard = document.getElementById("tournamentFixturesCard");
+    const fixturesListEl = document.getElementById("fixturesList");
+    const saveTournamentBtn = document.getElementById("saveTournamentBtn");
+    const activeTournamentListEl = document.getElementById("activeTournamentList");
+    const standingsContainer = document.getElementById("standingsContainer");
+
+    let selectedTournamentTeams = new Set();
+    let generatedFixtures = [];
+
+    // Tab Switching
+    tabBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const tab = btn.dataset.tab;
+        tabBtns.forEach(b => {
+          b.classList.remove("active");
+          b.style.background = "transparent";
+          b.style.boxShadow = "none";
+        });
+        btn.classList.add("active");
+        btn.style.background = "linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%)";
+        btn.style.boxShadow = "0 4px 14px rgba(30, 64, 175, 0.3)";
+
+        if (tab === "matches") {
+          matchSection.style.display = "grid";
+          tournamentSection.style.display = "none";
+        } else {
+          matchSection.style.display = "none";
+          tournamentSection.style.display = "grid";
+          renderTournamentTeamSelection();
+          refreshTournaments();
+        }
+      });
+    });
+
+    function renderTournamentTeamSelection() {
+      const filteredTeams = teamData.filter(team => team.gender === "men");
+      
+      tournamentTeamListEl.innerHTML = filteredTeams.map(team => {
+        const isSelected = selectedTournamentTeams.has(team.name);
+        return (
+          '<label class="player-option" style="cursor:pointer; padding: 0.6rem; border: 1px solid var(--gray-200); border-radius: 10px; background: ' + (isSelected ? "rgba(59, 130, 246, 0.1)" : "white") + '; display:flex; align-items:center; gap:0.5rem; transition: all 0.2s ease;">'
+            + '<input type="checkbox" data-name="' + escapeHtml(team.name) + '" ' + (isSelected ? "checked" : "") + '>'
+            + '<span style="font-size: 0.85rem; font-weight: 600; color: var(--dark);">' + escapeHtml(team.name) + '</span>'
+          + '</label>'
+        );
+      }).join("");
+
+      tournamentTeamListEl.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        cb.addEventListener("change", (e) => {
+          const name = e.target.dataset.name;
+          if (e.target.checked) selectedTournamentTeams.add(name);
+          else selectedTournamentTeams.delete(name);
+          teamCountLabel.textContent = selectedTournamentTeams.size + " teams selected";
+          renderTournamentTeamSelection();
+        });
+      });
+    }
+
+    generateTournamentBtn.addEventListener("click", async () => {
+      if (selectedTournamentTeams.size < 2) {
+        alert("Please select at least 2 teams.");
+        return;
+      }
+
+      const template = document.getElementById("tournamentTemplate").value;
+      const season = document.getElementById("tournamentSeason").value;
+      const name = document.getElementById("tournamentNameInput").value;
+
+      try {
+        generateTournamentBtn.disabled = true;
+        generateTournamentBtn.textContent = "Generating...";
+        
+        const result = await postJson("/api/tournaments/generate", {
+          templateKey: template,
+          season: Number(season),
+          tournamentName: name,
+          teams: Array.from(selectedTournamentTeams).map(name => ({ id: name, name }))
+        });
+
+        generatedFixtures = result.fixtures;
+        renderFixturePreview(generatedFixtures);
+        tournamentFixturesCard.style.display = "block";
+        tournamentFixturesCard.scrollIntoView({ behavior: "smooth" });
+      } catch (error) {
+        alert(error.message);
+      } finally {
+        generateTournamentBtn.disabled = false;
+        generateTournamentBtn.textContent = "Generate Season Fixtures";
+      }
+    });
+
+    function renderFixturePreview(fixtures) {
+      fixturesListEl.innerHTML = fixtures.map((f, i) => (
+        '<div class="match-card" style="margin-bottom: 0.5rem; background: white; border: 1px solid var(--gray-200);">'
+          + '<div>'
+            + '<strong style="color: var(--primary); font-size: 0.8rem; text-transform: uppercase;">' + (f.stage === "league" ? "Round " + f.round : f.stage) + '</strong>'
+            + '<p style="margin: 0.2rem 0; font-weight: 700; color: var(--dark);">' + escapeHtml(f.teamA.name) + ' vs ' + escapeHtml(f.teamB.name) + '</p>'
+          + '</div>'
+          + '<div>'
+            + '<span class="pill scheduled">Pending</span>'
+          + '</div>'
+        + '</div>'
+      )).join("");
+    }
+
+    saveTournamentBtn.addEventListener("click", async () => {
+      if (!generatedFixtures.length) return;
+
+      try {
+        saveTournamentBtn.disabled = true;
+        saveTournamentBtn.textContent = "Finalizing...";
+
+        const template = document.getElementById("tournamentTemplate").value;
+        const season = document.getElementById("tournamentSeason").value;
+        const name = document.getElementById("tournamentNameInput").value;
+
+        await postJson("/api/tournaments/save", {
+          templateKey: template,
+          season: Number(season),
+          tournamentName: name,
+          teams: Array.from(selectedTournamentTeams).map(name => ({ id: name, name })),
+          fixtures: generatedFixtures
+        });
+
+        alert("Tournament scheduled successfully!");
+        tournamentFixturesCard.style.display = "none";
+        selectedTournamentTeams.clear();
+        renderTournamentTeamSelection();
+        refreshTournaments();
+      } catch (error) {
+        alert(error.message);
+      } finally {
+        saveTournamentBtn.disabled = false;
+        saveTournamentBtn.textContent = "Finalize & Schedule Tournament";
+      }
+    });
+
+    async function refreshTournaments() {
+      try {
+        const res = await fetch("/api/tournaments/list");
+        const tournaments = await res.json();
+        
+        activeTournamentListEl.innerHTML = tournaments.map(t => (
+          '<button type="button" class="active-match-card" data-tid="' + escapeHtml(t.id) + '">'
+            + '<div class="active-match-card-header">'
+              + '<h4>' + escapeHtml(t.name) + '</h4>'
+              + '<span class="pill ' + (t.status === "completed" ? "completed" : "running") + '">' + escapeHtml(t.status) + '</span>'
+            + '</div>'
+            + '<div class="active-match-meta">'
+              + '<span>Season ' + escapeHtml(t.season) + '</span>'
+              + '<span>' + escapeHtml(t.format) + '</span>'
+            + '</div>'
+          + '</button>'
+        )).join("") || "<p class='note'>No tournaments found.</p>";
+
+        document.querySelectorAll("[data-tid]").forEach(btn => {
+          btn.addEventListener("click", () => fetchStandings(btn.dataset.tid));
+        });
+      } catch (err) {
+        console.error("Failed to load tournaments");
+      }
+    }
+
+    async function fetchStandings(tid) {
+      try {
+        standingsContainer.innerHTML = "<p class='note'>Loading points table...</p>";
+        const res = await fetch("/api/tournaments/standings/" + tid);
+        const standings = await res.json();
+
+        standingsContainer.innerHTML = (
+          '<table class="schedule-table" style="font-size: 0.8rem; width: 100%; border-collapse: collapse;">'
+            + '<thead style="background: var(--gray-50);"><tr><th style="padding: 0.5rem;">Team</th><th style="padding: 0.5rem;">P</th><th style="padding: 0.5rem;">Pts</th><th style="padding: 0.5rem;">NRR</th></tr></thead>'
+            + '<tbody>'
+              + standings.map(s => (
+                '<tr style="border-bottom: 1px solid var(--gray-100);">'
+                  + '<td style="padding: 0.6rem 0.5rem;"><strong>' + escapeHtml(s.teamName) + '</strong></td>'
+                  + '<td style="padding: 0.6rem 0.5rem;">' + s.played + '</td>'
+                  + '<td style="padding: 0.6rem 0.5rem;"><strong>' + s.points + '</strong></td>'
+                  + '<td style="padding: 0.6rem 0.5rem;">' + (s.nrr >= 0 ? "+" : "") + s.nrr.toFixed(3) + '</td>'
+                + '</tr>'
+              )).join("")
+            + '</tbody>'
+          + '</table>'
+        );
+      } catch (err) {
+        standingsContainer.innerHTML = "<p class='note'>Failed to load standings.</p>";
+      }
+    }
+
     async function init() {
       await fetchLineups();
       resetSelection("teamA", teamASelect.value);
@@ -708,6 +904,7 @@ module.exports = `
       updateFormState();
       await refresh();
       setInterval(refresh, 3000);
+      setInterval(refreshTournaments, 10000);
     }
 
     init();

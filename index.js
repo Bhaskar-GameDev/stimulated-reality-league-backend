@@ -236,6 +236,12 @@ function buildMatchPlayer(player) {
     name: player.name,
     role: player.role,
     type: player.type,
+    batting: player.batting || {},
+    bowling: player.bowling || {},
+    behavior: player.behavior || {},
+    stamina: player.stamina || {},
+    form: player.form || 1.0,
+    experience: player.experience || 0.5,
     batting_probabilities: mapOutcomeProbabilities(player.batting?.base),
     bowling_probabilities: mapOutcomeProbabilities(player.bowling?.base),
     base_probabilities: mapOutcomeProbabilities(player.batting?.base)
@@ -1022,9 +1028,106 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // --- Tournament API Endpoints ---
+  if (req.method === "POST" && requestUrl.pathname === "/api/tournaments/generate") {
+    try {
+      const payload = await parseRequestBody(req);
+      const fixtureGenerator = require("./tournaments/fixtureGenerator");
+      const templates = require("./tournaments/tournamentTemplates");
+      const template = templates[payload.templateKey];
+      
+      let fixtures = [];
+      if (template.format === "league") {
+        fixtures = fixtureGenerator.generateRoundRobin(payload.teams, template.rounds || 1);
+      } else if (template.format === "group_knockout") {
+        fixtures = fixtureGenerator.generateGroups(payload.teams, template.groupCount).fixtures;
+      }
+
+      jsonResponse(res, 200, { fixtures });
+    } catch (error) {
+      jsonResponse(res, 400, { error: error.message });
+    }
+    return;
+  }
+
+  if (req.method === "POST" && requestUrl.pathname === "/api/tournaments/save") {
+    try {
+      const payload = await parseRequestBody(req);
+      const tournamentEngine = require("./tournaments/tournamentEngine");
+      const tournamentId = await tournamentEngine.createTournament({
+        ...payload,
+        templateKey: payload.templateKey
+      });
+      addLog(`Tournament ${payload.tournamentName || "New"} created and scheduled.`);
+      jsonResponse(res, 200, { message: "Tournament saved", tournamentId });
+    } catch (error) {
+      jsonResponse(res, 400, { error: error.message });
+    }
+    return;
+  }
+
+  if (req.method === "GET" && requestUrl.pathname === "/api/tournaments/list") {
+    try {
+      const snapshot = await db.ref("tournaments").limitToLast(10).once("value");
+      const tournaments = [];
+      snapshot.forEach(child => {
+        const val = child.val();
+        tournaments.push({
+          id: val.id,
+          name: val.name,
+          status: val.status,
+          season: val.season,
+          format: val.format
+        });
+      });
+      jsonResponse(res, 200, tournaments.reverse());
+    } catch (error) {
+      jsonResponse(res, 400, { error: error.message });
+    }
+    return;
+  }
+
+  if (req.method === "GET" && requestUrl.pathname.startsWith("/api/tournaments/standings/")) {
+    try {
+      const tid = requestUrl.pathname.split("/").pop();
+      const standingsEngine = require("./tournaments/standingsEngine");
+      const snapshot = await db.ref(`tournaments/${tid}/standings`).once("value");
+      if (!snapshot.exists()) throw new Error("Standings not found");
+      const sorted = standingsEngine.sortStandings(snapshot.val());
+      jsonResponse(res, 200, sorted);
+    } catch (error) {
+      jsonResponse(res, 400, { error: error.message });
+    }
+    return;
+  }
+
   res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
   res.end("Not found");
 });
+
+// Automated Tournament Match Runner
+setInterval(async () => {
+  try {
+    const tournamentEngine = require("./tournaments/tournamentEngine");
+    const activeTournamentsSnap = await db.ref("tournaments").orderByChild("status").equalTo("live").once("value");
+    const upcomingTournamentsSnap = await db.ref("tournaments").orderByChild("status").equalTo("upcoming").once("value");
+    
+    const tids = [];
+    activeTournamentsSnap.forEach(t => tids.push(t.key));
+    upcomingTournamentsSnap.forEach(t => tids.push(t.key));
+
+    for (const tid of tids) {
+      // Check if there's a live match already in this tournament
+      const fixturesSnap = await db.ref(`tournaments/${tid}/fixtures`).orderByChild("status").equalTo("live").once("value");
+      if (fixturesSnap.exists()) continue; // One match at a time for simplicity
+
+      // Try running next match
+      await tournamentEngine.runNextMatch(tid);
+    }
+  } catch (err) {
+    // console.error("Tournament auto-runner error:", err);
+  }
+}, 30000); // Check every 30 seconds
 
 server.on("error", error => {
   if (error.code === "EADDRINUSE") {
@@ -1046,3 +1149,5 @@ server.listen(PORT, () => {
     openBrowser(urlToOpen);
 }
 });
+
+module.exports = { startMatch };
