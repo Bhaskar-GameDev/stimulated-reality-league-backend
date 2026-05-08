@@ -10,10 +10,28 @@ const teamsData = require("./teams.json");
 const { buildHtmlPage } = require("./ui/page");
 const lineupService = require("./services/lineupService");
 const matchService = require("./services/matchService");
+const tournamentEngine = require("./tournaments/tournamentengine");
 
 let PORT = Number(process.env.PORT || 3000);
 const serverStartedAt = new Date().toISOString();
 const STORAGE_PATH = path.join(__dirname, "schedules.json");
+
+// Poll for due tournament matches every 30 seconds
+setInterval(async () => {
+  try {
+    const tournamentsSnap = await db.ref("tournaments").once("value");
+    const tournaments = tournamentsSnap.val();
+    if (!tournaments) return;
+
+    for (const tId of Object.keys(tournaments)) {
+      if (tournaments[tId].status !== "completed") {
+        await tournamentEngine.runNextMatch(tId);
+      }
+    }
+  } catch (err) {
+    console.error("Tournament poll failed:", err);
+  }
+}, 30000);
 
 // Centralized Logger
 const logger = {
@@ -714,11 +732,15 @@ const server = http.createServer(async (req, res) => {
         }, {});
         
         const lineups = lineupService.getAllLineups() || {};
+        const tournamentsSnap = await db.ref("tournaments").once("value");
+        const tournaments = tournamentsSnap.val() || {};
+        const activeTournaments = Object.values(tournaments).filter(t => t.status !== "completed");
+
         const summary = {
           activeMatchCount: activeMatchList.length,
+          activeTournamentCount: activeTournaments.length,
           statusCounts,
           teamCount: Object.keys(teamCatalog).length,
-
           uptimeSeconds: Math.floor((Date.now() - new Date(serverStartedAt).getTime()) / 1000),
           nextScheduledMatch: schedules
             .filter(s => s.status === "scheduled" && s.startAt)
@@ -726,7 +748,7 @@ const server = http.createServer(async (req, res) => {
         };
 
         const currentMatch = activeMatchList.length > 0 ? activeMatchList[0] : null;
-        jsonResponse(res, 200, { currentMatch, activeMatches: activeMatchList, liveLogs, summary });
+        jsonResponse(res, 200, { currentMatch, activeMatches: activeMatchList, liveLogs, summary, tournaments: activeTournaments });
       } catch (error) {
         logger.error("API /api/status failed", error);
         jsonResponse(res, 500, { error: "Internal server error" });
@@ -865,6 +887,38 @@ const server = http.createServer(async (req, res) => {
       } catch (error) {
         logger.error("API /api/abort failed", error);
         jsonResponse(res, error.statusCode || 400, { error: error.message });
+      }
+      return;
+    }
+    if (req.method === "POST" && requestUrl.pathname === "/api/admin/setup-tournament") {
+      try {
+        const selectedTeamNames = [
+          "India (men)", 
+          "Australia (men)", 
+          "New Zealand (men)", 
+          "South Africa (men)", 
+          "Pakistan (men)", 
+          "England (men)"
+        ];
+        const teams = selectedTeamNames.map(name => ({ name, id: name }));
+        const tournamentId = await tournamentEngine.createTournament({
+          templateKey: "WORLD_CUP",
+          season: "2026",
+          teams: teams,
+          tournamentName: "Stimulated Reality Cup 2026",
+          startDate: new Date(),
+          country: "India"
+        });
+
+        const pastDate = new Date(Date.now() - 5 * 60000).toISOString();
+        await db.ref(`tournaments/${tournamentId}/fixtures/0`).update({
+          utcTimestamp: pastDate
+        });
+
+        jsonResponse(res, 200, { message: "Tournament created and first match scheduled for now.", tournamentId });
+      } catch (error) {
+        logger.error("Tournament setup failed", error);
+        jsonResponse(res, 500, { error: error.message });
       }
       return;
     }

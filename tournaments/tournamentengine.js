@@ -29,6 +29,7 @@ async function createTournament({ templateKey, season, teams, tournamentName, fi
     season,
     templateKey,
     format: template.format,
+    overs: template.overs || 20, // Added overs property
     teams,
     fixtures: tournamentFixtures,
     standings: {},
