@@ -875,6 +875,73 @@ const server = http.createServer(async (req, res) => {
     }
     return;
   }
+  if (req.method === "POST" && requestUrl.pathname === "/api/admin/cleanup") {
+    try {
+      const { nodes, dateRange, startDate, endDate } = await parseRequestBody(req);
+      if (!Array.isArray(nodes) || nodes.length === 0) {
+        throw new Error("No data nodes selected for cleanup.");
+      }
+
+      const results = [];
+      const now = new Date();
+      const todayStr = now.toISOString().split('T')[0];
+      const yesterdayStr = new Date(now.getTime() - 86400000).toISOString().split('T')[0];
+
+      for (const node of nodes) {
+        if (!["matches", "tournaments"].includes(node)) continue;
+
+        const snapshot = await db.ref(node).once("value");
+        const data = snapshot.val();
+        if (!data) {
+          results.push(`Node '${node}' is already empty.`);
+          continue;
+        }
+
+        let deleteCount = 0;
+        const keys = Object.keys(data);
+
+        for (const key of keys) {
+          const item = data[key];
+          // Determine the date of the item
+          let itemDateStr = "";
+          if (node === "matches") {
+            // Check list entry first
+            const createdAt = item.createdAt || (item.meta ? item.meta.createdAt : null);
+            if (createdAt) itemDateStr = createdAt.split('T')[0];
+            else if (item.startTime) itemDateStr = new Date(item.startTime).toISOString().split('T')[0];
+          } else {
+            if (item.createdAt) itemDateStr = item.createdAt.split('T')[0];
+          }
+
+          let shouldDelete = false;
+          if (dateRange === "all") {
+            shouldDelete = true;
+          } else if (itemDateStr) {
+            if (dateRange === "today" && itemDateStr === todayStr) shouldDelete = true;
+            else if (dateRange === "yesterday" && itemDateStr === yesterdayStr) shouldDelete = true;
+            else if (dateRange === "custom" && startDate && endDate) {
+              shouldDelete = itemDateStr >= startDate && itemDateStr <= endDate;
+            }
+          }
+
+          if (shouldDelete) {
+            await db.ref(`${node}/${key}`).remove();
+            // Also clean up matches/list if node is matches
+            if (node === "matches") {
+              await db.ref(`matches/list/${key}`).remove();
+            }
+            deleteCount++;
+          }
+        }
+        results.push(`Cleared ${deleteCount} items from '${node}'.`);
+      }
+
+      jsonResponse(res, 200, { results });
+    } catch (error) {
+      jsonResponse(res, 400, { error: error.message });
+    }
+    return;
+  }
 
   res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
   res.end("Not found");

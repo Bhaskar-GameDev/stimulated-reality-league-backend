@@ -44,6 +44,7 @@ ${styles}
     <nav class="nav-tabs" style="display: flex; gap: 1rem; margin-bottom: 2rem; padding: 0.65rem; background: rgba(255,255,255,0.05); border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); box-shadow: var(--shadow-lg);">
       <button class="btn tab-btn active" data-tab="matches" style="flex: 1; border-radius: 10px; font-size: 0.9rem;">Match Management</button>
       <button class="btn tab-btn" data-tab="tournaments" style="flex: 1; border-radius: 10px; font-size: 0.9rem; background: transparent; box-shadow: none;">Tournament Engine</button>
+      <button class="btn tab-btn" data-tab="maintenance" style="flex: 1; border-radius: 10px; font-size: 0.9rem; background: transparent; box-shadow: none;">Maintenance</button>
     </nav>
 
     <main class="dashboard" id="matchSection">
@@ -226,6 +227,64 @@ ${styles}
           <h2 class="card-title">Recent Tournaments</h2>
           <div id="activeTournamentList" class="match-card-list">
             <p class="note">No tournaments found.</p>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <main class="dashboard" id="maintenanceSection" style="display: none;">
+      <div class="primary-column">
+        <div class="card highlight">
+          <h2 class="card-title">Database Cleanup & Maintenance</h2>
+          <p class="card-description">Choose the data nodes and date range you wish to clear from Firebase. This action cannot be undone.</p>
+          
+          <div class="form-group" style="margin-top: 2rem;">
+            <label style="font-weight: 700; color: var(--gray-800);">Select Data to Clear</label>
+            <div style="display: flex; gap: 2rem; margin-top: 0.5rem; padding: 1rem; background: rgba(0,0,0,0.03); border-radius: 12px; border: 1px solid rgba(0,0,0,0.05);">
+              <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                <input type="checkbox" id="cleanupMatches" checked /> Matches
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                <input type="checkbox" id="cleanupTournaments" checked /> Tournaments
+              </label>
+            </div>
+          </div>
+
+          <div class="form-row" style="margin-top: 1.5rem;">
+            <div class="form-group">
+              <label for="cleanupRange">Filter by Date</label>
+              <select id="cleanupRange" class="form-control">
+                <option value="today">Created Today</option>
+                <option value="yesterday">Created Yesterday</option>
+                <option value="custom">Custom Date Range</option>
+                <option value="all">All Time (Careful!)</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="customDateRange" class="form-row" style="display: none; margin-top: 1rem;">
+            <div class="form-group">
+              <label for="cleanupStart">Start Date</label>
+              <input type="date" id="cleanupStart" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label for="cleanupEnd">End Date</label>
+              <input type="date" id="cleanupEnd" class="form-control" />
+            </div>
+          </div>
+
+          <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(0,0,0,0.05);">
+            <button id="executeCleanup" class="btn btn-primary btn-full" style="background: linear-gradient(135deg, #e53935 0%, #b71c1c 100%);">
+              Execute Cleanup
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="secondary-column">
+        <div class="card">
+          <h2 class="card-title">Cleanup Logs</h2>
+          <div id="cleanupLogs" class="log-container" style="height: 400px; background: #1a1a1a; color: #4caf50; font-family: monospace; font-size: 0.85rem; padding: 1rem; border-radius: 12px; overflow-y: auto;">
+            <div class="note" style="color: #888;">Cleanup activity will be logged here...</div>
           </div>
         </div>
       </div>

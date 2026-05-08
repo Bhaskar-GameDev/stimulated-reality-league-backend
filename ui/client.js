@@ -26,6 +26,17 @@ module.exports = `
     const genderToggle = document.getElementById("genderToggle");
     const searchA = document.getElementById("searchA");
     const searchB = document.getElementById("searchB");
+    
+    // Maintenance Selectors
+    const maintenanceSection = document.getElementById("maintenanceSection");
+    const cleanupRangeSelect = document.getElementById("cleanupRange");
+    const customDateRangeEl = document.getElementById("customDateRange");
+    const executeCleanupBtn = document.getElementById("executeCleanup");
+    const cleanupLogsEl = document.getElementById("cleanupLogs");
+    const cleanupMatchesCb = document.getElementById("cleanupMatches");
+    const cleanupTournamentsCb = document.getElementById("cleanupTournaments");
+    const cleanupStartInput = document.getElementById("cleanupStart");
+    const cleanupEndInput = document.getElementById("cleanupEnd");
     const selectionState = {
       teamA: [],
       teamB: []
@@ -725,21 +736,85 @@ module.exports = `
           b.classList.remove("active");
           b.style.background = "transparent";
           b.style.boxShadow = "none";
+          b.style.color = "var(--gray-400)";
         });
         btn.classList.add("active");
         btn.style.background = "linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%)";
+        btn.style.color = "white";
         btn.style.boxShadow = "0 4px 14px rgba(30, 64, 175, 0.3)";
+
+        matchSection.style.display = "none";
+        tournamentSection.style.display = "none";
+        maintenanceSection.style.display = "none";
 
         if (tab === "matches") {
           matchSection.style.display = "grid";
-          tournamentSection.style.display = "none";
-        } else {
-          matchSection.style.display = "none";
+        } else if (tab === "tournaments") {
           tournamentSection.style.display = "grid";
           renderTournamentTeamSelection();
           refreshTournaments();
+        } else if (tab === "maintenance") {
+          maintenanceSection.style.display = "grid";
         }
       });
+    });
+
+    // Maintenance Handlers
+    cleanupRangeSelect.addEventListener("change", () => {
+      customDateRangeEl.style.display = cleanupRangeSelect.value === "custom" ? "flex" : "none";
+    });
+
+    executeCleanupBtn.addEventListener("click", async () => {
+      const nodes = [];
+      if (cleanupMatchesCb.checked) nodes.push("matches");
+      if (cleanupTournamentsCb.checked) nodes.push("tournaments");
+
+      if (nodes.length === 0) {
+        alert("Please select at least one data node to clear.");
+        return;
+      }
+
+      if (!confirm("Are you sure you want to delete this data? This action is permanent!")) {
+        return;
+      }
+
+      executeCleanupBtn.disabled = true;
+      executeCleanupBtn.textContent = "Processing...";
+      cleanupLogsEl.innerHTML = "<div style='color: #4caf50;'>[SYSTEM] Cleanup started...</div>";
+
+      try {
+        const payload = {
+          nodes,
+          dateRange: cleanupRangeSelect.value,
+          startDate: cleanupStartInput.value,
+          endDate: cleanupEndInput.value
+        };
+
+        const result = await postJson("/api/admin/cleanup", payload);
+        
+        result.results.forEach(msg => {
+          const div = document.createElement("div");
+          div.textContent = "[SUCCESS] " + msg;
+          cleanupLogsEl.appendChild(div);
+        });
+        
+        const endDiv = document.createElement("div");
+        endDiv.style.color = "#888";
+        endDiv.style.marginTop = "0.5rem";
+        endDiv.textContent = "[SYSTEM] Cleanup finished at " + new Date().toLocaleTimeString();
+        cleanupLogsEl.appendChild(endDiv);
+
+      } catch (error) {
+        const div = document.createElement("div");
+        div.style.color = "#e53935";
+        div.textContent = "[ERROR] " + error.message;
+        cleanupLogsEl.appendChild(div);
+      } finally {
+        executeCleanupBtn.disabled = false;
+        executeCleanupBtn.textContent = "Execute Cleanup";
+        await refresh();
+        await refreshTournaments();
+      }
     });
 
     function renderTournamentTeamSelection() {
