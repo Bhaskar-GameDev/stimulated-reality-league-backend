@@ -35,7 +35,6 @@ async function createTournament({ templateKey, season, teams, tournamentName, fi
     standings: {},
     stats: { playerStats: {} },
     currentRound: 1,
-    stage: "league",
     createdAt: new Date().toISOString()
   };
 
@@ -85,15 +84,16 @@ async function runNextMatch(tournamentId) {
     const teamBPlayers = resolvePlayingXI(teamBEntry, [], format);
 
 
-    // Call match engine with correct parameters
+    // Call match engine with correct parameter order: (matchId, teamA, teamB, options)
     const result = await startMatch(fixture.matchId, teamAPlayers, teamBPlayers, {
       teamAName: fixture.teamA.name,
       teamBName: fixture.teamB.name,
       matchType: tournament.overs === 20 ? "T20" : "ODI",
       oversLimit: tournament.overs || 20,
       venue: fixture.venue,
-      isKnockout: fixture.stage !== "league",
-      isFinal: fixture.stage === "Final"
+      city: fixture.city,
+      dayNight: fixture.dayNight,
+      environmentalEffects: fixture.environmentalEffects
     });
 
     await processMatchResult(tournamentId, nextFixtureIndex, result);
@@ -110,11 +110,10 @@ async function processMatchResult(tournamentId, fixtureIndex, rawResult) {
   const tournament = tournamentSnap.val();
   const fixture = tournament.fixtures[fixtureIndex];
 
-  // 1. Update Standings / Stats
+  // Map raw result to standings engine format
   const standingsResult = {
     teamA: { id: fixture.teamA.id, name: fixture.teamA.name },
     teamB: { id: fixture.teamB.id, name: fixture.teamB.name },
-    group: fixture.group, // Pass group info
     winner: rawResult.result.winner,
     teamAScore: rawResult.firstInnings.runs,
     teamBScore: rawResult.secondInnings.runs,
@@ -122,140 +121,77 @@ async function processMatchResult(tournamentId, fixtureIndex, rawResult) {
     teamBOvers: parseFloat(rawResult.secondInnings.overs)
   };
 
-  if (fixture.stage === "league") {
-    const newStandings = standingsEngine.updateStandings(tournament.standings || {}, standingsResult);
-    await db.ref(`tournaments/${tournamentId}/standings`).set(newStandings);
-  }
+  // Update Standings (Decoupled Path)
+  const newStandings = standingsEngine.updateStandings(tournament.standings || {}, standingsResult);
+  await db.ref(`tournaments/${tournamentId}/standings`).set(newStandings);
   
+  // Update Stats (Decoupled Path)
   const newStats = statsEngine.updateTournamentStats(tournament.stats || { playerStats: {} }, rawResult);
   await db.ref(`tournaments/${tournamentId}/stats`).set(newStats);
 
-  // 2. Update Fixture Status
+  // Update Fixture Status
   await db.ref(`tournaments/${tournamentId}/fixtures/${fixtureIndex}`).update({
     status: "completed",
     winner: rawResult.result.winner,
     resultSummary: rawResult.result.margin ? `${rawResult.result.winner} won by ${rawResult.result.margin}` : "Match tied"
   });
 
-  // 3. Knockout Progression (Resolve TBDs)
-  if (fixture.stage !== "league") {
-    await resolveNextKnockoutRound(tournamentId, fixture, rawResult.result.winner);
-  }
-
-  // 4. Champion Check
-  if (fixture.stage === "Final") {
-    await db.ref(`tournaments/${tournamentId}`).update({
-      status: "completed",
-      champion: rawResult.result.winner,
-      completedAt: new Date().toISOString()
-    });
-    console.log(`[TOURNAMENT] ${rawResult.result.winner} are the CHAMPIONS!`);
-  }
-
+  // Narrative Trigger (Placeholder for Step B)
   await generateNarrative(tournamentId, rawResult);
 }
 
-async function resolveNextKnockoutRound(tournamentId, completedFixture, winner) {
-  const tournamentSnap = await db.ref(`tournaments/${tournamentId}`).once("value");
-  const tournament = tournamentSnap.val();
-  const fixtures = [...tournament.fixtures];
-  let updated = false;
 
-  if (completedFixture.stage === "Semi Final 1") {
-    const final = fixtures.find(f => f.stage === "Final");
-    if (final) { final.teamA = { id: winner, name: winner }; updated = true; }
-  } else if (completedFixture.stage === "Semi Final 2") {
-    const final = fixtures.find(f => f.stage === "Final");
-    if (final) { final.teamB = { id: winner, name: winner }; updated = true; }
-  }
-
-  if (updated) {
-    await db.ref(`tournaments/${tournamentId}/fixtures`).set(fixtures);
-  }
-}
-
-async function advanceToPlayoffs(tournamentId) {
-  const tournamentSnap = await db.ref(`tournaments/${tournamentId}`).once("value");
-  const tournament = tournamentSnap.val();
-  
-  const standings = tournament.standings || {};
-  const allTeams = standingsEngine.sortStandings(standings);
-
-  let semiFinalTeams = [];
-
-  if (tournament.format === "group_knockout") {
-    // Top 2 from Group A and Top 2 from Group B
-    const groupA = allTeams.filter(t => t.group === "A").slice(0, 2);
-    const groupB = allTeams.filter(t => t.group === "B").slice(0, 2);
-    
-    if (groupA.length < 2 || groupB.length < 2) {
-        console.error("Not enough teams in groups for playoffs");
-        await db.ref(`tournaments/${tournamentId}/status`).set("completed");
-        return;
-    }
-    
-    // SF1: A1 vs B2, SF2: B1 vs A2
-    semiFinalTeams = [
-        { teamA: groupA[0], teamB: groupB[1] }, // SF1
-        { teamB: groupB[0], teamA: groupA[1] }  // SF2
-    ];
-  } else {
-    // Standard League Top 4
-    if (allTeams.length < 4) {
-        await db.ref(`tournaments/${tournamentId}/status`).set("completed");
-        return;
-    }
-    semiFinalTeams = [
-        { teamA: allTeams[0], teamB: allTeams[3] },
-        { teamA: allTeams[1], teamB: allTeams[2] }
-    ];
-  }
-
-  const playoffs = [
-    { 
-        matchId: `SF1_${tournamentId}`, 
-        teamA: { id: semiFinalTeams[0].teamA.teamId, name: semiFinalTeams[0].teamA.teamName }, 
-        teamB: { id: semiFinalTeams[0].teamB.teamId, name: semiFinalTeams[0].teamB.teamName }, 
-        stage: "Semi Final 1", status: "scheduled",
-        utcTimestamp: new Date(Date.now() + 86400000).toISOString(),
-        venue: "Tournament Arena"
-    },
-    { 
-        matchId: `SF2_${tournamentId}`, 
-        teamA: { id: semiFinalTeams[1].teamA.teamId, name: semiFinalTeams[1].teamA.teamName }, 
-        teamB: { id: semiFinalTeams[1].teamB.teamId, name: semiFinalTeams[1].teamB.teamName }, 
-        stage: "Semi Final 2", status: "scheduled",
-        utcTimestamp: new Date(Date.now() + 172800000).toISOString(),
-        venue: "Championship Ground"
-    },
-    { 
-        matchId: `FINAL_${tournamentId}`, 
-        teamA: { id: "TBD", name: "TBD" }, 
-        teamB: { id: "TBD", name: "TBD" }, 
-        stage: "Final", status: "scheduled",
-        utcTimestamp: new Date(Date.now() + 259200000).toISOString(),
-        venue: "Lord's Cricket Ground"
-    }
-  ];
-
-  await db.ref(`tournaments/${tournamentId}`).update({
-    fixtures: [...tournament.fixtures, ...playoffs],
-    stage: "knockout"
-  });
-}
 
 async function generateNarrative(tournamentId, result) {
-  const headline = result.result.isFinal 
-    ? `HISTORIC! ${result.result.winner} crowned CHAMPIONS after defeating ${result.teamBName}!`
-    : result.result.margin 
-      ? `${result.result.winner} victory over ${result.teamBName}`
-      : `Thriller ends in tie between ${result.teamAName} and ${result.teamBName}`;
+  const headline = result.result.margin 
+    ? `${result.result.winner} dominant in victory over ${result.teamBName}`
+    : `Thriller ends in tie between ${result.teamAName} and ${result.teamBName}`;
   
   await db.ref(`narratives/${tournamentId}`).push({
     headline,
     timestamp: new Date().toISOString(),
     type: "match_report"
   });
+}
+
+async function archiveTournament(tournamentId) {
+  const tournamentSnap = await db.ref(`tournaments/${tournamentId}`).once("value");
+  const tournament = tournamentSnap.val();
+  if (!tournament) return;
+
+  const season = tournament.season || "2026";
+  const archivePath = `history/seasons/${season}/${tournamentId}`;
+
+  // Snapshot and Move
+  await db.ref(archivePath).set({
+    ...tournament,
+    archivedAt: new Date().toISOString(),
+    finalStatus: "completed"
+  });
+
+  // Clean up live node
+  await db.ref(`tournaments/${tournamentId}`).remove();
+  console.log(`Tournament ${tournamentId} archived to ${archivePath}`);
+}
+
+
+async function advanceToPlayoffs(tournamentId) {
+  const tournamentSnap = await db.ref(`tournaments/${tournamentId}`).once("value");
+  const tournament = tournamentSnap.val();
+  
+  const sorted = standingsEngine.sortStandings(tournament.standings);
+  const top4 = sorted.slice(0, 4);
+
+  // Example IPL Style Playoffs
+  const playoffs = [
+    { matchId: `PLY_Q1`, teamA: top4[0], teamB: top4[1], stage: "Qualifier 1", status: "scheduled" },
+    { matchId: `PLY_EL`, teamA: top4[2], teamB: top4[3], stage: "Eliminator", status: "scheduled" },
+    { matchId: `PLY_Q2`, teamA: "TBD", teamB: "TBD", stage: "Qualifier 2", status: "scheduled" },
+    { matchId: `PLY_FN`, teamA: "TBD", teamB: "TBD", stage: "Final", status: "scheduled" }
+  ];
+
+  await db.ref(`tournaments/${tournamentId}/fixtures`).set([...tournament.fixtures, ...playoffs]);
+  await db.ref(`tournaments/${tournamentId}/stage`).set("playoffs");
 }
 
 module.exports = { createTournament, runNextMatch, processMatchResult };

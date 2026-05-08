@@ -6,9 +6,9 @@ module.exports = {
     overs: 20
   },
   WORLD_CUP: {
-    name: "ICC T20 World Cup",
+    name: "T20 World Cup",
     format: "group_knockout",
-    groupCount: 2,
+    groupCount: 4,
     overs: 20
   },
   BBL: {

@@ -1,13 +1,12 @@
 function updateStandings(standings, result) {
-  const { teamA, teamB, winner, teamAScore, teamBScore, teamAOvers, teamBOvers, group } = result;
+  const { teamA, teamB, winner, teamAScore, teamBScore, teamAOvers, teamBOvers } = result;
 
   const update = (teamId, name, won, runsScored, oversFaced, runsConceded, oversBowled) => {
     if (!standings[teamId]) {
-      standings[teamId] = { teamId, teamName: name, played: 0, won: 0, lost: 0, points: 0, nrr: 0, runsScored: 0, oversFaced: 0, runsConceded: 0, oversBowled: 0, group };
+      standings[teamId] = { teamId, teamName: name, played: 0, won: 0, lost: 0, points: 0, nrr: 0, runsScored: 0, oversFaced: 0, runsConceded: 0, oversBowled: 0 };
     }
     const s = standings[teamId];
     s.played += 1;
-    s.group = group || s.group; // Update/Keep group
     if (won) {
       s.won += 1;
       s.points += 2;
@@ -36,8 +35,7 @@ function calculateNRR(runsScored, oversFaced, runsConceded, oversBowled) {
 function sortStandings(standings) {
   return Object.values(standings).sort((a, b) => {
     if (b.points !== a.points) return b.points - a.points;
-    if (Math.abs(b.nrr - a.nrr) > 0.001) return b.nrr - a.nrr;
-    return b.won - a.won;
+    return b.nrr - a.nrr;
   });
 }
 

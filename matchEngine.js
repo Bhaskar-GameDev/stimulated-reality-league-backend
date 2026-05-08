@@ -24,9 +24,8 @@ function getMatchPhase(over) {
 function calculateAdjustedProbabilities(batsman, bowler, context) {
   const batBase = batsman.batting?.base || DEFAULT_PROBABILITIES;
   const bowlBase = bowler.bowling?.base || DEFAULT_PROBABILITIES;
-  const momentum = context.momentum || 0; // -100 to 100
-  const isFinal = context.isFinal || false;
 
+  // Initial merge: Average of batsman's intent and bowler's restriction
   const probs = {
     "dot": (Number(batBase.dot || 0.3) + Number(bowlBase.dot || 0.4)) / 2,
     "1": (Number(batBase["1"] || 0.3) + Number(bowlBase["1"] || 0.3)) / 2,
@@ -44,56 +43,29 @@ function calculateAdjustedProbabilities(batsman, bowler, context) {
   let dotMult = 1.0;
   let wicketMult = 1.0;
 
-  // Momentum Impact: Positive momentum helps batsman, negative helps bowler
-  if (momentum > 0) {
-      boundaryMult *= (1 + momentum / 500);
-      wicketMult *= (1 - momentum / 1000);
-  } else if (momentum < 0) {
-      dotMult *= (1 + Math.abs(momentum) / 500);
-      wicketMult *= (1 + Math.abs(momentum) / 500);
-  }
-
-  // Final / Pressure Logic
-  if (isFinal) {
-      const experience = batsman.experience || 50; // 0-100
-      if (experience < 40) {
-          wicketMult *= 1.3; // Nerves for inexperienced players
-          dotMult *= 1.2;
-      } else if (experience > 80) {
-          boundaryMult *= 1.1; // Big match players thrive
-          wicketMult *= 0.9;
-      }
-      
-      // Increased pressure in death overs of a final
-      if (phase === "death") {
-          wicketMult *= 1.2;
-          dotMult *= 1.1;
-      }
-  }
-
   // Phase adjustments
   if (phase === "powerplay") {
-    boundaryMult *= 1.4;
-    dotMult *= 0.8;
-    wicketMult *= 1.1;
+    boundaryMult = 1.4;
+    dotMult = 0.8;
+    wicketMult = 1.1;
   } else if (phase === "middle") {
-    boundaryMult *= 0.9;
-    dotMult *= 0.9;
-    wicketMult *= 0.8;
+    boundaryMult = 0.9;
+    dotMult = 0.9;
+    wicketMult = 0.8;
   } else if (phase === "death") {
-    boundaryMult *= 2.2;
-    dotMult *= 0.5;
-    wicketMult *= 1.8;
+    boundaryMult = 2.2;
+    dotMult = 0.5;
+    wicketMult = 1.8;
   }
 
   // Batsman type impact
   if (batsmanType.includes("aggressive") || batsmanType.includes("hitter")) {
-    boundaryMult *= (phase === "death" ? 1.5 : 1.3); // Finishers thrive in death
+    boundaryMult *= 1.3;
     wicketMult *= 1.2;
     dotMult *= 0.9;
   } else if (batsmanType.includes("anchor")) {
     boundaryMult *= 0.8;
-    wicketMult *= (context.wicketsFallen >= 5 ? 0.4 : 0.6); // Anchors get more cautious if wickets fall
+    wicketMult *= 0.6;
     dotMult *= 1.1;
   }
 
@@ -109,12 +81,18 @@ function calculateAdjustedProbabilities(batsman, bowler, context) {
       wicketMult *= (1.0 + urgency * 0.8);
       dotMult *= (1.0 - urgency * 0.3);
     }
-    
-    // Collapse logic: if wickets are falling fast, momentum drops and pressure rises
-    if (context.wicketsFallen >= 5 && rrr > 12) {
-        wicketMult *= 1.4;
-    }
   }
+
+  // Wickets fallen pressure
+  if (context.wicketsFallen >= 7) {
+    wicketMult *= 1.5;
+    boundaryMult *= 0.7;
+  }
+
+  // Matchup: Pace vs Spin
+  const isSpin = (bowler.bowling?.type || "").toLowerCase().includes("spin");
+  const matchupScore = isSpin ? (batsman.batting?.vsSpin ?? 1.0) : (batsman.batting?.vsPace ?? 1.0);
+  boundaryMult *= matchupScore;
 
   // Apply multipliers
   probs["4"] *= boundaryMult;
@@ -150,13 +128,12 @@ function simulateBall(batsman, bowler, context) {
 }
 
 async function simulateInnings(matchId, inningNumber, batting, bowling, options = {}) {
-  const { oversLimit = 20, wicketsLimit = 10, delayMs = 100, rng, chaseTarget = null, battingTeamName, bowlingTeamName, venue, abortSignal, onBall, isFinal = false } = options;
+  const { oversLimit = 20, delayMs = 100, rng, chaseTarget = null, battingTeamName, bowlingTeamName, venue, abortSignal, onBall } = options;
   
   console.log(`[MATCH:${matchId}] Starting Inning ${inningNumber}. Target: ${isNaN(chaseTarget) || chaseTarget === null ? "N/A" : chaseTarget}`);
   const target = isNaN(chaseTarget) || chaseTarget === null ? Infinity : chaseTarget;
   
   let runs = 0, wickets = 0, ballsBowled = 0, legalBallsInOver = 0, currentOver = 0;
-  let momentum = 0; // Tracks match momentum (-100 to 100)
   let strikerIdx = 0, nonStrikerIdx = 1, nextBatsmanIdx = 2;
   
   const scorecard = { batting: {}, bowling: {}, extras: { wides: 0, noBalls: 0, byes: 0, legByes: 0 } };
@@ -172,7 +149,7 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
 
   let lastBowlerId = null;
 
-  while (currentOver < oversLimit && wickets < wicketsLimit && (chaseTarget === null || runs < chaseTarget)) {
+  while (currentOver < oversLimit && wickets < 10 && (chaseTarget === null || runs < chaseTarget)) {
     // Select bowler for the over
     const possibleBowlers = bowling.filter(p => {
         const id = p.id || p.name;
@@ -190,25 +167,19 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
 
     legalBallsInOver = 0;
     let runsThisOver = 0;
-    while (legalBallsInOver < 6 && wickets < wicketsLimit && (runs < target)) {
+    while (legalBallsInOver < 6 && wickets < 10 && (runs < target)) {
       if (abortSignal?.aborted) return;
 
       const batsman = batting[strikerIdx];
       const context = {
         currentOver, currentBallInOver: legalBallsInOver, totalOvers: oversLimit, 
         wicketsFallen: wickets, isChasing: chaseTarget !== null, target: chaseTarget, 
-        currentScore: runs, momentum, isFinal, rng
+        currentScore: runs, rng
       };
 
       const result = simulateBall(batsman, bowler, context);
       let ballRuns = 0;
       let isLegal = true;
-
-      // Update Momentum
-      if (result === "4" || result === "6") momentum = Math.min(100, momentum + 15);
-      else if (result === "W") momentum = Math.max(-100, momentum - 25);
-      else if (result === "dot") momentum = Math.max(-100, momentum - 2);
-      else momentum = Math.min(100, momentum + 2);
 
       if (result === "WD") {
         runs += 1;
@@ -222,6 +193,8 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
         bowlerStats[bowlerId].runs += 1;
         runsThisOver += 1;
         isLegal = false;
+        // Simplified: next ball isn't free hit, but the batsman is safe? 
+        // User didn't specify free hit logic in detail, keeping it simple.
       } else if (result === "W") {
         wickets += 1;
         scorecard.batting[batsman.id || batsman.name].status = "out";
@@ -274,8 +247,7 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
         bowler: bowler.name,
         recentBalls,
         target: chaseTarget,
-        result,
-        momentum
+        result
       };
       updates[`matches/${matchId}/scorecard/${inningNumber}`] = {
           batting: Object.values(scorecard.batting).sort((a,b) => a.pos - b.pos),
@@ -297,13 +269,6 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
 
       await db.ref().update(updates);
       if (delayMs > 0) await new Promise(r => setTimeout(r, delayMs));
-      
-      if (result === "1" || result === "3") {
-          [strikerIdx, nonStrikerIdx] = [nonStrikerIdx, strikerIdx];
-      }
-      if (result === "W" && wickets < wicketsLimit) {
-          strikerIdx = nextBatsmanIdx - 1;
-      }
     }
 
     // Over end
@@ -331,7 +296,7 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
     await db.ref(`matches/${matchId}/commentary/${overSummaryCommId}`).set(commentaryEngine.generate(matchId, overSummary));
 
     // Rotate strike at end of over
-    if (wickets < wicketsLimit && strikerIdx !== -1 && runs < (chaseTarget || Infinity)) {
+    if (wickets < 10 && strikerIdx !== -1 && runs < (chaseTarget || Infinity)) {
         [strikerIdx, nonStrikerIdx] = [nonStrikerIdx, strikerIdx];
     }
   }
@@ -347,8 +312,8 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
 
   // Match/Innings End Commentary
   const endCommId = String(ballsBowled + (inningNumber - 1) * 120 + 1).padStart(3, "0") + "_end";
+  const endContext = inningNumber === 2 ? "match_end" : "innings_end";
   await db.ref(`matches/${matchId}/commentary/${endCommId}`).set(
-      inningNumber >= 3 ? `**SUPER OVER END!**` :
       inningNumber === 2 ? `**MATCH OVER!** ${battingTeamName} finished at ${runs}/${wickets} in ${currentOver}.${legalBallsInOver} overs.` :
       `**INNINGS OVER!** ${battingTeamName} set a target of ${runs + 1} runs.`
   );
@@ -356,73 +321,43 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
   return finalSummary;
 }
 
-async function simulateSuperOver(matchId, battingTeam, bowlingTeam, options = {}) {
-    console.log(`[SUPER OVER] ${options.battingTeamName} is batting.`);
-    return simulateInnings(matchId, options.inningNum, battingTeam, bowlingTeam, {
-        ...options,
-        oversLimit: 1,
-        wicketsLimit: 2 // Only 2 wickets allowed in Super Over
-    });
-}
-
 async function startMatch(matchId, teamA, teamB, options = {}) {
-  const { teamAName = "Team A", teamBName = "Team B", oversLimit = 20, delayMs = 100, venue = "International Stadium", isFinal = false, isKnockout = false } = options;
+  const { teamAName = "Team A", teamBName = "Team B", oversLimit = 20, delayMs = 100, venue = "International Stadium" } = options;
   const rng = createSeededRandom(matchId);
 
   const initData = {
     matchId, teamA: teamAName, teamB: teamBName, status: "running",
-    oversLimit, venue, startedAt: Date.now(), isFinal, isKnockout
+    oversLimit, venue, startedAt: Date.now()
   };
   await db.ref(`matches/${matchId}/meta`).set(initData);
   await db.ref(`matches/list/${matchId}`).set(initData);
 
   // Innings 1: Team A bats
   const firstInnings = await simulateInnings(matchId, 1, teamA, teamB, {
-      oversLimit, delayMs, rng, battingTeamName: teamAName, bowlingTeamName: teamBName, venue, isFinal
+      oversLimit, delayMs, rng, battingTeamName: teamAName, bowlingTeamName: teamBName, venue
   });
 
   // Innings 2: Team B bats
   const secondInnings = await simulateInnings(matchId, 2, teamB, teamA, {
-      oversLimit, delayMs, rng, chaseTarget: firstInnings.runs + 1, battingTeamName: teamBName, bowlingTeamName: teamAName, venue, isFinal
+      oversLimit, delayMs, rng, chaseTarget: firstInnings.runs + 1, battingTeamName: teamBName, bowlingTeamName: teamAName, venue
   });
 
   // Calculate Result
-  let winner = null, margin = "", isSuperOver = false;
+  let winner = null, margin = "";
   if (secondInnings.runs >= firstInnings.runs + 1) {
       winner = teamBName;
       const wicketsLeft = 10 - secondInnings.wickets;
       const ballsLeft = (oversLimit * 6) - secondInnings.ballsBowled;
       margin = `${wicketsLeft} wickets (with ${ballsLeft} balls remaining)`;
   } else if (secondInnings.runs === firstInnings.runs) {
-      if (isKnockout) {
-          let soInning = 3;
-          while (winner === null) {
-              const so1 = await simulateSuperOver(matchId, teamA.slice(0,3), teamB, { 
-                  inningNum: soInning++, battingTeamName: teamAName, bowlingTeamName: teamBName, venue, rng, delayMs 
-              });
-              const so2 = await simulateSuperOver(matchId, teamB.slice(0,3), teamA, { 
-                  inningNum: soInning++, battingTeamName: teamBName, bowlingTeamName: teamAName, venue, rng, delayMs, chaseTarget: so1.runs + 1 
-              });
-              
-              if (so2.runs > so1.runs) {
-                  winner = teamBName;
-                  margin = "Super Over";
-              } else if (so1.runs > so2.runs) {
-                  winner = teamAName;
-                  margin = "Super Over";
-              }
-              // If still tied, loop continues for another Super Over
-          }
-      } else {
-          winner = "Tie";
-          margin = "Scores level";
-      }
+      winner = "Tie";
+      margin = "Scores level";
   } else {
       winner = teamAName;
       margin = `${firstInnings.runs - secondInnings.runs} runs`;
   }
 
-  const result = { winner, margin, summary: `${winner} won by ${margin}`, isFinal, isSuperOver };
+  const result = { winner, margin, summary: `${winner} won by ${margin}` };
   await db.ref(`matches/${matchId}/result`).set(result);
   await db.ref(`matches/${matchId}/status`).set("completed");
   await db.ref(`matches/list/${matchId}`).update({ status: "completed", resultSummary: result.summary });
