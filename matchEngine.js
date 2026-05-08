@@ -1,4 +1,5 @@
 const db = require("./firebase");
+const commentaryEngine = require("./utils/commentaryEngine");
 const { createSeededRandom } = require("./utils/random");
 const DEFAULT_PROBABILITIES = {
   dot: 0.35,
@@ -364,6 +365,7 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
     chaseTarget = null,
     battingTeamName = "Team A",
     bowlingTeamName = "Team B",
+    venue = "the stadium",
     onBall = null,
     onStatusUpdate = null,
     abortSignal = null,
@@ -390,8 +392,26 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
 
   await writeDb(`matches/${matchId}/innings/${inningNumber}/meta`, inningMeta);
 
+  const maxOversPerBowler = Math.ceil(oversLimit / 5);
+  const bowlerOversCount = {};
+  let lastBowlerId = null;
+
   for (let over = 0; over < oversLimit; over++) {
-    const bowler = bowling[over % bowling.length];
+    const allBowlers = bowling.filter(p => 
+      p.role?.toLowerCase().includes("bowler") || 
+      p.role?.toLowerCase().includes("allrounder")
+    );
+    const availableBowlers = (allBowlers.length > 0 ? allBowlers : bowling.slice(-5))
+      .filter(p => (bowlerOversCount[p.id || p.name] || 0) < maxOversPerBowler)
+      .filter(p => (p.id || p.name) !== lastBowlerId);
+
+    // If no one is available (rare), pick anyone except the last bowler
+    const pickList = availableBowlers.length > 0 ? availableBowlers : 
+      (allBowlers.length > 0 ? allBowlers : bowling).filter(p => (p.id || p.name) !== lastBowlerId);
+    
+    const bowler = pickList[over % pickList.length];
+    lastBowlerId = bowler.id || bowler.name;
+    bowlerOversCount[lastBowlerId] = (bowlerOversCount[lastBowlerId] || 0) + 1;
 
     for (let ball = 0; ball < 6; ball++) {
       if (abortSignal?.aborted) break;
@@ -493,15 +513,48 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
         result: result
       });
       await pushRecentBalls(matchId, recentBalls);
-      await pushCommentary(matchId, String(ballsBowled).padStart(3, "0"),
-        result === "W"
-          ? `WICKET! ${bowler.name} to ${currentBatsman?.name}`
-          : result === "6"
-            ? `SIX! ${currentBatsman?.name} clears the rope`
-            : result === "4"
-              ? `FOUR! ${currentBatsman?.name} finds the boundary`
-              : `${ballRuns} run${ballRuns === 1 ? "" : "s"} from ${currentBatsman?.name}`
-      );
+      const commentaryText = commentaryEngine.generate(matchId, {
+        result,
+        batsman: batsman,
+        bowler: bowler,
+        battingTeam: battingTeamName,
+        bowlingTeam: bowlingTeamName,
+        venue,
+        state: {
+          runs,
+          wickets,
+          over: currentOver,
+          ball: currentBall,
+          totalOvers: oversLimit,
+          target: chaseTarget,
+          isChasing: chaseTarget !== null
+        }
+      });
+
+      await pushCommentary(matchId, String(ballsBowled).padStart(3, "0"), commentaryText);
+
+      // Over summary commentary
+      if (ball === 5 || wickets >= 10 || (chaseTarget !== null && runs >= chaseTarget)) {
+        const overSummaryText = commentaryEngine.generate(matchId, {
+          isOverEnd: true,
+          runsInOver: 0, // Placeholder, could calculate real runs in over if needed
+          batsman: batsman,
+          bowler: bowler,
+          battingTeam: battingTeamName,
+          bowlingTeam: bowlingTeamName,
+          venue,
+          state: {
+            runs,
+            wickets,
+            over: currentOver,
+            ball: currentBall,
+            totalOvers: oversLimit,
+            target: chaseTarget,
+            isChasing: chaseTarget !== null
+          }
+        });
+        await pushCommentary(matchId, `${String(ballsBowled).padStart(3, "0")}_over`, overSummaryText);
+      }
 
       if (typeof onBall === "function") {
         onBall({ matchId, inningNumber, ballData, status: { runs, wickets, over: currentOver, ball: currentBall, score, result, target: chaseTarget } });
@@ -600,6 +653,7 @@ async function startMatch(matchId, teamA, teamB, options = {}) {
     rng,
     battingTeamName: teamAName,
     bowlingTeamName: teamBName,
+    venue: options.venue || "the stadium",
     onBall,
     onStatusUpdate,
     abortSignal,
@@ -614,6 +668,7 @@ async function startMatch(matchId, teamA, teamB, options = {}) {
     chaseTarget: firstInnings.runs,
     battingTeamName: teamBName,
     bowlingTeamName: teamAName,
+    venue: options.venue || "the stadium",
     onBall,
     onStatusUpdate,
     abortSignal,

@@ -206,10 +206,16 @@ function resolvePlayingXI(teamEntry, selectedIds) {
     throw new Error(`${teamEntry.name} does not have enough players to select a playing 11.`);
   }
 
-  const fallbackIds = squad.slice(0, 11).map(player => player.id);
-  const requestedIds = Array.isArray(selectedIds) && selectedIds.length > 0
-    ? selectedIds.map(id => String(id))
-    : fallbackIds;
+  // Priority: 1. Explicitly selected IDs, 2. Saved lineup for this team, 3. First 11 in squad
+  let requestedIds = [];
+  if (Array.isArray(selectedIds) && selectedIds.length > 0) {
+    requestedIds = selectedIds.map(id => String(id));
+  } else if (savedLineups[teamEntry.name] && Array.isArray(savedLineups[teamEntry.name])) {
+    requestedIds = savedLineups[teamEntry.name].map(id => String(id));
+  } else {
+    requestedIds = squad.slice(0, 11).map(player => player.id);
+  }
+
   const uniqueIds = [...new Set(requestedIds)];
 
   if (uniqueIds.length !== 11) {
