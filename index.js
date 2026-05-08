@@ -1053,6 +1053,34 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    if (req.method === "POST" && requestUrl.pathname === "/api/tournaments/preview-groups") {
+      try {
+        const payload = await parseRequestBody(req);
+        const templates = require("./tournaments/tournamenttemplates");
+        const template = templates[payload.templateKey];
+        const groupCount = template.groupCount || 2;
+        
+        const validTeams = payload.teams.filter(t => t && (t.id || t.name));
+        const groups = Array.from({ length: groupCount }, () => []);
+        const teamsPerGroup = Math.ceil(validTeams.length / groupCount);
+        
+        validTeams.forEach((team, i) => {
+          const groupIdx = Math.floor(i / teamsPerGroup);
+          if (groups[groupIdx]) groups[groupIdx].push(team);
+        });
+
+        const result = groups.map((g, i) => ({
+          name: "Group " + String.fromCharCode(65 + i),
+          teams: g
+        }));
+
+        jsonResponse(res, 200, { groups: result });
+      } catch (err) {
+        jsonResponse(res, 500, { error: err.message });
+      }
+      return;
+    }
+
     res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
     res.end("Not found");
   } catch (error) {
