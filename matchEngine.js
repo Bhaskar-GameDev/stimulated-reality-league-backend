@@ -190,17 +190,20 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
 
     legalBallsInOver = 0;
     let runsThisOver = 0;
+    let currentBatsman = null;
+    let currentBowler = bowler;
+
     while (legalBallsInOver < 6 && wickets < wicketsLimit && (runs < target)) {
       if (abortSignal?.aborted) return;
 
-      const batsman = batting[strikerIdx];
+      currentBatsman = batting[strikerIdx];
       const context = {
         currentOver, currentBallInOver: legalBallsInOver, totalOvers: oversLimit, 
         wicketsFallen: wickets, isChasing: chaseTarget !== null, target: chaseTarget, 
         currentScore: runs, momentum, isFinal, rng
       };
 
-      const result = simulateBall(batsman, bowler, context);
+      const result = simulateBall(currentBatsman, currentBowler, context);
       let ballRuns = 0;
       let isLegal = true;
 
@@ -224,8 +227,8 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
         isLegal = false;
       } else if (result === "W") {
         wickets += 1;
-        scorecard.batting[batsman.id || batsman.name].status = "out";
-        scorecard.batting[batsman.id || batsman.name].balls += 1;
+        scorecard.batting[currentBatsman.id || currentBatsman.name].status = "out";
+        scorecard.batting[currentBatsman.id || currentBatsman.name].balls += 1;
         bowlerStats[bowlerId].balls += 1;
         bowlerStats[bowlerId].wickets += 1;
         
@@ -242,7 +245,7 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
         bowlerStats[bowlerId].runs += ballRuns;
         bowlerStats[bowlerId].balls += 1;
         
-        const batStat = scorecard.batting[batsman.id || batsman.name];
+        const batStat = scorecard.batting[currentBatsman.id || currentBatsman.name];
         batStat.runs += ballRuns;
         batStat.balls += 1;
         if (ballRuns === 4) batStat.fours += 1;
@@ -271,7 +274,7 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
         inning: inningNumber, runs, wickets, overs: `${currentOver}.${legalBallsInOver}`,
         striker: batting[strikerIdx]?.name || "None",
         nonStriker: batting[nonStrikerIdx]?.name || "None",
-        bowler: bowler.name,
+        bowler: currentBowler.name,
         recentBalls,
         target: chaseTarget,
         result,
@@ -287,7 +290,7 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
       // Commentary
       const commId = String(ballsBowled + (inningNumber - 1) * 120).padStart(3, "0");
       updates[`matches/${matchId}/commentary/${commId}`] = commentaryEngine.generate(matchId, {
-          result, batsman, bowler, battingTeam: battingTeamName, bowlingTeam: bowlingTeamName, venue,
+          result, batsman: currentBatsman, bowler: currentBowler, battingTeam: battingTeamName, bowlingTeam: bowlingTeamName, venue,
           state: { 
             runs, wickets, over: currentOver, ball: legalBallsInOver, 
             target: chaseTarget, isChasing: chaseTarget !== null,
@@ -301,9 +304,6 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
       if (result === "1" || result === "3") {
           [strikerIdx, nonStrikerIdx] = [nonStrikerIdx, strikerIdx];
       }
-      if (result === "W" && wickets < wicketsLimit) {
-          strikerIdx = nextBatsmanIdx - 1;
-      }
     }
 
     // Over end
@@ -316,8 +316,8 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
     const overSummary = {
         result: "dot", // dummy
         isOverEnd: true,
-        batsman,
-        bowler,
+        batsman: currentBatsman,
+        bowler: currentBowler,
         battingTeam: battingTeamName,
         bowlingTeam: bowlingTeamName,
         venue,
