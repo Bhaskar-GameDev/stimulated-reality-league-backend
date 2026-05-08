@@ -31,7 +31,6 @@ const teamOptions = Object.values(teamCatalog)
 
 let activeMatches = new Map(); // matchId -> match state object
 let schedules = loadSchedules();
-let savedLineups = loadLineups();
 let scheduledJobs = {};
 let liveLogs = [];
 let nextScheduleId = schedules.reduce((max, item) => Math.max(max, item.id || 0), 0) + 1;
@@ -96,11 +95,11 @@ setInterval(async () => {
   firebaseLineups = await fetchLineupsFromFirebase();
 }, 60000); // Update every minute
 
-function saveLineups() {
+async function saveLineupsToFirebase(teamName, lineupIds) {
   try {
-    fs.writeFileSync(LINEUPS_PATH, JSON.stringify(savedLineups, null, 2), "utf8");
+    await db.ref(`lineups/${teamName}`).set(lineupIds);
   } catch (error) {
-    console.error("Unable to save lineups:", error.message);
+    console.error("Failed to save lineup to Firebase:", error.message);
   }
 }
 
@@ -737,7 +736,7 @@ const server = http.createServer(async (req, res) => {
     const summary = {
       activeMatchCount: activeMatchList.length,
       statusCounts,
-      savedLineupCount: Object.keys(savedLineups).length,
+      savedLineupCount: Object.keys(firebaseLineups).length,
       teamCount: Object.keys(teamCatalog).length,
       uptimeSeconds: Math.floor((Date.now() - new Date(serverStartedAt).getTime()) / 1000),
       nextScheduledMatch: schedules
@@ -799,7 +798,7 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (req.method === "GET" && requestUrl.pathname === "/api/lineups") {
-    jsonResponse(res, 200, savedLineups);
+    jsonResponse(res, 200, firebaseLineups);
     return;
   }
 
@@ -809,8 +808,8 @@ const server = http.createServer(async (req, res) => {
       if (!payload.teamName || !Array.isArray(payload.lineupIds) || payload.lineupIds.length !== 11) {
         throw new Error("Invalid lineup data. Need teamName and exactly 11 lineupIds.");
       }
-      savedLineups[payload.teamName] = payload.lineupIds;
-      saveLineups();
+      firebaseLineups[payload.teamName] = payload.lineupIds;
+      await saveLineupsToFirebase(payload.teamName, payload.lineupIds);
       jsonResponse(res, 200, { message: "Lineup saved successfully." });
     } catch (error) {
       jsonResponse(res, error.statusCode || 400, { error: error.message });
