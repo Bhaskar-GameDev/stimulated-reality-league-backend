@@ -114,6 +114,7 @@ async function processMatchResult(tournamentId, fixtureIndex, rawResult) {
   const standingsResult = {
     teamA: { id: fixture.teamA.id, name: fixture.teamA.name },
     teamB: { id: fixture.teamB.id, name: fixture.teamB.name },
+    group: fixture.group, // Pass group info
     winner: rawResult.result.winner,
     teamAScore: rawResult.firstInnings.runs,
     teamBScore: rawResult.secondInnings.runs,
@@ -122,7 +123,7 @@ async function processMatchResult(tournamentId, fixtureIndex, rawResult) {
   };
 
   if (fixture.stage === "league") {
-    const newStandings = standingsEngine.updateStandings(tournament.standings || {}, standingsResult, fixture.group);
+    const newStandings = standingsEngine.updateStandings(tournament.standings || {}, standingsResult);
     await db.ref(`tournaments/${tournamentId}/standings`).set(newStandings);
   }
   
@@ -177,33 +178,55 @@ async function advanceToPlayoffs(tournamentId) {
   const tournamentSnap = await db.ref(`tournaments/${tournamentId}`).once("value");
   const tournament = tournamentSnap.val();
   
-  const sorted = standingsEngine.sortStandings(tournament.standings);
-  const groupA = sorted.filter(s => s.group === "A").slice(0, 2);
-  const groupB = sorted.filter(s => s.group === "B").slice(0, 2);
+  const standings = tournament.standings || {};
+  const allTeams = standingsEngine.sortStandings(standings);
 
-  if (groupA.length < 2 || groupB.length < 2) {
-    console.error("Not enough teams qualified for knockouts");
-    await db.ref(`tournaments/${tournamentId}/status`).set("completed");
-    return;
+  let semiFinalTeams = [];
+
+  if (tournament.format === "group_knockout") {
+    // Top 2 from Group A and Top 2 from Group B
+    const groupA = allTeams.filter(t => t.group === "A").slice(0, 2);
+    const groupB = allTeams.filter(t => t.group === "B").slice(0, 2);
+    
+    if (groupA.length < 2 || groupB.length < 2) {
+        console.error("Not enough teams in groups for playoffs");
+        await db.ref(`tournaments/${tournamentId}/status`).set("completed");
+        return;
+    }
+    
+    // SF1: A1 vs B2, SF2: B1 vs A2
+    semiFinalTeams = [
+        { teamA: groupA[0], teamB: groupB[1] }, // SF1
+        { teamB: groupB[0], teamA: groupA[1] }  // SF2
+    ];
+  } else {
+    // Standard League Top 4
+    if (allTeams.length < 4) {
+        await db.ref(`tournaments/${tournamentId}/status`).set("completed");
+        return;
+    }
+    semiFinalTeams = [
+        { teamA: allTeams[0], teamB: allTeams[3] },
+        { teamA: allTeams[1], teamB: allTeams[2] }
+    ];
   }
 
-  // Generate Semi Finals (Winner A vs Runner B, Winner B vs Runner A)
   const playoffs = [
     { 
         matchId: `SF1_${tournamentId}`, 
-        teamA: { id: groupA[0].teamId, name: groupA[0].teamName }, 
-        teamB: { id: groupB[1].teamId, name: groupB[1].teamName }, 
+        teamA: { id: semiFinalTeams[0].teamA.teamId, name: semiFinalTeams[0].teamA.teamName }, 
+        teamB: { id: semiFinalTeams[0].teamB.teamId, name: semiFinalTeams[0].teamB.teamName }, 
         stage: "Semi Final 1", status: "scheduled",
         utcTimestamp: new Date(Date.now() + 86400000).toISOString(),
-        venue: "Semi Final Grounds 1"
+        venue: "Tournament Arena"
     },
     { 
         matchId: `SF2_${tournamentId}`, 
-        teamA: { id: groupB[0].teamId, name: groupB[0].teamName }, 
-        teamB: { id: groupA[1].teamId, name: groupA[1].teamName }, 
+        teamA: { id: semiFinalTeams[1].teamA.teamId, name: semiFinalTeams[1].teamA.teamName }, 
+        teamB: { id: semiFinalTeams[1].teamB.teamId, name: semiFinalTeams[1].teamB.teamName }, 
         stage: "Semi Final 2", status: "scheduled",
         utcTimestamp: new Date(Date.now() + 172800000).toISOString(),
-        venue: "Semi Final Grounds 2"
+        venue: "Championship Ground"
     },
     { 
         matchId: `FINAL_${tournamentId}`, 
@@ -211,7 +234,7 @@ async function advanceToPlayoffs(tournamentId) {
         teamB: { id: "TBD", name: "TBD" }, 
         stage: "Final", status: "scheduled",
         utcTimestamp: new Date(Date.now() + 259200000).toISOString(),
-        venue: "Tournament Final Stadium"
+        venue: "Lord's Cricket Ground"
     }
   ];
 

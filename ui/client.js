@@ -621,45 +621,6 @@ module.exports = `
       });
     }
 
-    const previewGroupsBtn = document.getElementById("previewGroupsBtn");
-    const previewGroupsCard = document.getElementById("previewGroupsCard");
-    const groupsDisplay = document.getElementById("groupsDisplay");
-
-    previewGroupsBtn.addEventListener("click", async () => {
-      if (selectedTournamentTeams.size < 2) {
-        alert("Please select at least 2 teams.");
-        return;
-      }
-
-      const template = document.getElementById("tournamentTemplate").value;
-      try {
-        previewGroupsBtn.disabled = true;
-        previewGroupsBtn.textContent = "Wait...";
-
-        const result = await postJson("/api/tournaments/preview-groups", {
-          templateKey: template,
-          teams: Array.from(selectedTournamentTeams).map(name => ({ id: name, name }))
-        });
-
-        groupsDisplay.innerHTML = result.groups.map(g => (
-          '<div>'
-            + '<h4 style="color: var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 0.3rem;">' + escapeHtml(g.name) + '</h4>'
-            + '<ul style="list-style: none; padding: 0.5rem 0; margin: 0;">'
-              + g.teams.map(t => '<li style="padding: 0.25rem 0; font-weight: 500; font-size: 0.9rem;">• ' + escapeHtml(t.name) + '</li>').join("")
-            + '</ul>'
-          + '</div>'
-        )).join("");
-
-        previewGroupsCard.style.display = "block";
-        previewGroupsCard.scrollIntoView({ behavior: "smooth" });
-      } catch (error) {
-        alert(error.message);
-      } finally {
-        previewGroupsBtn.disabled = false;
-        previewGroupsBtn.textContent = "Preview Groups";
-      }
-    });
-
     generateTournamentBtn.addEventListener("click", async () => {
       if (selectedTournamentTeams.size < 2) {
         alert("Please select at least 2 teams.");
@@ -694,11 +655,7 @@ module.exports = `
     });
 
     function renderFixturePreview(fixtures) {
-      const groupA = fixtures.filter(f => f.group === "A");
-      const groupB = fixtures.filter(f => f.group === "B");
-      const knockouts = fixtures.filter(f => f.group !== "A" && f.group !== "B");
-
-      const renderMatch = (f) => (
+      fixturesListEl.innerHTML = fixtures.map((f, i) => (
         '<div class="match-card" style="margin-bottom: 0.5rem; background: white; border: 1px solid var(--gray-200);">'
           + '<div>'
             + '<strong style="color: var(--primary); font-size: 0.8rem; text-transform: uppercase;">' + (f.stage === "league" ? "Round " + f.round : f.stage) + '</strong>'
@@ -708,20 +665,7 @@ module.exports = `
             + '<span class="pill scheduled">Pending</span>'
           + '</div>'
         + '</div>'
-      );
-
-      let html = "";
-      if (groupA.length) {
-        html += '<h3 style="margin: 1.5rem 0 0.5rem; color: var(--primary); font-size: 1rem;">Group A Fixtures</h3>' + groupA.map(renderMatch).join("");
-      }
-      if (groupB.length) {
-        html += '<h3 style="margin: 1.5rem 0 0.5rem; color: var(--primary); font-size: 1rem;">Group B Fixtures</h3>' + groupB.map(renderMatch).join("");
-      }
-      if (knockouts.length) {
-        html += '<h3 style="margin: 1.5rem 0 0.5rem; color: #b71c1c; font-size: 1rem;">Knockout Stage</h3>' + knockouts.map(renderMatch).join("");
-      }
-
-      fixturesListEl.innerHTML = html || "<p class='note'>No fixtures generated.</p>";
+      )).join("");
     }
 
     saveTournamentBtn.addEventListener("click", async () => {

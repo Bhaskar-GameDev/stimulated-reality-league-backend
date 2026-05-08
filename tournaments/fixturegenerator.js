@@ -34,12 +34,8 @@ function generateRoundRobin(teams, rounds = 1) {
 function generateGroups(teams, groupCount) {
   const validTeams = teams.filter(t => t && (t.id || t.name));
   const groups = Array.from({ length: groupCount }, () => []);
-  
-  const teamsPerGroup = Math.ceil(validTeams.length / groupCount);
-  validTeams.forEach((team, i) => {
-    const groupIdx = Math.floor(i / teamsPerGroup);
-    if (groups[groupIdx]) groups[groupIdx].push(team);
-  });
+  validTeams.forEach((team, i) => groups[i % groupCount].push(team));
+
 
   let fixtures = [];
   groups.forEach((group, i) => {
@@ -50,47 +46,47 @@ function generateGroups(teams, groupCount) {
   return { groups, fixtures };
 }
 
-function generateWorldCupFixtures(groups) {
+function generateT20WorldCupFixtures(teams) {
+  const groupA_Names = ["India", "Australia", "Bangladesh", "Ireland", "Scotland", "Netherlands"];
+  const groupB_Names = ["England", "Pakistan", "New Zealand", "South Africa", "Sri Lanka", "West Indies"];
+
+  const getTeam = (name) => {
+    return teams.find(t => t.name.includes(name)) || { id: name, name: name };
+  };
+
+  const groupA = groupA_Names.map(getTeam);
+  const groupB = groupB_Names.map(getTeam);
+
   const fixtures = [];
-  
-  // Group A (Group 0) - Indices: 0:Ind, 1:Aus, 2:Ban, 3:Ire, 4:Sco, 5:Net
-  const groupA = groups[0];
-  const orderA = [
-    [0, 1], [2, 3], [4, 5], // Matches 1-3
-    [0, 2], [1, 4], [3, 5], // Matches 4-6
-    [0, 4], [1, 5], [2, 4], // Matches 7-9
-    [3, 0], [1, 2], [5, 0], // Matches 10-12
-    [3, 4], [2, 5], [1, 3]  // Matches 13-15
+
+  // GROUP A FIXTURES
+  const groupA_Matches = [
+    [0, 1], [2, 3], [4, 5], [0, 2], [1, 4], [3, 5], [0, 4], [1, 5], [2, 4], [3, 0], [1, 2], [5, 0], [3, 4], [2, 5], [1, 3]
   ];
 
-  orderA.forEach((pair, i) => {
+  groupA_Matches.forEach((m, i) => {
     fixtures.push({
-      matchId: `WC_A_${i+1}`,
-      teamA: groupA[pair[0]],
-      teamB: groupA[pair[1]],
-      round: Math.floor(i / 3) + 1,
+      matchId: `WC_A_${i + 1}`,
+      teamA: groupA[m[0]],
+      teamB: groupA[m[1]],
+      round: i + 1,
       status: "scheduled",
       stage: "league",
       group: "A"
     });
   });
 
-  // Group B (Group 1) - Indices: 0:Eng, 1:Pak, 2:NZ, 3:SA, 4:SL, 5:WI
-  const groupB = groups[1];
-  const orderB = [
-    [0, 1], [2, 3], [4, 5], // Matches 16-18
-    [0, 2], [1, 4], [3, 5], // Matches 19-21
-    [0, 3], [1, 5], [2, 4], // Matches 22-24
-    [0, 4], [1, 3], [5, 2], // Matches 25-27
-    [0, 5], [3, 4], [1, 2]  // Matches 28-30
+  // GROUP B FIXTURES
+  const groupB_Matches = [
+    [0, 1], [2, 3], [4, 5], [0, 2], [1, 4], [3, 5], [0, 3], [1, 5], [2, 4], [0, 4], [1, 3], [5, 2], [0, 5], [3, 4], [1, 2]
   ];
 
-  orderB.forEach((pair, i) => {
+  groupB_Matches.forEach((m, i) => {
     fixtures.push({
-      matchId: `WC_B_${i+16}`,
-      teamA: groupB[pair[0]],
-      teamB: groupB[pair[1]],
-      round: Math.floor(i / 3) + 1,
+      matchId: `WC_B_${i + 16}`,
+      teamA: groupB[m[0]],
+      teamB: groupB[m[1]],
+      round: i + 1,
       status: "scheduled",
       stage: "league",
       group: "B"
@@ -107,9 +103,8 @@ function createFullTournamentSchedule(teams, options = {}) {
   const { format = "round_robin", rounds = 1, startDate = new Date(), country = "India" } = options;
   
   let rawFixtures;
-  if (format === "group_knockout" && teams.length === 12) {
-    const { groups } = generateGroups(teams, 2);
-    rawFixtures = generateWorldCupFixtures(groups);
+  if (options.templateKey === "WORLD_CUP") {
+    rawFixtures = generateT20WorldCupFixtures(teams);
   } else if (format === "groups" || format === "group_knockout") {
     const { fixtures } = generateGroups(teams, options.groupCount || 2);
     rawFixtures = fixtures;
@@ -121,10 +116,10 @@ function createFullTournamentSchedule(teams, options = {}) {
   return scheduleFixtures(rawFixtures, startDate, {
     country,
     doubleHeaderWeekends: true,
-    matchesPerDay: 1,
+    matchesPerDay: 2, // 2 matches per day for World Cup feel
     restDayFrequency: 10
   });
 }
 
-module.exports = { generateRoundRobin, generateGroups, createFullTournamentSchedule };
+module.exports = { generateRoundRobin, generateGroups, createFullTournamentSchedule, generateT20WorldCupFixtures };
 

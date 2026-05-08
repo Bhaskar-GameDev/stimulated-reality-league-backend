@@ -176,16 +176,8 @@ ${styles}
               </div>
             </div>
 
-            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-              <button type="button" id="previewGroupsBtn" class="btn btn-secondary" style="flex: 1;">Preview Groups</button>
-              <button type="button" id="generateTournamentBtn" class="btn btn-primary" style="flex: 2;">Generate Season Fixtures</button>
-            </div>
+            <button type="button" id="generateTournamentBtn" class="btn btn-primary btn-full" style="margin-top: 1rem;">Generate Season Fixtures</button>
           </form>
-        </div>
-
-        <div id="previewGroupsCard" class="card" style="display: none; margin-top: 1.5rem; background: #f8fafc; border: 1px dashed var(--primary);">
-          <h2 class="card-title" style="font-size: 1.1rem; color: var(--primary);">Group Assignments</h2>
-          <div id="groupsDisplay" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1rem;"></div>
         </div>
 
         <div id="tournamentFixturesCard" class="card" style="display: none; margin-top: 2rem;">

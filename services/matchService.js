@@ -28,42 +28,42 @@ function resolvePlayingXI(teamEntry, selectedIds, format = "T20") {
   }
 
   const squadById = new Map(squad.map(p => [String(p.id), p]));
-  const squadBySlug = new Map(squad.map(p => [String(p.id).split('_').pop(), p])); // Fallback to name slug
-  
   let requestedIds = [];
   
-  const saved = lineupService.getLineup(teamEntry.name);
-  if (Array.isArray(saved) && saved.length === 11) {
-    requestedIds = saved.map(id => String(id));
-  } else {
-    const sortedSquad = [...squad].sort((a, b) => {
-      const pA = ROLE_PRIORITY[(a.role || "").toLowerCase()] || 99;
-      const pB = ROLE_PRIORITY[(b.role || "").toLowerCase()] || 99;
-      return pA - pB;
-    });
-    requestedIds = sortedSquad.slice(0, 11).map(player => String(player.id));
+  // 1. Priority: Explicitly selected 11 IDs
+  if (Array.isArray(selectedIds) && selectedIds.length === 11) {
+    requestedIds = selectedIds.map(id => String(id));
+  } 
+  // 2. Priority: Saved lineup from lineupService
+  else {
+    const saved = lineupService.getLineup(teamEntry.name);
+    if (Array.isArray(saved) && saved.length === 11) {
+      requestedIds = saved.map(id => String(id));
+    } 
+    // 3. Fallback: Role-based default selection
+    else {
+      const sortedSquad = [...squad].sort((a, b) => {
+        const pA = ROLE_PRIORITY[(a.role || "").toLowerCase()] || 99;
+        const pB = ROLE_PRIORITY[(b.role || "").toLowerCase()] || 99;
+        return pA - pB;
+      });
+      requestedIds = sortedSquad.slice(0, 11).map(player => String(player.id));
+    }
   }
 
+  // Resolve players and filter out invalid ones
   let finalXI = [];
   const seenIds = new Set();
   
   for (const id of requestedIds) {
-    // Try direct ID match
-    let player = squadById.get(id);
-    
-    // Fallback: Try matching by the name part of the ID (last segment)
-    if (!player) {
-        const slug = id.split('_').pop();
-        player = squadBySlug.get(slug);
-    }
-
+    const player = squadById.get(id);
     if (player && !seenIds.has(String(player.id))) {
       finalXI.push(player);
       seenIds.add(String(player.id));
     }
   }
 
-  // If still under 11, fill with best available
+  // If we don't have 11 (e.g. invalid IDs or duplicates in saved lineup), fill from squad
   if (finalXI.length < 11) {
     const sortedSquad = [...squad].sort((a, b) => {
       const pA = ROLE_PRIORITY[(a.role || "").toLowerCase()] || 99;
