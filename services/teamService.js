@@ -6,19 +6,41 @@ const path = require('path');
 
 const teamCatalog = {};
 
+function slugify(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "") || "player";
+}
+
+function buildPlayerId(teamName, playerName, index) {
+  return `${slugify(teamName)}_${String(index + 1).padStart(2, "0")}_${slugify(playerName)}`;
+}
+
+function normalizeSquadPlayer(teamName, player, index) {
+  const name = String(player?.name || `Player ${index + 1}`);
+  return {
+    ...player,
+    id: buildPlayerId(teamName, name, index),
+    name,
+    role: player?.role || "player",
+    type: player?.type || "balanced"
+  };
+}
+
 function loadTeamCatalog() {
   try {
     const data = JSON.parse(fs.readFileSync(path.join(__dirname, '../teams.json'), 'utf8'));
     // Clear existing data without reassigning the object reference
     Object.keys(teamCatalog).forEach(key => delete teamCatalog[key]);
     
-
-    
     // Normalize and flatten teams
     if (data.men) {
       Object.entries(data.men).forEach(([name, teamData]) => {
-        const players = Array.isArray(teamData) ? teamData : (teamData.players || []);
         const displayName = `${name} (men)`;
+        const players = (Array.isArray(teamData) ? teamData : (teamData.players || []))
+          .map((p, idx) => normalizeSquadPlayer(displayName, p, idx));
+          
         teamCatalog[displayName] = { 
           name: displayName, 
           players, 
@@ -29,8 +51,10 @@ function loadTeamCatalog() {
     }
     if (data.women) {
       Object.entries(data.women).forEach(([name, teamData]) => {
-        const players = Array.isArray(teamData) ? teamData : (teamData.players || []);
         const displayName = `${name} (women)`;
+        const players = (Array.isArray(teamData) ? teamData : (teamData.players || []))
+          .map((p, idx) => normalizeSquadPlayer(displayName, p, idx));
+
         teamCatalog[displayName] = { 
           name: displayName, 
           players, 
@@ -39,7 +63,6 @@ function loadTeamCatalog() {
         };
       });
     }
-
 
     console.log(`Loaded ${Object.keys(teamCatalog).length} teams into catalog.`);
   } catch (error) {

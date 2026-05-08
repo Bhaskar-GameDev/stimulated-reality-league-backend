@@ -157,7 +157,7 @@ function normalizeSquadPlayer(teamName, player, index) {
   const name = String(player?.name || `Player ${index + 1}`);
   return {
     ...player,
-    id: player?.id || buildPlayerId(teamName, name, index),
+    id: buildPlayerId(teamName, name, index),
     name,
     role: player?.role || "player",
     type: player?.type || "balanced"
