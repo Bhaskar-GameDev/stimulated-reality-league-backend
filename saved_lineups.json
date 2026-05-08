@@ -41,7 +41,7 @@
   "Sri Lanka (men)": [
     "PL_41c3b4ef37",
     "PL_7cce000342",
-    "PL_4a2f967579",
+    "PL_de0ef362d4",
     "PL_37e3ce000f",
     "PL_bbc725d7e5",
     "PL_0147049815",
@@ -167,5 +167,18 @@
     "united_states_of_america_men_14_ali_khan",
     "united_states_of_america_men_08_sn_netravalkar",
     "united_states_of_america_men_07_jasdeep_singh"
+  ],
+  "Afghanistan (men)": [
+    "afghanistan_men_01_rahmanullah_gurbaz",
+    "afghanistan_men_02_ibrahim_zadran",
+    "afghanistan_men_03_gulbadin_naib",
+    "afghanistan_men_04_azmatullah_omarzai",
+    "afghanistan_men_05_mohammad_nabi",
+    "afghanistan_men_06_najibullah_zadran",
+    "afghanistan_men_07_rashid_khan",
+    "afghanistan_men_08_noor_ahmad",
+    "afghanistan_men_09_naveen_ul_haq",
+    "afghanistan_men_10_fazalhaq_farooqi",
+    "afghanistan_men_11_mujeeb_ur_rahman"
   ]
 }
