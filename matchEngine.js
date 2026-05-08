@@ -342,7 +342,7 @@ function formatOvers(ballsBowled) {
   return ballsInCurrentOver === 0 ? `${oversCompleted}` : `${oversCompleted}.${ballsInCurrentOver}`;
 }
 
-function updateBattingStats(scorecard, batsman, ballRuns, result) {
+function updateBattingStats(scorecard, batsman, ballRuns, result, pos) {
   const key = batsman.id || batsman.name;
   const existing = scorecard.batting[key] || {
     name: batsman.name,
@@ -351,7 +351,8 @@ function updateBattingStats(scorecard, batsman, ballRuns, result) {
     fours: 0,
     sixes: 0,
     strikeRate: 0,
-    isOut: false
+    isOut: false,
+    pos: pos !== undefined ? pos : 99 // Position in playing order
   };
 
   existing.runs += ballRuns;
@@ -363,7 +364,7 @@ function updateBattingStats(scorecard, batsman, ballRuns, result) {
   scorecard.batting[key] = existing;
 }
 
-function updateBowlingStats(scorecard, bowler, ballRuns, result) {
+function updateBowlingStats(scorecard, bowler, ballRuns, result, pos) {
   const key = bowler.id || bowler.name;
   const existing = scorecard.bowling[key] || {
     name: bowler.name,
@@ -371,7 +372,8 @@ function updateBowlingStats(scorecard, bowler, ballRuns, result) {
     overs: "0",
     runs: 0,
     wickets: 0,
-    economy: 0
+    economy: 0,
+    pos: pos !== undefined ? pos : 99
   };
 
   existing.balls += 1;
@@ -403,6 +405,10 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
   let nonStriker = 1;
   let nextBatsman = 2;
   let ballsBowled = 0;
+  let partnershipRuns = 0;
+  let partnershipBalls = 0;
+  let partnershipStrikerRuns = 0;
+  let partnershipNonStrikerRuns = 0;
   const recentBalls = {};
   let scorecard = await readDb(`matches/${matchId}/scorecard/${inningNumber}`) || { batting: {}, bowling: {} };
 
@@ -419,6 +425,8 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
 
   const maxOversPerBowler = Math.ceil(oversLimit / 5);
   const bowlerOversCount = {};
+  const bowlerOrderIndex = {}; // Track when each bowler first bowled
+  let nextBowlerPos = 0;
   let lastBowlerId = null;
 
   for (let over = 0; over < oversLimit; over++) {
@@ -448,7 +456,12 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
       bowler = available[0] || pool[0];
     }
 
-    lastBowlerId = bowler.id || bowler.name;
+    const bId = bowler.id || bowler.name;
+    if (bowlerOrderIndex[bId] === undefined) {
+      bowlerOrderIndex[bId] = nextBowlerPos++;
+    }
+
+    lastBowlerId = bId;
     bowlerOversCount[lastBowlerId] = (bowlerOversCount[lastBowlerId] || 0) + 1;
 
     for (let ball = 0; ball < 6; ball++) {
@@ -482,23 +495,40 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
     }
 );
       let ballRuns = 0;
+      partnershipBalls += 1;
 
       if (result === "1") {
         ballRuns = 1;
         runs += 1;
+        partnershipRuns += 1;
+        partnershipStrikerRuns += 1;
         [striker, nonStriker] = [nonStriker, striker];
+        [partnershipStrikerRuns, partnershipNonStrikerRuns] = [partnershipNonStrikerRuns, partnershipStrikerRuns];
       } else if (result === "2") {
         ballRuns = 2;
         runs += 2;
+        partnershipRuns += 2;
+        partnershipStrikerRuns += 2;
       } else if (result === "4") {
         ballRuns = 4;
         runs += 4;
+        partnershipRuns += 4;
+        partnershipStrikerRuns += 4;
       } else if (result === "6") {
         ballRuns = 6;
         runs += 6;
+        partnershipRuns += 6;
+        partnershipStrikerRuns += 6;
       } else if (result === "W") {
         wickets += 1;
+        partnershipRuns = 0;
+        partnershipBalls = 0;
+        partnershipStrikerRuns = 0;
+        partnershipNonStrikerRuns = 0;
         striker = nextBatsman < batting.length ? nextBatsman++ : -1;
+      } else {
+        // Dot ball
+        partnershipRuns += 0;
       }
 
       ballsBowled += 1;
@@ -537,8 +567,8 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
       };
 
       await writeDb(`matches/${matchId}/balls/${inningNumber}/${buildBallKey(currentOver, currentBall)}`, ballData);
-      updateBattingStats(scorecard, batsman, ballRuns, result);
-      updateBowlingStats(scorecard, bowler, ballRuns, result);
+      updateBattingStats(scorecard, batsman, ballRuns, result, striker);
+      updateBowlingStats(scorecard, bowler, ballRuns, result, bowlerOrderIndex[lastBowlerId]);
       await pushScorecard(matchId, inningNumber, scorecard);
       await pushCurrentState(matchId, inningNumber, {
         over: currentOver,
@@ -548,9 +578,16 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
         striker: currentBatsman,
         nonStriker: currentNonStriker,
         bowler: bowler,
-        result: result
+        result: result,
+        partnership: {
+          runs: partnershipRuns,
+          balls: partnershipBalls,
+          strikerRuns: partnershipStrikerRuns,
+          nonStrikerRuns: partnershipNonStrikerRuns
+        }
       });
       await pushRecentBalls(matchId, recentBalls);
+
       const commentaryText = commentaryEngine.generate(matchId, {
         result,
         batsman: batsman,
@@ -616,6 +653,7 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
     }
 
     [striker, nonStriker] = [nonStriker, striker];
+    [partnershipStrikerRuns, partnershipNonStrikerRuns] = [partnershipNonStrikerRuns, partnershipStrikerRuns];
   }
 
   const oversCompleted = Math.floor(ballsBowled / 6);
