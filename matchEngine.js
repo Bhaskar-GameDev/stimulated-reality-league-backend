@@ -165,7 +165,7 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
   
   // Initialize scorecard with all players (DNB)
   batting.forEach((p, i) => {
-    scorecard.batting[p.id || p.name] = { name: p.name, runs: 0, balls: 0, fours: 0, sixes: 0, strikeRate: 0, status: "DNB", pos: i };
+    scorecard.batting[p.id || p.name] = { name: p.name, runs: 0, balls: 0, fours: 0, sixes: 0, strikeRate: 0, status: "DNB", pos: i + 1 };
   });
   scorecard.batting[batting[0].id || batting[0].name].status = "not out";
   scorecard.batting[batting[1].id || batting[1].name].status = "not out";
@@ -270,6 +270,19 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
       // Update Firebase
       const ballKey = `${currentOver}_${legalBallsInOver}`;
       const updates = {};
+      
+      // Detailed Ball Record
+      updates[`matches/${matchId}/innings/${inningNumber}/balls/${ballsBowled}`] = {
+        over: currentOver,
+        ball: legalBallsInOver,
+        batsman: currentBatsman.name,
+        bowler: currentBowler.name,
+        result,
+        runs: ballRuns,
+        score: `${runs}/${wickets}`,
+        timestamp: new Date().toISOString()
+      };
+
       updates[`matches/${matchId}/snapshot`] = {
         inning: inningNumber, runs, wickets, overs: `${currentOver}.${legalBallsInOver}`,
         striker: batting[strikerIdx]?.name || "None",
@@ -278,8 +291,10 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
         recentBalls,
         target: chaseTarget,
         result,
-        momentum
+        momentum,
+        status: "running"
       };
+      
       updates[`matches/${matchId}/scorecard/${inningNumber}`] = {
           batting: Object.values(scorecard.batting).sort((a,b) => a.pos - b.pos),
           bowling: Object.values(bowlerStats),
