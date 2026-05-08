@@ -34,8 +34,12 @@ function generateRoundRobin(teams, rounds = 1) {
 function generateGroups(teams, groupCount) {
   const validTeams = teams.filter(t => t && (t.id || t.name));
   const groups = Array.from({ length: groupCount }, () => []);
-  validTeams.forEach((team, i) => groups[i % groupCount].push(team));
-
+  
+  const teamsPerGroup = Math.ceil(validTeams.length / groupCount);
+  validTeams.forEach((team, i) => {
+    const groupIdx = Math.floor(i / teamsPerGroup);
+    if (groups[groupIdx]) groups[groupIdx].push(team);
+  });
 
   let fixtures = [];
   groups.forEach((group, i) => {

@@ -1,15 +1,21 @@
-function updateStandings(standings, result) {
+function updateStandings(standings, result, group = null) {
   const { teamA, teamB, winner, teamAScore, teamBScore, teamAOvers, teamBOvers } = result;
 
   const update = (teamId, name, won, runsScored, oversFaced, runsConceded, oversBowled) => {
     if (!standings[teamId]) {
-      standings[teamId] = { teamId, teamName: name, played: 0, won: 0, lost: 0, points: 0, nrr: 0, runsScored: 0, oversFaced: 0, runsConceded: 0, oversBowled: 0 };
+      standings[teamId] = { 
+        teamId, teamName: name, played: 0, won: 0, lost: 0, points: 0, nrr: 0, 
+        runsScored: 0, oversFaced: 0, runsConceded: 0, oversBowled: 0,
+        group: group 
+      };
     }
     const s = standings[teamId];
     s.played += 1;
     if (won) {
       s.won += 1;
       s.points += 2;
+    } else if (winner === "Tie" || winner === "No Result") {
+      s.points += 1;
     } else {
       s.lost += 1;
     }
@@ -35,7 +41,9 @@ function calculateNRR(runsScored, oversFaced, runsConceded, oversBowled) {
 function sortStandings(standings) {
   return Object.values(standings).sort((a, b) => {
     if (b.points !== a.points) return b.points - a.points;
-    return b.nrr - a.nrr;
+    if (b.nrr !== a.nrr) return b.nrr - a.nrr;
+    if (b.won !== a.won) return b.won - a.won;
+    return 0; // Head-to-head would go here
   });
 }
 

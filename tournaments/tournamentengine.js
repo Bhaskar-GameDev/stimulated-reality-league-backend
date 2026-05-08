@@ -122,7 +122,7 @@ async function processMatchResult(tournamentId, fixtureIndex, rawResult) {
   };
 
   if (fixture.stage === "league") {
-    const newStandings = standingsEngine.updateStandings(tournament.standings || {}, standingsResult);
+    const newStandings = standingsEngine.updateStandings(tournament.standings || {}, standingsResult, fixture.group);
     await db.ref(`tournaments/${tournamentId}/standings`).set(newStandings);
   }
   
@@ -160,8 +160,6 @@ async function resolveNextKnockoutRound(tournamentId, completedFixture, winner) 
   const fixtures = [...tournament.fixtures];
   let updated = false;
 
-  // Find fixtures that depend on this match (using matchId references in TBD slots if implemented, 
-  // or simple positional logic for semi -> final)
   if (completedFixture.stage === "Semi Final 1") {
     const final = fixtures.find(f => f.stage === "Final");
     if (final) { final.teamA = { id: winner, name: winner }; updated = true; }
@@ -180,39 +178,40 @@ async function advanceToPlayoffs(tournamentId) {
   const tournament = tournamentSnap.val();
   
   const sorted = standingsEngine.sortStandings(tournament.standings);
-  const top4 = sorted.slice(0, 4);
+  const groupA = sorted.filter(s => s.group === "A").slice(0, 2);
+  const groupB = sorted.filter(s => s.group === "B").slice(0, 2);
 
-  if (top4.length < 4) {
-    console.error("Not enough teams for playoffs");
+  if (groupA.length < 2 || groupB.length < 2) {
+    console.error("Not enough teams qualified for knockouts");
     await db.ref(`tournaments/${tournamentId}/status`).set("completed");
     return;
   }
 
-  // Generate Semi Finals and Final
+  // Generate Semi Finals (Winner A vs Runner B, Winner B vs Runner A)
   const playoffs = [
     { 
         matchId: `SF1_${tournamentId}`, 
-        teamA: { id: top4[0].id, name: top4[0].teamName }, 
-        teamB: { id: top4[3].id, name: top4[3].teamName }, 
+        teamA: { id: groupA[0].teamId, name: groupA[0].teamName }, 
+        teamB: { id: groupB[1].teamId, name: groupB[1].teamName }, 
         stage: "Semi Final 1", status: "scheduled",
-        utcTimestamp: new Date(Date.now() + 86400000).toISOString(), // +1 day
-        venue: "Tournament Arena"
+        utcTimestamp: new Date(Date.now() + 86400000).toISOString(),
+        venue: "Semi Final Grounds 1"
     },
     { 
         matchId: `SF2_${tournamentId}`, 
-        teamA: { id: top4[1].id, name: top4[1].teamName }, 
-        teamB: { id: top4[2].id, name: top4[2].teamName }, 
+        teamA: { id: groupB[0].teamId, name: groupB[0].teamName }, 
+        teamB: { id: groupA[1].teamId, name: groupA[1].teamName }, 
         stage: "Semi Final 2", status: "scheduled",
-        utcTimestamp: new Date(Date.now() + 172800000).toISOString(), // +2 days
-        venue: "Championship Ground"
+        utcTimestamp: new Date(Date.now() + 172800000).toISOString(),
+        venue: "Semi Final Grounds 2"
     },
     { 
         matchId: `FINAL_${tournamentId}`, 
         teamA: { id: "TBD", name: "TBD" }, 
         teamB: { id: "TBD", name: "TBD" }, 
         stage: "Final", status: "scheduled",
-        utcTimestamp: new Date(Date.now() + 259200000).toISOString(), // +3 days
-        venue: "Lord's Cricket Ground"
+        utcTimestamp: new Date(Date.now() + 259200000).toISOString(),
+        venue: "Tournament Final Stadium"
     }
   ];
 
