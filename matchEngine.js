@@ -270,6 +270,13 @@ function computeRunRate(runs, ballsBowled) {
   return Number((runs / overs).toFixed(1));
 }
 
+async function pushLineups(matchId, teamA, teamB, teamAName, teamBName) {
+  await writeDb(`matches/${matchId}/lineups`, {
+    [teamAName]: teamA,
+    [teamBName]: teamB
+  });
+}
+
 async function initMatch(matchId, meta) {
   const metaPayload = {
     teamA: meta.teamA || meta.teamAName || "Team A",
@@ -279,7 +286,9 @@ async function initMatch(matchId, meta) {
     matchType: meta.matchType || null,
     status: meta.status || "running",
     startAt: meta.startAt || null,
-    startTime: Date.now()
+    startTime: Date.now(),
+    toss: `${meta.teamAName || 'Team A'} won the toss and elected to bat first`,
+    umpire: "AI Umpire & Simulation"
   };
 
   await writeDb(`matches/${matchId}/meta`, metaPayload);
@@ -717,6 +726,7 @@ async function startMatch(matchId, teamA, teamB, options = {}) {
   } = options;
 
   await initMatch(matchId, { teamAName, teamBName, matchType, startAt, oversLimit });
+  await pushLineups(matchId, teamA, teamB, teamAName, teamBName);
 
   if (typeof onStatusUpdate === "function") {
     onStatusUpdate({ status: "started", matchId, teamAName, teamBName });

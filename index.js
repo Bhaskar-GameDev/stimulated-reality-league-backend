@@ -79,15 +79,22 @@ function saveSchedules() {
   }
 }
 
-function loadLineups() {
+async function fetchLineupsFromFirebase() {
   try {
-    const text = fs.readFileSync(LINEUPS_PATH, "utf8");
-    const items = JSON.parse(text);
-    if (items && typeof items === "object") return items;
+    const snapshot = await db.ref("lineups").get();
+    return snapshot.exists() ? snapshot.val() : {};
   } catch (error) {
+    console.error("Failed to fetch lineups from Firebase:", error.message);
+    return {};
   }
-  return {};
 }
+
+// Keep a local cache that updates periodically or on demand
+let firebaseLineups = {};
+fetchLineupsFromFirebase().then(data => { firebaseLineups = data; });
+setInterval(async () => {
+  firebaseLineups = await fetchLineupsFromFirebase();
+}, 60000); // Update every minute
 
 function saveLineups() {
   try {
@@ -210,8 +217,8 @@ function resolvePlayingXI(teamEntry, selectedIds) {
   let requestedIds = [];
   if (Array.isArray(selectedIds) && selectedIds.length > 0) {
     requestedIds = selectedIds.map(id => String(id));
-  } else if (savedLineups[teamEntry.name] && Array.isArray(savedLineups[teamEntry.name])) {
-    requestedIds = savedLineups[teamEntry.name].map(id => String(id));
+  } else if (firebaseLineups[teamEntry.name] && Array.isArray(firebaseLineups[teamEntry.name])) {
+    requestedIds = firebaseLineups[teamEntry.name].map(id => String(id));
   } else {
     requestedIds = squad.slice(0, 11).map(player => player.id);
   }
