@@ -949,10 +949,8 @@ const server = http.createServer(async (req, res) => {
 
           for (const key of keys) {
             const item = data[key];
-            // Determine the date of the item
             let itemDateStr = "";
             if (node === "matches") {
-              // Check list entry first
               const createdAt = item.createdAt || (item.meta ? item.meta.createdAt : null);
               if (createdAt) itemDateStr = createdAt.split('T')[0];
               else if (item.startTime) itemDateStr = new Date(item.startTime).toISOString().split('T')[0];
@@ -973,7 +971,6 @@ const server = http.createServer(async (req, res) => {
 
             if (shouldDelete) {
               await db.ref(`${node}/${key}`).remove();
-              // Also clean up matches/list if node is matches
               if (node === "matches") {
                 await db.ref(`matches/list/${key}`).remove();
               }
@@ -987,6 +984,71 @@ const server = http.createServer(async (req, res) => {
       } catch (error) {
         logger.error("API /api/admin/cleanup failed", error);
         jsonResponse(res, 400, { error: error.message });
+      }
+      return;
+    }
+
+    // Tournament Endpoints
+    if (req.method === "GET" && requestUrl.pathname === "/api/tournaments/list") {
+      try {
+        const snapshot = await db.ref("tournaments").once("value");
+        const tournaments = snapshot.val();
+        const list = tournaments ? Object.values(tournaments).map(t => ({
+          id: t.id,
+          name: t.name,
+          status: t.status,
+          season: t.season,
+          format: t.format
+        })) : [];
+        jsonResponse(res, 200, list);
+      } catch (err) {
+        jsonResponse(res, 500, { error: err.message });
+      }
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/tournaments/generate") {
+      try {
+        const { templateKey, teams, startDate } = await parseRequestBody(req);
+        const fixtureGenerator = require("./tournaments/fixturegenerator");
+        const templates = require("./tournaments/tournamenttemplates");
+        const template = templates[templateKey];
+
+        const fixtures = fixtureGenerator.createFullTournamentSchedule(teams, {
+          format: template.format,
+          groupCount: template.groupCount || 2,
+          rounds: template.rounds || 1,
+          startDate: startDate ? new Date(startDate) : new Date()
+        });
+
+        jsonResponse(res, 200, { fixtures });
+      } catch (err) {
+        jsonResponse(res, 500, { error: err.message });
+      }
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/tournaments/save") {
+      try {
+        const payload = await parseRequestBody(req);
+        const tournamentId = await tournamentEngine.createTournament(payload);
+        jsonResponse(res, 200, { message: "Tournament saved", tournamentId });
+      } catch (err) {
+        jsonResponse(res, 500, { error: err.message });
+      }
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname.startsWith("/api/tournaments/standings/")) {
+      try {
+        const tid = requestUrl.pathname.split("/").pop();
+        const snapshot = await db.ref(`tournaments/${tid}/standings`).once("value");
+        const standings = snapshot.val();
+        const standingsEngine = require("./tournaments/standingsengine");
+        const sorted = standingsEngine.sortStandings(standings || {});
+        jsonResponse(res, 200, sorted);
+      } catch (err) {
+        jsonResponse(res, 500, { error: err.message });
       }
       return;
     }

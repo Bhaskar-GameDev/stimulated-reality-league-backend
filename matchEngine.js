@@ -88,12 +88,12 @@ function calculateAdjustedProbabilities(batsman, bowler, context) {
 
   // Batsman type impact
   if (batsmanType.includes("aggressive") || batsmanType.includes("hitter")) {
-    boundaryMult *= 1.3;
+    boundaryMult *= (phase === "death" ? 1.5 : 1.3); // Finishers thrive in death
     wicketMult *= 1.2;
     dotMult *= 0.9;
   } else if (batsmanType.includes("anchor")) {
     boundaryMult *= 0.8;
-    wicketMult *= 0.6;
+    wicketMult *= (context.wicketsFallen >= 5 ? 0.4 : 0.6); // Anchors get more cautious if wickets fall
     dotMult *= 1.1;
   }
 
