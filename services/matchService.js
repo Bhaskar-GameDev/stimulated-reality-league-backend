@@ -4,6 +4,7 @@
  */
 const { startMatch } = require('../matchEngine');
 const dataLoader = require('./dataLoader');
+const lineupService = require('./lineupService');
 
 function buildMatchPlayer(player, format = "T20") {
   return dataLoader.loadPlayerProfile(player, format);
@@ -29,6 +30,8 @@ function resolvePlayingXI(teamEntry, selectedIds, format = "T20") {
   let requestedIds = [];
   if (Array.isArray(selectedIds) && selectedIds.length === 11) {
     requestedIds = selectedIds.map(id => String(id));
+  } else if (lineupService.getLineup(teamEntry.name)) {
+    requestedIds = lineupService.getLineup(teamEntry.name).map(id => String(id));
   } else {
     // Default: Sort by role to ensure batsmen are at the top
     const sortedSquad = [...squad].sort((a, b) => {

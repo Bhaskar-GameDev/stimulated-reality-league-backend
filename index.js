@@ -8,10 +8,29 @@ const { startMatch, pushScorecard } = require("./matchEngine");
 const db = require("./firebase");
 const teamsData = require("./teams.json");
 const { buildHtmlPage } = require("./ui/page");
+const lineupService = require("./services/lineupService");
 
 let PORT = Number(process.env.PORT || 3000);
 const serverStartedAt = new Date().toISOString();
 const STORAGE_PATH = path.join(__dirname, "schedules.json");
+
+// Centralized Logger
+const logger = {
+  info: (msg, meta = {}) => {
+    const traceId = meta.traceId ? `[TraceID: ${meta.traceId}] ` : "";
+    const duration = meta.duration ? ` [${meta.duration}ms]` : "";
+    console.log(`[INFO] [${new Date().toISOString()}] ${traceId}${msg}${duration}`, Object.keys(meta).filter(k => k !== 'traceId' && k !== 'duration').length ? meta : "");
+  },
+  error: (msg, err, meta = {}) => {
+    const traceId = meta.traceId ? `[TraceID: ${meta.traceId}] ` : "";
+    console.error(`[ERROR] [${new Date().toISOString()}] ${traceId}${msg}`, err?.stack || err, Object.keys(meta).filter(k => k !== 'traceId').length ? meta : "");
+  },
+  warn: (msg, meta = {}) => {
+    const traceId = meta.traceId ? `[TraceID: ${meta.traceId}] ` : "";
+    console.warn(`[WARN] [${new Date().toISOString()}] ${traceId}${msg}`, Object.keys(meta).filter(k => k !== 'traceId').length ? meta : "");
+  },
+  match: (matchId, msg) => console.log(`[MATCH:${matchId}] [${new Date().toISOString()}] ${msg}`)
+};
 
 const LINEUPS_PATH = path.join(__dirname, "saved_lineups.json");
 const MAX_LOG_ITEMS = 150;
@@ -78,30 +97,7 @@ function saveSchedules() {
   }
 }
 
-async function fetchLineupsFromFirebase() {
-  try {
-    const snapshot = await db.ref("lineups").get();
-    return snapshot.exists() ? snapshot.val() : {};
-  } catch (error) {
-    console.error("Failed to fetch lineups from Firebase:", error.message);
-    return {};
-  }
-}
-
-// Keep a local cache that updates periodically or on demand
-let firebaseLineups = {};
-fetchLineupsFromFirebase().then(data => { firebaseLineups = data; });
-setInterval(async () => {
-  firebaseLineups = await fetchLineupsFromFirebase();
-}, 60000); // Update every minute
-
-async function saveLineupsToFirebase(teamName, lineupIds) {
-  try {
-    await db.ref(`lineups/${teamName}`).set(lineupIds);
-  } catch (error) {
-    console.error("Failed to save lineup to Firebase:", error.message);
-  }
-}
+// Lineup management is now handled by lineupService
 
 function openBrowser(urlToOpen) {
   const platform = process.platform;
@@ -228,8 +224,8 @@ function resolvePlayingXI(teamEntry, selectedIds) {
   let requestedIds = [];
   if (Array.isArray(selectedIds) && selectedIds.length > 0) {
     requestedIds = selectedIds.map(id => String(id));
-  } else if (firebaseLineups[teamEntry.name] && Array.isArray(firebaseLineups[teamEntry.name])) {
-    requestedIds = firebaseLineups[teamEntry.name].map(id => String(id));
+  } else if (lineupService.getLineup(teamEntry.name)) {
+    requestedIds = lineupService.getLineup(teamEntry.name).map(id => String(id));
   } else {
     // Sort by role to ensure batsmen are at the top by default
     const sortedSquad = [...squad].sort((a, b) => {
@@ -731,253 +727,293 @@ function abortCurrentMatch(matchId) {
 }
 
 const server = http.createServer(async (req, res) => {
-  const baseUrl = `http://${req.headers.host}`;
-  const requestUrl = new URL(req.url, baseUrl);
+  const startTime = Date.now();
+  const traceId = req.headers['x-trace-id'] || Math.random().toString(36).substring(2, 15);
+  
+  try {
+    const baseUrl = `http://${req.headers.host}`;
+    const requestUrl = new URL(req.url, baseUrl);
 
-  if (req.method === "GET" && requestUrl.pathname === "/") {
-    textResponse(res, 200, buildHtmlPage({ teamOptions, matchTypes }));
-    return;
-  }
+    logger.info(`${req.method} ${requestUrl.pathname}`, { traceId });
 
-  if (req.method === "GET" && requestUrl.pathname === "/background.jpg") {
-    const imagePath = path.join(__dirname, "background.jpg");
-    fs.readFile(imagePath, (error, data) => {
-      if (error) {
-        res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
-        res.end("Background image not found.");
-        return;
-      }
-      res.writeHead(200, { "Content-Type": "image/jpeg" });
-      res.end(data);
-    });
-    return;
-  }
-
-  if (req.method === "GET" && requestUrl.pathname === "/api/status") {
-    const activeMatchList = await getActiveMatchesSummary();
-    const statusCounts = schedules.reduce((acc, s) => {
-      acc[s.status] = (acc[s.status] || 0) + 1;
-      return acc;
-    }, {});
-    
-    const summary = {
-      activeMatchCount: activeMatchList.length,
-      statusCounts,
-      savedLineupCount: Object.keys(firebaseLineups).length,
-      teamCount: Object.keys(teamCatalog).length,
-      uptimeSeconds: Math.floor((Date.now() - new Date(serverStartedAt).getTime()) / 1000),
-      nextScheduledMatch: schedules
-        .filter(s => s.status === "scheduled" && s.startAt)
-        .sort((a, b) => new Date(a.startAt) - new Date(b.startAt))[0] || null
+    // Middleware to inject traceId and end timer
+    const originalEnd = res.end;
+    res.end = function(...args) {
+      const duration = Date.now() - startTime;
+      logger.info(`Response: ${res.statusCode} ${requestUrl.pathname}`, { traceId, duration });
+      return originalEnd.apply(this, args);
     };
 
-    const currentMatch = activeMatchList.length > 0 ? activeMatchList[0] : null;
-    jsonResponse(res, 200, { currentMatch, activeMatches: activeMatchList, liveLogs, summary });
-    return;
-  }
-
-
-  if (req.method === "GET" && requestUrl.pathname === "/api/matches") {
-    const list = await readDb("matches/list");
-    jsonResponse(res, 200, list || {});
-    return;
-  }
-
-  if (req.method === "POST" && requestUrl.pathname === "/api/clear-logs") {
-    liveLogs = [];
-    jsonResponse(res, 200, { message: "Logs cleared." });
-    return;
-  }
-
-  if (req.method === "GET" && requestUrl.pathname === "/api/match") {
-    const matchId = requestUrl.searchParams.get("matchId");
-    if (!matchId) {
-      jsonResponse(res, 400, { error: "Missing matchId parameter." });
-      return;
-    }
-    if (!/^[a-zA-Z0-9_-]+$/.test(matchId)) {
-      jsonResponse(res, 400, { error: "Invalid matchId format." });
+    if (req.method === "GET" && requestUrl.pathname === "/") {
+      textResponse(res, 200, buildHtmlPage({ teamOptions, matchTypes }));
       return;
     }
 
-    const [meta, rawState, result] = await Promise.all([
-      readDb(`matches/${matchId}/meta`),
-      readDb(`matches/${matchId}/snapshot`),
-      readDb(`matches/${matchId}/result`)
-    ]);
-
-    if (!meta) {
-      jsonResponse(res, 404, { error: "Match not found." });
+    if (req.method === "GET" && requestUrl.pathname === "/background.jpg") {
+      const imagePath = path.join(__dirname, "background.jpg");
+      fs.readFile(imagePath, (error, data) => {
+        if (error) {
+          res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+          res.end("Background image not found.");
+          return;
+        }
+        res.writeHead(200, { "Content-Type": "image/jpeg" });
+        res.end(data);
+      });
       return;
     }
 
-    const currentState = rawState
-      ? { ...rawState, status: meta?.status || rawState.status }
-      : null;
+    if (req.method === "GET" && requestUrl.pathname === "/api/status") {
+      try {
+        const activeMatchList = await getActiveMatchesSummary();
+        const statusCounts = schedules.reduce((acc, s) => {
+          acc[s.status] = (acc[s.status] || 0) + 1;
+          return acc;
+        }, {});
+        
+        const lineups = lineupService.getAllLineups() || {};
+        const summary = {
+          activeMatchCount: activeMatchList.length,
+          statusCounts,
+          savedLineupCount: Object.keys(lineups).length,
+          teamCount: Object.keys(teamCatalog).length,
+          uptimeSeconds: Math.floor((Date.now() - new Date(serverStartedAt).getTime()) / 1000),
+          nextScheduledMatch: schedules
+            .filter(s => s.status === "scheduled" && s.startAt)
+            .sort((a, b) => new Date(a.startAt) - new Date(b.startAt))[0] || null
+        };
 
-    jsonResponse(res, 200, {
-      matchId,
-      meta,
-      currentState,
-      result
-    });
-    return;
-  }
-
-  if (req.method === "GET" && requestUrl.pathname === "/api/lineups") {
-    jsonResponse(res, 200, firebaseLineups);
-    return;
-  }
-
-  if (req.method === "POST" && requestUrl.pathname === "/api/save-lineup") {
-    try {
-      const payload = await parseRequestBody(req);
-      if (!payload.teamName || !Array.isArray(payload.lineupIds) || payload.lineupIds.length !== 11) {
-        throw new Error("Invalid lineup data. Need teamName and exactly 11 lineupIds.");
+        const currentMatch = activeMatchList.length > 0 ? activeMatchList[0] : null;
+        jsonResponse(res, 200, { currentMatch, activeMatches: activeMatchList, liveLogs, summary });
+      } catch (error) {
+        logger.error("API /api/status failed", error);
+        jsonResponse(res, 500, { error: "Internal server error" });
       }
-      firebaseLineups[payload.teamName] = payload.lineupIds;
-      await saveLineupsToFirebase(payload.teamName, payload.lineupIds);
-      jsonResponse(res, 200, { message: "Lineup saved successfully." });
-    } catch (error) {
-      jsonResponse(res, error.statusCode || 400, { error: error.message });
+      return;
     }
-    return;
-  }
 
-  if (req.method === "GET" && requestUrl.pathname === "/api/scheduled") {
-    jsonResponse(res, 200, schedules);
-    return;
-  }
 
-  if (req.method === "GET" && requestUrl.pathname === "/api/teams") {
-    jsonResponse(res, 200, teamOptions);
-    return;
-  }
-
-  if (req.method === "POST" && requestUrl.pathname === "/api/schedule") {
-    try {
-      const payload = await parseRequestBody(req);
-      const message = await scheduleMatch(payload);
-      jsonResponse(res, 200, { message });
-    } catch (error) {
-      jsonResponse(res, error.statusCode || 400, { error: error.message });
-    }
-    return;
-  }
-
-  if (req.method === "POST" && requestUrl.pathname === "/api/cancel") {
-    try {
-      const payload = await parseRequestBody(req);
-      cancelSchedule(Number(payload.id));
-      jsonResponse(res, 200, { message: "Schedule cancelled." });
-    } catch (error) {
-      jsonResponse(res, error.statusCode || 400, { error: error.message });
-    }
-    return;
-  }
-
-  if (req.method === "POST" && requestUrl.pathname === "/api/pause") {
-    try {
-      const payload = await parseRequestBody(req);
-      pauseCurrentMatch(payload.matchId || null);
-      jsonResponse(res, 200, { message: "Match paused." });
-    } catch (error) {
-      jsonResponse(res, error.statusCode || 400, { error: error.message });
-    }
-    return;
-  }
-
-  if (req.method === "POST" && requestUrl.pathname === "/api/resume") {
-    try {
-      const payload = await parseRequestBody(req);
-      resumeCurrentMatch(payload.matchId || null);
-      jsonResponse(res, 200, { message: "Match resumed." });
-    } catch (error) {
-      jsonResponse(res, error.statusCode || 400, { error: error.message });
-    }
-    return;
-  }
-
-  if (req.method === "POST" && requestUrl.pathname === "/api/abort") {
-    try {
-      const payload = await parseRequestBody(req);
-      abortCurrentMatch(payload.matchId || null);
-      jsonResponse(res, 200, { message: "Match abort requested." });
-    } catch (error) {
-      jsonResponse(res, error.statusCode || 400, { error: error.message });
-    }
-    return;
-  }
-  if (req.method === "POST" && requestUrl.pathname === "/api/admin/cleanup") {
-    try {
-      const { nodes, dateRange, startDate, endDate } = await parseRequestBody(req);
-      if (!Array.isArray(nodes) || nodes.length === 0) {
-        throw new Error("No data nodes selected for cleanup.");
+    if (req.method === "GET" && requestUrl.pathname === "/api/matches") {
+      try {
+        const list = await readDb("matches/list");
+        jsonResponse(res, 200, list || {});
+      } catch (error) {
+        logger.error("API /api/matches failed", error);
+        jsonResponse(res, 500, { error: "Internal server error" });
       }
+      return;
+    }
 
-      const results = [];
-      const now = new Date();
-      const todayStr = now.toISOString().split('T')[0];
-      const yesterdayStr = new Date(now.getTime() - 86400000).toISOString().split('T')[0];
+    if (req.method === "POST" && requestUrl.pathname === "/api/clear-logs") {
+      liveLogs = [];
+      jsonResponse(res, 200, { message: "Logs cleared." });
+      return;
+    }
 
-      for (const node of nodes) {
-        if (!["matches", "tournaments"].includes(node)) continue;
-
-        const snapshot = await db.ref(node).once("value");
-        const data = snapshot.val();
-        if (!data) {
-          results.push(`Node '${node}' is already empty.`);
-          continue;
+    if (req.method === "GET" && requestUrl.pathname === "/api/match") {
+      try {
+        const matchId = requestUrl.searchParams.get("matchId");
+        if (!matchId) {
+          jsonResponse(res, 400, { error: "Missing matchId parameter." });
+          return;
+        }
+        if (!/^[a-zA-Z0-9_-]+$/.test(matchId)) {
+          jsonResponse(res, 400, { error: "Invalid matchId format." });
+          return;
         }
 
-        let deleteCount = 0;
-        const keys = Object.keys(data);
+        const [meta, rawState, result] = await Promise.all([
+          readDb(`matches/${matchId}/meta`),
+          readDb(`matches/${matchId}/snapshot`),
+          readDb(`matches/${matchId}/result`)
+        ]);
 
-        for (const key of keys) {
-          const item = data[key];
-          // Determine the date of the item
-          let itemDateStr = "";
-          if (node === "matches") {
-            // Check list entry first
-            const createdAt = item.createdAt || (item.meta ? item.meta.createdAt : null);
-            if (createdAt) itemDateStr = createdAt.split('T')[0];
-            else if (item.startTime) itemDateStr = new Date(item.startTime).toISOString().split('T')[0];
-          } else {
-            if (item.createdAt) itemDateStr = item.createdAt.split('T')[0];
+        if (!meta) {
+          jsonResponse(res, 404, { error: "Match not found." });
+          return;
+        }
+
+        const currentState = rawState
+          ? { ...rawState, status: meta?.status || rawState.status }
+          : null;
+
+        jsonResponse(res, 200, {
+          matchId,
+          meta,
+          currentState,
+          result
+        });
+      } catch (error) {
+        logger.error("API /api/match failed", error);
+        jsonResponse(res, 500, { error: "Internal server error" });
+      }
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/lineups") {
+      jsonResponse(res, 200, lineupService.getAllLineups());
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/save-lineup") {
+      try {
+        const payload = await parseRequestBody(req);
+        if (!payload.teamName || !Array.isArray(payload.lineupIds) || payload.lineupIds.length !== 11) {
+          throw new Error("Invalid lineup data. Need teamName and exactly 11 lineupIds.");
+        }
+        lineupService.saveLineup(payload.teamName, payload.lineupIds);
+        jsonResponse(res, 200, { message: "Lineup saved successfully." });
+      } catch (error) {
+        logger.error("API /api/save-lineup failed", error);
+        jsonResponse(res, error.statusCode || 400, { error: error.message });
+      }
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/scheduled") {
+      jsonResponse(res, 200, schedules);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/teams") {
+      jsonResponse(res, 200, teamOptions);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/schedule") {
+      try {
+        const payload = await parseRequestBody(req);
+        const message = await scheduleMatch(payload);
+        jsonResponse(res, 200, { message });
+      } catch (error) {
+        logger.error("API /api/schedule failed", error);
+        jsonResponse(res, error.statusCode || 400, { error: error.message });
+      }
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/cancel") {
+      try {
+        const payload = await parseRequestBody(req);
+        cancelSchedule(Number(payload.id));
+        jsonResponse(res, 200, { message: "Schedule cancelled." });
+      } catch (error) {
+        logger.error("API /api/cancel failed", error);
+        jsonResponse(res, error.statusCode || 400, { error: error.message });
+      }
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/pause") {
+      try {
+        const payload = await parseRequestBody(req);
+        pauseCurrentMatch(payload.matchId || null);
+        jsonResponse(res, 200, { message: "Match paused." });
+      } catch (error) {
+        logger.error("API /api/pause failed", error);
+        jsonResponse(res, error.statusCode || 400, { error: error.message });
+      }
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/resume") {
+      try {
+        const payload = await parseRequestBody(req);
+        resumeCurrentMatch(payload.matchId || null);
+        jsonResponse(res, 200, { message: "Match resumed." });
+      } catch (error) {
+        logger.error("API /api/resume failed", error);
+        jsonResponse(res, error.statusCode || 400, { error: error.message });
+      }
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/abort") {
+      try {
+        const payload = await parseRequestBody(req);
+        abortCurrentMatch(payload.matchId || null);
+        jsonResponse(res, 200, { message: "Match abort requested." });
+      } catch (error) {
+        logger.error("API /api/abort failed", error);
+        jsonResponse(res, error.statusCode || 400, { error: error.message });
+      }
+      return;
+    }
+    if (req.method === "POST" && requestUrl.pathname === "/api/admin/cleanup") {
+      try {
+        const { nodes, dateRange, startDate, endDate } = await parseRequestBody(req);
+        if (!Array.isArray(nodes) || nodes.length === 0) {
+          throw new Error("No data nodes selected for cleanup.");
+        }
+
+        const results = [];
+        const now = new Date();
+        const todayStr = now.toISOString().split('T')[0];
+        const yesterdayStr = new Date(now.getTime() - 86400000).toISOString().split('T')[0];
+
+        for (const node of nodes) {
+          if (!["matches", "tournaments"].includes(node)) continue;
+
+          const snapshot = await db.ref(node).once("value");
+          const data = snapshot.val();
+          if (!data) {
+            results.push(`Node '${node}' is already empty.`);
+            continue;
           }
 
-          let shouldDelete = false;
-          if (dateRange === "all") {
-            shouldDelete = true;
-          } else if (itemDateStr) {
-            if (dateRange === "today" && itemDateStr === todayStr) shouldDelete = true;
-            else if (dateRange === "yesterday" && itemDateStr === yesterdayStr) shouldDelete = true;
-            else if (dateRange === "custom" && startDate && endDate) {
-              shouldDelete = itemDateStr >= startDate && itemDateStr <= endDate;
-            }
-          }
+          let deleteCount = 0;
+          const keys = Object.keys(data);
 
-          if (shouldDelete) {
-            await db.ref(`${node}/${key}`).remove();
-            // Also clean up matches/list if node is matches
+          for (const key of keys) {
+            const item = data[key];
+            // Determine the date of the item
+            let itemDateStr = "";
             if (node === "matches") {
-              await db.ref(`matches/list/${key}`).remove();
+              // Check list entry first
+              const createdAt = item.createdAt || (item.meta ? item.meta.createdAt : null);
+              if (createdAt) itemDateStr = createdAt.split('T')[0];
+              else if (item.startTime) itemDateStr = new Date(item.startTime).toISOString().split('T')[0];
+            } else {
+              if (item.createdAt) itemDateStr = item.createdAt.split('T')[0];
             }
-            deleteCount++;
+
+            let shouldDelete = false;
+            if (dateRange === "all") {
+              shouldDelete = true;
+            } else if (itemDateStr) {
+              if (dateRange === "today" && itemDateStr === todayStr) shouldDelete = true;
+              else if (dateRange === "yesterday" && itemDateStr === yesterdayStr) shouldDelete = true;
+              else if (dateRange === "custom" && startDate && endDate) {
+                shouldDelete = itemDateStr >= startDate && itemDateStr <= endDate;
+              }
+            }
+
+            if (shouldDelete) {
+              await db.ref(`${node}/${key}`).remove();
+              // Also clean up matches/list if node is matches
+              if (node === "matches") {
+                await db.ref(`matches/list/${key}`).remove();
+              }
+              deleteCount++;
+            }
           }
+          results.push(`Cleared ${deleteCount} items from '${node}'.`);
         }
-        results.push(`Cleared ${deleteCount} items from '${node}'.`);
+
+        jsonResponse(res, 200, { results });
+      } catch (error) {
+        logger.error("API /api/admin/cleanup failed", error);
+        jsonResponse(res, 400, { error: error.message });
       }
-
-      jsonResponse(res, 200, { results });
-    } catch (error) {
-      jsonResponse(res, 400, { error: error.message });
+      return;
     }
-    return;
-  }
 
-  res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
-  res.end("Not found");
+    res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+    res.end("Not found");
+  } catch (error) {
+    logger.error("Global request handler caught error", error);
+    jsonResponse(res, 500, { error: "Internal server error" });
+  }
 });
 
 server.on("error", error => {
