@@ -27,33 +27,76 @@ function resolvePlayingXI(teamEntry, selectedIds, format = "T20") {
     throw new Error(`${teamEntry.name} does not have enough players.`);
   }
 
+  const squadById = new Map(squad.map(p => [String(p.id), p]));
   let requestedIds = [];
+  
+  // 1. Priority: Explicitly selected 11 IDs
   if (Array.isArray(selectedIds) && selectedIds.length === 11) {
     requestedIds = selectedIds.map(id => String(id));
-  } else if (lineupService.getLineup(teamEntry.name)) {
-    requestedIds = lineupService.getLineup(teamEntry.name).map(id => String(id));
-  } else {
-    // Default: Sort by role to ensure batsmen are at the top
+  } 
+  // 2. Priority: Saved lineup from lineupService
+  else {
+    const saved = lineupService.getLineup(teamEntry.name);
+    if (Array.isArray(saved) && saved.length === 11) {
+      requestedIds = saved.map(id => String(id));
+    } 
+    // 3. Fallback: Role-based default selection
+    else {
+      const sortedSquad = [...squad].sort((a, b) => {
+        const pA = ROLE_PRIORITY[(a.role || "").toLowerCase()] || 99;
+        const pB = ROLE_PRIORITY[(b.role || "").toLowerCase()] || 99;
+        return pA - pB;
+      });
+      requestedIds = sortedSquad.slice(0, 11).map(player => String(player.id));
+    }
+  }
+
+  // Resolve players and filter out invalid ones
+  let finalXI = [];
+  const seenIds = new Set();
+  
+  for (const id of requestedIds) {
+    const player = squadById.get(id);
+    if (player && !seenIds.has(String(player.id))) {
+      finalXI.push(player);
+      seenIds.add(String(player.id));
+    }
+  }
+
+  // If we don't have 11 (e.g. invalid IDs or duplicates in saved lineup), fill from squad
+  if (finalXI.length < 11) {
     const sortedSquad = [...squad].sort((a, b) => {
       const pA = ROLE_PRIORITY[(a.role || "").toLowerCase()] || 99;
       const pB = ROLE_PRIORITY[(b.role || "").toLowerCase()] || 99;
       return pA - pB;
     });
-    requestedIds = sortedSquad.slice(0, 11).map(player => String(player.id));
+    
+    for (const player of sortedSquad) {
+      if (!seenIds.has(String(player.id))) {
+        finalXI.push(player);
+        seenIds.add(String(player.id));
+        if (finalXI.length === 11) break;
+      }
+    }
   }
 
-  const squadById = new Map(squad.map(p => [String(p.id), p]));
-  
-  return requestedIds.map(id => {
-    const player = squadById.get(id) || squad[0];
-    return buildMatchPlayer(player, format);
-  });
+  return finalXI.slice(0, 11).map(player => buildMatchPlayer(player, format));
+}
+
+function summarizePlayingXI(players) {
+  return players.map(player => ({
+    id: player.id,
+    name: player.name,
+    role: player.role,
+    type: player.type
+  }));
 }
 
 module.exports = {
   startMatch,
   buildMatchPlayer,
   resolvePlayingXI,
+  summarizePlayingXI,
   archiveMatchData: require('../matchEngine').archiveMatchData
 };
 

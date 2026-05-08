@@ -9,6 +9,7 @@ const db = require("./firebase");
 const teamsData = require("./teams.json");
 const { buildHtmlPage } = require("./ui/page");
 const lineupService = require("./services/lineupService");
+const matchService = require("./services/matchService");
 
 let PORT = Number(process.env.PORT || 3000);
 const serverStartedAt = new Date().toISOString();
@@ -186,21 +187,6 @@ function mapOutcomeProbabilities(probabilities) {
   };
 }
 
-function buildMatchPlayer(player) {
-  return {
-    ...player,
-    id: player.id,
-    name: player.name,
-    role: player.role,
-    type: player.type,
-    batting: player.batting,
-    bowling: player.bowling,
-    batting_probabilities: mapOutcomeProbabilities(player.batting?.base),
-    bowling_probabilities: mapOutcomeProbabilities(player.bowling?.base),
-    base_probabilities: mapOutcomeProbabilities(player.batting?.base)
-  };
-}
-
 const ROLE_PRIORITY = {
   "batsman": 1,
   "wicket-keeper": 2,
@@ -210,59 +196,16 @@ const ROLE_PRIORITY = {
   "bowler": 4
 };
 
+function buildMatchPlayer(player) {
+  return matchService.buildMatchPlayer(player);
+}
+
 function resolvePlayingXI(teamEntry, selectedIds) {
-  if (!teamEntry) {
-    return null;
-  }
-
-  const squad = Array.isArray(teamEntry.players) ? teamEntry.players : [];
-  if (squad.length < 11) {
-    throw new Error(`${teamEntry.name} does not have enough players to select a playing 11.`);
-  }
-
-  // Priority: 1. Explicitly selected IDs, 2. Saved lineup for this team, 3. First 11 in squad (sorted by role)
-  let requestedIds = [];
-  if (Array.isArray(selectedIds) && selectedIds.length > 0) {
-    requestedIds = selectedIds.map(id => String(id));
-  } else if (lineupService.getLineup(teamEntry.name)) {
-    requestedIds = lineupService.getLineup(teamEntry.name).map(id => String(id));
-  } else {
-    // Sort by role to ensure batsmen are at the top by default
-    const sortedSquad = [...squad].sort((a, b) => {
-      const pA = ROLE_PRIORITY[(a.role || "").toLowerCase()] || 99;
-      const pB = ROLE_PRIORITY[(b.role || "").toLowerCase()] || 99;
-      return pA - pB;
-    });
-    requestedIds = sortedSquad.slice(0, 11).map(player => player.id);
-  }
-
-  const uniqueIds = [...new Set(requestedIds)];
-
-  if (uniqueIds.length !== 11) {
-    // Fallback if the saved lineup had duplicates or something went wrong
-    requestedIds = squad.slice(0, 11).map(player => player.id);
-  }
-
-  const squadById = new Map(squad.map(player => [String(player.id), player]));
-  const finalIds = requestedIds.slice(0, 11); // Ensure exactly 11
-  
-  return finalIds.map(id => {
-    const p = squadById.get(String(id));
-    if (!p) {
-        // Fallback to first available if ID is missing (should not happen with valid squad)
-        return squad[0];
-    }
-    return p;
-  });
+  return matchService.resolvePlayingXI(teamEntry, selectedIds);
 }
 
 function summarizePlayingXI(players) {
-  return players.map(player => ({
-    id: player.id,
-    name: player.name,
-    role: player.role,
-    type: player.type
-  }));
+  return matchService.summarizePlayingXI(players);
 }
 
 function getMatchTypeByKey(key) {
@@ -876,7 +819,13 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === "GET" && requestUrl.pathname === "/api/teams") {
-      jsonResponse(res, 200, teamOptions);
+      const lineups = lineupService.getAllLineups();
+      const teamsWithLineups = teamOptions.map(t => ({
+        ...t,
+        hasSavedLineup: !!lineups[t.name],
+        savedLineup: lineups[t.name] || null
+      }));
+      jsonResponse(res, 200, teamsWithLineups);
       return;
     }
 
