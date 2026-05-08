@@ -11,9 +11,11 @@ const DEFAULT_PROBABILITIES = {
 };
 
 function getMatchPhase(context) {
-  const overRatio = context.currentOver / context.totalOvers;
-  if (overRatio < 0.3) return "powerplay";
-  if (overRatio < 0.75) return "middle";
+  const over = context.currentOver + 1; // 1-indexed for logic
+  if (over <= 2) return "setup";
+  if (over <= 6) return "powerplay";
+  if (over <= 10) return "stabilize";
+  if (over <= 15) return "acceleration";
   return "death";
 }
 
@@ -29,98 +31,121 @@ function calculateAdjustedProbabilities(batsman, bowler, context) {
     "wicket": batBase.wicket || batBase["wicket"] || 0.05
   };
 
-  if (!batsman.batting || !bowler.bowling) {
-    const bowlBase = bowler.bowling_probabilities || bowler.base_probabilities || DEFAULT_PROBABILITIES;
-    return {
-      "dot": (probs["dot"] + (bowlBase.dot || 0.35)) / 2,
-      "1": (probs["1"] + (bowlBase.single || bowlBase["1"] || 0.3)) / 2,
-      "2": (probs["2"] + (bowlBase.double || bowlBase["2"] || 0.08)) / 2,
-      "4": (probs["4"] + (bowlBase.four || bowlBase["4"] || 0.14)) / 2,
-      "6": (probs["6"] + (bowlBase.six || bowlBase["6"] || 0.08)) / 2,
-      "wicket": (probs["wicket"] + (bowlBase.wicket || 0.05)) / 2
-    };
+  const phase = getMatchPhase(context);
+  const playerType = (batsman.type || "").toLowerCase();
+
+  // PHASE MULTIPLIERS (T20 Pattern)
+  let boundaryMult = 1.0;
+  let dotMult = 1.0;
+  let wicketMult = 1.0;
+  let rotationMult = 1.0;
+
+  switch (phase) {
+    case "setup":
+      boundaryMult = 0.6;
+      dotMult = 1.3;
+      wicketMult = 0.5;
+      if (playerType.includes("aggressive")) boundaryMult = 1.2;
+      break;
+    case "powerplay":
+      boundaryMult = 1.6;
+      dotMult = 0.8;
+      wicketMult = 1.2;
+      break;
+    case "stabilize":
+      boundaryMult = 0.8;
+      dotMult = 0.9;
+      rotationMult = 1.4;
+      wicketMult = 0.7;
+      if (playerType.includes("anchor")) {
+        rotationMult = 1.6;
+        wicketMult = 0.4;
+      }
+      break;
+    case "acceleration":
+      boundaryMult = 1.3;
+      dotMult = 0.7;
+      rotationMult = 1.2;
+      wicketMult = 1.1;
+      break;
+    case "death":
+      boundaryMult = 2.2;
+      dotMult = 0.4;
+      wicketMult = 1.8;
+      if (playerType.includes("finisher")) {
+        boundaryMult = 2.8;
+        wicketMult = 1.5; // Finishers are better at high risk
+      }
+      break;
   }
 
-  const phase = getMatchPhase(context);
+  probs["4"] *= boundaryMult;
+  probs["6"] *= boundaryMult;
+  probs["dot"] *= dotMult;
+  probs["wicket"] *= wicketMult;
+  probs["1"] *= rotationMult;
+  probs["2"] *= rotationMult;
 
-  const aggMultiplier = batsman.batting.aggression?.[phase] ?? 1.0;
-  probs["4"] *= (1.0 + aggMultiplier * 0.5);
-  probs["6"] *= (1.0 + aggMultiplier * 0.8);
-  probs["wicket"] *= (1.0 + aggMultiplier * 0.3);
-  probs["dot"] *= Math.max(0.1, 1.0 - (aggMultiplier * 0.2));
+  // Handle non-standard data
+  if (!batsman.batting || !bowler.bowling) {
+    const bowlBase = bowler.bowling_probabilities || bowler.base_probabilities || DEFAULT_PROBABILITIES;
+    const finalProbs = {};
+    Object.keys(probs).forEach(key => {
+        const bowlVal = bowlBase[key] || (key === "1" ? bowlBase.single : (key === "2" ? bowlBase.double : 0.1));
+        finalProbs[key] = (probs[key] + bowlVal) / 2;
+    });
+    return finalProbs;
+  }
 
-  const bowlerAggression = bowler.bowling.aggression?.[phase] ?? 1.0;
+  // Bowler Influence
+  const bowlerAggression = bowler.bowling.aggression?.[phase === "death" ? "death" : (phase === "powerplay" ? "powerplay" : "middle")] ?? 1.0;
   const restrictiveFactor = ((bowler.bowling.economyControl ?? 0.5) + (bowler.bowling.accuracy ?? 0.5)) / 2.0;
-  probs["dot"] *= (1.0 + restrictiveFactor * 0.5);
-  probs["4"] *= Math.max(0.1, 1.0 - restrictiveFactor * 0.4);
-  probs["6"] *= Math.max(0.1, 1.0 - restrictiveFactor * 0.6);
-  probs["wicket"] *= (1.0 + (bowler.bowling.wicketTaking ?? 0.5) * 0.6 + bowlerAggression * 0.2);
+  probs["dot"] *= (1.0 + restrictiveFactor * 0.4);
+  probs["4"] *= Math.max(0.1, 1.0 - restrictiveFactor * 0.3);
+  probs["wicket"] *= (1.0 + (bowler.bowling.wicketTaking ?? 0.5) * 0.5 + bowlerAggression * 0.2);
 
   if (phase === "death") {
-    probs["dot"] *= (1.0 + (bowler.behavior?.deathOverSkill ?? 0.5) * 0.3);
-    probs["wicket"] *= (1.0 + (bowler.behavior?.deathOverSkill ?? 0.5) * 0.3);
+    probs["dot"] *= (1.0 + (bowler.behavior?.deathOverSkill ?? 0.5) * 0.4);
+    probs["wicket"] *= (1.0 + (bowler.behavior?.deathOverSkill ?? 0.5) * 0.4);
   }
 
   const matchupMultiplier = context.bowlerType === "Pace" 
     ? (batsman.batting.vsPace ?? 1.0) 
     : (batsman.batting.vsSpin ?? 1.0);
   
-  probs["1"] *= matchupMultiplier;
-  probs["2"] *= matchupMultiplier;
   probs["4"] *= matchupMultiplier;
-  probs["6"] *= (matchupMultiplier * 1.2);
+  probs["6"] *= matchupMultiplier;
 
   const form = batsman.form ?? 1.0;
   const consistency = batsman.batting.consistency ?? 0.5;
   const reliability = (form + consistency) / 2.0;
-  probs["wicket"] *= Math.max(0.2, 1.5 - reliability);
-  probs["1"] *= (1.0 + reliability * 0.2);
-  probs["2"] *= (1.0 + reliability * 0.3);
+  probs["wicket"] *= Math.max(0.2, 1.4 - reliability);
 
   if (batsman.stamina) {
     const staminaDecay = (batsman.stamina.decayRate ?? 0.01) * context.batsmanBallsFaced;
     const currentStamina = Math.max(0.1, (batsman.stamina.initial ?? 1.0) - staminaDecay);
-    probs["2"] *= currentStamina;
-    probs["4"] *= (0.5 + currentStamina * 0.5);
-    probs["6"] *= currentStamina;
     const fatigue = 1.0 - currentStamina;
-    probs["dot"] *= (1.0 + fatigue * 0.5);
-    probs["wicket"] *= (1.0 + fatigue * 0.3);
+    probs["dot"] *= (1.0 + fatigue * 0.4);
+    probs["wicket"] *= (1.0 + fatigue * 0.2);
   }
 
-  if (batsman.behavior) {
-    if (context.isChasing && context.runsRequired !== null) {
-      const ballsRemaining = (context.totalOvers * 6) - ((context.currentOver * 6) + context.currentBallInOver);
-      const rrr = ballsRemaining > 0 ? (context.runsRequired / ballsRemaining) * 6 : 0;
-      
-      if (rrr > 9.0) {
-        const rrrPressure = (rrr - 9.0) / 5.0;
-        const boost = batsman.behavior.chaseBoost ?? 0.5;
-        const pressureHandling = batsman.behavior.pressureHandling ?? 0.5;
-        
-        probs["4"] *= (1.0 + rrrPressure * boost);
-        probs["6"] *= (1.0 + rrrPressure * boost * 1.5);
-        probs["wicket"] *= (1.0 + rrrPressure * Math.max(0.1, 1.5 - pressureHandling));
-      }
-    }
-
-    if (context.wicketsFallen >= 3) {
-      const collapseRisk = Math.max(0.1, 1.5 - (batsman.behavior.collapseResistance ?? 0.5));
-      probs["wicket"] *= collapseRisk;
-      if ((batsman.behavior.collapseResistance ?? 0.5) > 0.6) {
-        probs["dot"] *= 1.2;
-        probs["1"] *= 1.1;
-      }
+  if (context.isChasing && context.runsRequired !== null) {
+    const ballsRemaining = (context.totalOvers * 6) - ((context.currentOver * 6) + context.currentBallInOver);
+    const rrr = ballsRemaining > 0 ? (context.runsRequired / ballsRemaining) * 6 : 0;
+    
+    if (rrr > 10.0) {
+      const pressure = Math.min(1.0, (rrr - 10.0) / 10.0);
+      probs["6"] *= (1.0 + pressure * 0.5);
+      probs["wicket"] *= (1.0 + pressure * 0.4);
     }
   }
 
-  for (const key of Object.keys(probs)) {
-    probs[key] = Math.max(0.001, probs[key]);
-  }
+  // Normalize
+  const total = Object.values(probs).reduce((a, b) => a + b, 0);
+  Object.keys(probs).forEach(k => probs[k] /= total);
 
   return probs;
 }
-
 function normalizeProbabilities(p) {
   const categories = ["dot", "1", "2", "4", "6", "wicket"];
   const normalized = {};
@@ -397,19 +422,32 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
   let lastBowlerId = null;
 
   for (let over = 0; over < oversLimit; over++) {
+    // 1. Get all potential bowlers (designated roles)
     const allBowlers = bowling.filter(p => 
       p.role?.toLowerCase().includes("bowler") || 
       p.role?.toLowerCase().includes("allrounder")
     );
-    const availableBowlers = (allBowlers.length > 0 ? allBowlers : bowling.slice(-5))
-      .filter(p => (bowlerOversCount[p.id || p.name] || 0) < maxOversPerBowler)
-      .filter(p => (p.id || p.name) !== lastBowlerId);
 
-    // If no one is available (rare), pick anyone except the last bowler
-    const pickList = availableBowlers.length > 0 ? availableBowlers : 
-      (allBowlers.length > 0 ? allBowlers : bowling).filter(p => (p.id || p.name) !== lastBowlerId);
+    // 2. Identify the pool (designated bowlers or bottom 5 if none found)
+    const pool = allBowlers.length > 0 ? allBowlers : bowling.slice(-5);
+
+    // 3. Find the best available bowler from the pool
+    // Priority: Not the last bowler, and hasn't reached max overs
+    // We also want to rotate through them somewhat naturally
+    const available = pool.filter(p => (bowlerOversCount[p.id || p.name] || 0) < maxOversPerBowler);
     
-    const bowler = pickList[over % pickList.length];
+    // Sort available by least overs bowled to ensure rotation, but exclude lastBowlerId
+    const candidates = available.filter(p => (p.id || p.name) !== lastBowlerId);
+    
+    let bowler;
+    if (candidates.length > 0) {
+      // Pick the one who has bowled the least to simulate rotation
+      bowler = candidates.sort((a, b) => (bowlerOversCount[a.id || a.name] || 0) - (bowlerOversCount[b.id || b.name] || 0))[0];
+    } else {
+      // Fallback: Pick any available except the last one (should not happen in 11-player squad)
+      bowler = available[0] || pool[0];
+    }
+
     lastBowlerId = bowler.id || bowler.name;
     bowlerOversCount[lastBowlerId] = (bowlerOversCount[lastBowlerId] || 0) + 1;
 
