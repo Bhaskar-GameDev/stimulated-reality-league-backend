@@ -50,6 +50,56 @@ function generateGroups(teams, groupCount) {
   return { groups, fixtures };
 }
 
+function generateWorldCupFixtures(groups) {
+  const fixtures = [];
+  
+  // Group A (Group 0) - Indices: 0:Ind, 1:Aus, 2:Ban, 3:Ire, 4:Sco, 5:Net
+  const groupA = groups[0];
+  const orderA = [
+    [0, 1], [2, 3], [4, 5], // Matches 1-3
+    [0, 2], [1, 4], [3, 5], // Matches 4-6
+    [0, 4], [1, 5], [2, 4], // Matches 7-9
+    [3, 0], [1, 2], [5, 0], // Matches 10-12
+    [3, 4], [2, 5], [1, 3]  // Matches 13-15
+  ];
+
+  orderA.forEach((pair, i) => {
+    fixtures.push({
+      matchId: `WC_A_${i+1}`,
+      teamA: groupA[pair[0]],
+      teamB: groupA[pair[1]],
+      round: Math.floor(i / 3) + 1,
+      status: "scheduled",
+      stage: "league",
+      group: "A"
+    });
+  });
+
+  // Group B (Group 1) - Indices: 0:Eng, 1:Pak, 2:NZ, 3:SA, 4:SL, 5:WI
+  const groupB = groups[1];
+  const orderB = [
+    [0, 1], [2, 3], [4, 5], // Matches 16-18
+    [0, 2], [1, 4], [3, 5], // Matches 19-21
+    [0, 3], [1, 5], [2, 4], // Matches 22-24
+    [0, 4], [1, 3], [5, 2], // Matches 25-27
+    [0, 5], [3, 4], [1, 2]  // Matches 28-30
+  ];
+
+  orderB.forEach((pair, i) => {
+    fixtures.push({
+      matchId: `WC_B_${i+16}`,
+      teamA: groupB[pair[0]],
+      teamB: groupB[pair[1]],
+      round: Math.floor(i / 3) + 1,
+      status: "scheduled",
+      stage: "league",
+      group: "B"
+    });
+  });
+
+  return fixtures;
+}
+
 /**
  * Main entry point for generating a fully scheduled tournament
  */
@@ -57,7 +107,10 @@ function createFullTournamentSchedule(teams, options = {}) {
   const { format = "round_robin", rounds = 1, startDate = new Date(), country = "India" } = options;
   
   let rawFixtures;
-  if (format === "groups" || format === "group_knockout") {
+  if (format === "group_knockout" && teams.length === 12) {
+    const { groups } = generateGroups(teams, 2);
+    rawFixtures = generateWorldCupFixtures(groups);
+  } else if (format === "groups" || format === "group_knockout") {
     const { fixtures } = generateGroups(teams, options.groupCount || 2);
     rawFixtures = fixtures;
   } else {
@@ -69,7 +122,7 @@ function createFullTournamentSchedule(teams, options = {}) {
     country,
     doubleHeaderWeekends: true,
     matchesPerDay: 1,
-    restDayFrequency: 8
+    restDayFrequency: 10
   });
 }
 

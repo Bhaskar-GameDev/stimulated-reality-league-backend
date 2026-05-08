@@ -694,7 +694,11 @@ module.exports = `
     });
 
     function renderFixturePreview(fixtures) {
-      fixturesListEl.innerHTML = fixtures.map((f, i) => (
+      const groupA = fixtures.filter(f => f.group === "A");
+      const groupB = fixtures.filter(f => f.group === "B");
+      const knockouts = fixtures.filter(f => f.group !== "A" && f.group !== "B");
+
+      const renderMatch = (f) => (
         '<div class="match-card" style="margin-bottom: 0.5rem; background: white; border: 1px solid var(--gray-200);">'
           + '<div>'
             + '<strong style="color: var(--primary); font-size: 0.8rem; text-transform: uppercase;">' + (f.stage === "league" ? "Round " + f.round : f.stage) + '</strong>'
@@ -704,7 +708,20 @@ module.exports = `
             + '<span class="pill scheduled">Pending</span>'
           + '</div>'
         + '</div>'
-      )).join("");
+      );
+
+      let html = "";
+      if (groupA.length) {
+        html += '<h3 style="margin: 1.5rem 0 0.5rem; color: var(--primary); font-size: 1rem;">Group A Fixtures</h3>' + groupA.map(renderMatch).join("");
+      }
+      if (groupB.length) {
+        html += '<h3 style="margin: 1.5rem 0 0.5rem; color: var(--primary); font-size: 1rem;">Group B Fixtures</h3>' + groupB.map(renderMatch).join("");
+      }
+      if (knockouts.length) {
+        html += '<h3 style="margin: 1.5rem 0 0.5rem; color: #b71c1c; font-size: 1rem;">Knockout Stage</h3>' + knockouts.map(renderMatch).join("");
+      }
+
+      fixturesListEl.innerHTML = html || "<p class='note'>No fixtures generated.</p>";
     }
 
     saveTournamentBtn.addEventListener("click", async () => {
