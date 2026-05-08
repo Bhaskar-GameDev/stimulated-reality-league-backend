@@ -9,6 +9,15 @@ function buildMatchPlayer(player, format = "T20") {
   return dataLoader.loadPlayerProfile(player, format);
 }
 
+const ROLE_PRIORITY = {
+  "batsman": 1,
+  "wicket-keeper": 2,
+  "wicketkeeper": 2,
+  "allrounder": 3,
+  "all-rounder": 3,
+  "bowler": 4
+};
+
 function resolvePlayingXI(teamEntry, selectedIds, format = "T20") {
   if (!teamEntry) return null;
 
@@ -17,10 +26,18 @@ function resolvePlayingXI(teamEntry, selectedIds, format = "T20") {
     throw new Error(`${teamEntry.name} does not have enough players.`);
   }
 
-  const fallbackIds = squad.slice(0, 11).map(player => String(player.id));
-  const requestedIds = Array.isArray(selectedIds) && selectedIds.length === 11
-    ? selectedIds.map(id => String(id))
-    : fallbackIds;
+  let requestedIds = [];
+  if (Array.isArray(selectedIds) && selectedIds.length === 11) {
+    requestedIds = selectedIds.map(id => String(id));
+  } else {
+    // Default: Sort by role to ensure batsmen are at the top
+    const sortedSquad = [...squad].sort((a, b) => {
+      const pA = ROLE_PRIORITY[(a.role || "").toLowerCase()] || 99;
+      const pB = ROLE_PRIORITY[(b.role || "").toLowerCase()] || 99;
+      return pA - pB;
+    });
+    requestedIds = sortedSquad.slice(0, 11).map(player => String(player.id));
+  }
 
   const squadById = new Map(squad.map(p => [String(p.id), p]));
   

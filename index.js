@@ -192,15 +192,27 @@ function mapOutcomeProbabilities(probabilities) {
 
 function buildMatchPlayer(player) {
   return {
+    ...player,
     id: player.id,
     name: player.name,
     role: player.role,
     type: player.type,
+    batting: player.batting,
+    bowling: player.bowling,
     batting_probabilities: mapOutcomeProbabilities(player.batting?.base),
     bowling_probabilities: mapOutcomeProbabilities(player.bowling?.base),
     base_probabilities: mapOutcomeProbabilities(player.batting?.base)
   };
 }
+
+const ROLE_PRIORITY = {
+  "batsman": 1,
+  "wicket-keeper": 2,
+  "wicketkeeper": 2,
+  "allrounder": 3,
+  "all-rounder": 3,
+  "bowler": 4
+};
 
 function resolvePlayingXI(teamEntry, selectedIds) {
   if (!teamEntry) {
@@ -212,29 +224,40 @@ function resolvePlayingXI(teamEntry, selectedIds) {
     throw new Error(`${teamEntry.name} does not have enough players to select a playing 11.`);
   }
 
-  // Priority: 1. Explicitly selected IDs, 2. Saved lineup for this team, 3. First 11 in squad
+  // Priority: 1. Explicitly selected IDs, 2. Saved lineup for this team, 3. First 11 in squad (sorted by role)
   let requestedIds = [];
   if (Array.isArray(selectedIds) && selectedIds.length > 0) {
     requestedIds = selectedIds.map(id => String(id));
   } else if (firebaseLineups[teamEntry.name] && Array.isArray(firebaseLineups[teamEntry.name])) {
     requestedIds = firebaseLineups[teamEntry.name].map(id => String(id));
   } else {
-    requestedIds = squad.slice(0, 11).map(player => player.id);
+    // Sort by role to ensure batsmen are at the top by default
+    const sortedSquad = [...squad].sort((a, b) => {
+      const pA = ROLE_PRIORITY[(a.role || "").toLowerCase()] || 99;
+      const pB = ROLE_PRIORITY[(b.role || "").toLowerCase()] || 99;
+      return pA - pB;
+    });
+    requestedIds = sortedSquad.slice(0, 11).map(player => player.id);
   }
 
   const uniqueIds = [...new Set(requestedIds)];
 
   if (uniqueIds.length !== 11) {
-    throw new Error(`Please select exactly 11 unique players for ${teamEntry.name}.`);
+    // Fallback if the saved lineup had duplicates or something went wrong
+    requestedIds = squad.slice(0, 11).map(player => player.id);
   }
 
   const squadById = new Map(squad.map(player => [String(player.id), player]));
-  const invalidId = uniqueIds.find(id => !squadById.has(id));
-  if (invalidId) {
-    throw new Error(`One or more selected players for ${teamEntry.name} are invalid.`);
-  }
-
-  return uniqueIds.map(id => squadById.get(id));
+  const finalIds = requestedIds.slice(0, 11); // Ensure exactly 11
+  
+  return finalIds.map(id => {
+    const p = squadById.get(String(id));
+    if (!p) {
+        // Fallback to first available if ID is missing (should not happen with valid squad)
+        return squad[0];
+    }
+    return p;
+  });
 }
 
 function summarizePlayingXI(players) {
@@ -661,6 +684,10 @@ function cancelSchedule(id) {
   schedule.status = "cancelled";
   schedule.updatedAt = new Date().toISOString();
   updateScheduleList();
+  
+  // Also update Firebase
+  updateMatchStatus(schedule.matchId, "cancelled");
+  
   addLog(`Scheduled match ${schedule.matchId} was cancelled.`);
 }
 

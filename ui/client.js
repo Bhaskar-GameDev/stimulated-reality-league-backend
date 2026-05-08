@@ -159,11 +159,27 @@ module.exports = `
     function resetSelection(side, teamName) {
       const saved = savedLineups[teamName];
       const players = getTeamPlayers(teamName);
+      
+      const rolePriority = {
+        "batsman": 1,
+        "wicket-keeper": 2,
+        "wicketkeeper": 2,
+        "allrounder": 3,
+        "all-rounder": 3,
+        "bowler": 4
+      };
+
       const validIds = new Set(players.map(player => player.id));
       if (saved && Array.isArray(saved) && saved.length === 11 && saved.every(id => validIds.has(id))) {
         selectionState[side] = [...saved];
       } else {
-        selectionState[side] = players.slice(0, 11).map(player => player.id);
+        // Sort players by role priority for default selection
+        const sorted = [...players].sort((a, b) => {
+          const pA = rolePriority[(a.role || "").toLowerCase()] || 99;
+          const pB = rolePriority[(b.role || "").toLowerCase()] || 99;
+          return pA - pB;
+        });
+        selectionState[side] = sorted.slice(0, 11).map(player => player.id);
       }
     }
 
