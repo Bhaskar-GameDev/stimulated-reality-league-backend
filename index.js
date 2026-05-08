@@ -33,7 +33,6 @@ const logger = {
   match: (matchId, msg) => console.log(`[MATCH:${matchId}] [${new Date().toISOString()}] ${msg}`)
 };
 
-const LINEUPS_PATH = path.join(__dirname, "saved_lineups.json");
 const MAX_LOG_ITEMS = 150;
 const teamCatalog = buildTeamCatalog(teamsData);
 const teamOptions = Object.values(teamCatalog)
@@ -98,7 +97,7 @@ function saveSchedules() {
   }
 }
 
-// Lineup management is now handled by lineupService
+
 
 function openBrowser(urlToOpen) {
   const platform = process.platform;
@@ -718,8 +717,8 @@ const server = http.createServer(async (req, res) => {
         const summary = {
           activeMatchCount: activeMatchList.length,
           statusCounts,
-          savedLineupCount: Object.keys(lineups).length,
           teamCount: Object.keys(teamCatalog).length,
+
           uptimeSeconds: Math.floor((Date.now() - new Date(serverStartedAt).getTime()) / 1000),
           nextScheduledMatch: schedules
             .filter(s => s.status === "scheduled" && s.startAt)
@@ -793,27 +792,8 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-    if (req.method === "GET" && requestUrl.pathname === "/api/lineups") {
-      jsonResponse(res, 200, lineupService.getAllLineups());
-      return;
-    }
-
-    if (req.method === "POST" && requestUrl.pathname === "/api/save-lineup") {
-      try {
-        const payload = await parseRequestBody(req);
-        if (!payload.teamName || !Array.isArray(payload.lineupIds) || payload.lineupIds.length !== 11) {
-          throw new Error("Invalid lineup data. Need teamName and exactly 11 lineupIds.");
-        }
-        lineupService.saveLineup(payload.teamName, payload.lineupIds);
-        jsonResponse(res, 200, { message: "Lineup saved successfully." });
-      } catch (error) {
-        logger.error("API /api/save-lineup failed", error);
-        jsonResponse(res, error.statusCode || 400, { error: error.message });
-      }
-      return;
-    }
-
     if (req.method === "GET" && requestUrl.pathname === "/api/scheduled") {
+
       jsonResponse(res, 200, schedules);
       return;
     }

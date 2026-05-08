@@ -1,28 +1,19 @@
 const db = require('../firebase');
-const fs = require('fs');
-const path = require('path');
-
-const LOCAL_LINEUPS_PATH = path.join(__dirname, '../saved_lineups.json');
-
 
 let firebaseLineups = {};
 
+/**
+ * Fetches all lineups from the 'lineups' node in Firebase.
+ * The user has updated these manually or via external tools.
+ */
 async function fetchLineupsFromFirebase() {
   try {
-    const snapshot = await db.ref("lineups/matches").get();
+    const snapshot = await db.ref("lineups").get();
     firebaseLineups = snapshot.exists() ? snapshot.val() : {};
     console.log("Lineups fetched from Firebase.");
     return firebaseLineups;
   } catch (error) {
-    console.error("Failed to fetch lineups from Firebase, using local fallback:", error.message);
-    try {
-      if (fs.existsSync(LOCAL_LINEUPS_PATH)) {
-        firebaseLineups = JSON.parse(fs.readFileSync(LOCAL_LINEUPS_PATH, 'utf8'));
-        console.log("Lineups loaded from local fallback.");
-      }
-    } catch (localErr) {
-      console.error("Failed to load local lineups:", localErr.message);
-    }
+    console.error("Failed to fetch lineups from Firebase:", error.message);
     return firebaseLineups;
   }
 }
@@ -30,16 +21,21 @@ async function fetchLineupsFromFirebase() {
 // Initial fetch
 fetchLineupsFromFirebase();
 
-// Update every minute
+// Update every minute to stay in sync with manual Firebase changes
 setInterval(fetchLineupsFromFirebase, 60000);
 
 function getLineup(teamName) {
   return firebaseLineups[teamName] || null;
 }
 
+/**
+ * Saves a lineup to Firebase. 
+ * Note: The user mentioned having updated these in Firebase, 
+ * but we keep this for potential programmatic updates.
+ */
 async function saveLineup(teamName, lineupIds) {
   try {
-    await db.ref(`lineups/matches/${teamName}`).set(lineupIds);
+    await db.ref(`lineups/${teamName}`).set(lineupIds);
     firebaseLineups[teamName] = lineupIds;
   } catch (error) {
     console.error("Failed to save lineup to Firebase:", error.message);
@@ -53,3 +49,4 @@ module.exports = {
   saveLineup,
   getAllLineups: () => firebaseLineups
 };
+

@@ -100,35 +100,8 @@ ${styles}
           </form>
         </div>
 
-        <div class="card">
-          <h2 class="card-title">Playing XIs & Batting Order</h2>
-          <div class="lineups">
-            <div class="lineup">
-              <div class="lineup-header">
-                <h3 id="lineupAName">Team A</h3>
-                <span id="lineupACount" class="selection-count">0/11 selected</span>
-              </div>
-              <button type="button" id="saveLineupA" class="btn btn-secondary btn-sm" style="margin-bottom: 1rem; width: 100%; font-size: 0.8rem;">Save Default XI</button>
-              <h4 style="margin: 0.5rem 0; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gray-500);">Batting Order</h4>
-              <ul id="playingA" class="playing-list" style="margin-bottom: 1.5rem; min-height: 50px;"></ul>
-              <h4 style="margin: 0.5rem 0; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gray-500);">Squad Selection</h4>
-              <input type="text" id="searchA" class="form-control" placeholder="Search..." style="margin-bottom: 0.75rem; padding: 0.6rem;" />
-              <ul id="lineupA" class="squad-list"></ul>
-            </div>
-            <div class="lineup">
-              <div class="lineup-header">
-                <h3 id="lineupBName">Team B</h3>
-                <span id="lineupBCount" class="selection-count">0/11 selected</span>
-              </div>
-              <button type="button" id="saveLineupB" class="btn btn-secondary btn-sm" style="margin-bottom: 1rem; width: 100%; font-size: 0.8rem;">Save Default XI</button>
-              <h4 style="margin: 0.5rem 0; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gray-500);">Batting Order</h4>
-              <ul id="playingB" class="playing-list" style="margin-bottom: 1.5rem; min-height: 50px;"></ul>
-              <h4 style="margin: 0.5rem 0; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gray-500);">Squad Selection</h4>
-              <input type="text" id="searchB" class="form-control" placeholder="Search..." style="margin-bottom: 0.75rem; padding: 0.6rem;" />
-              <ul id="lineupB" class="squad-list"></ul>
-            </div>
-          </div>
-        </div>
+        <!-- Lineup management removed as per user request. Lineups are fetched automatically from Firebase. -->
+
       </div>
 
       <div class="secondary-column">
