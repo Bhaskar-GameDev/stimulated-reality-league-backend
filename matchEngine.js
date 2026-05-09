@@ -173,7 +173,7 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
     }
   };
 
-  const target = chaseTarget || 9999; // For 1st innings, target is high
+
 
   while (currentOver < oversLimit && wickets < 10 && (chaseTarget === null || runs < chaseTarget)) {
     // Select bowler for the over
