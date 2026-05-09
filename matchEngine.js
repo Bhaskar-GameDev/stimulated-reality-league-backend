@@ -258,7 +258,7 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
 
       // NEW/OLD ARCHITECTURE: Record every ball in the 'balls' section
       const ballId = `${currentOver}_${legalBallsInOver}_${Date.now()}`; // Unique key for the ball
-      const ballRuns = result === "W" ? 0 : (result === "WD" || result === "NB" ? 1 : (parseInt(result) || 0));
+      const totalBallRuns = result === "W" ? 0 : (result === "WD" || result === "NB" ? 1 : (parseInt(result) || 0));
       const isWicket = result === "W";
       
       const ballData = {
@@ -266,7 +266,7 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
         over: currentOver,
         ball: legalBallsInOver,
         result,
-        ballRuns, // Numeric runs for charts
+        ballRuns: totalBallRuns, // Numeric runs for charts
         isWicket, // Boolean for charts
         batsman: batsman.name,
         bowler: bowler.name,
