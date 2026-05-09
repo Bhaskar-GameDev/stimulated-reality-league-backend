@@ -358,6 +358,12 @@ async function startMatch(matchId, teamA, teamB, options = {}) {
   await db.ref(`matches/${matchId}/meta`).set(initData);
   await db.ref(`matches/list/${matchId}`).set(initData);
 
+  // Save Lineups (Playing XI) so they appear in the Info tab
+  const lineups = {};
+  lineups[teamAName] = teamA;
+  lineups[teamBName] = teamB;
+  await db.ref(`matches/${matchId}/lineups`).set(lineups);
+
   // Innings 1: Team A bats
   const firstInnings = await simulateInnings(matchId, 1, teamA, teamB, {
       oversLimit, delayMs, rng, battingTeamName: teamAName, bowlingTeamName: teamBName, venue
