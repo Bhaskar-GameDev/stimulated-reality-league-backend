@@ -139,6 +139,7 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
   const scorecard = { batting: {}, bowling: {}, extras: { wides: 0, noBalls: 0, byes: 0, legByes: 0 } };
   const bowlerStats = {}; // Tracks overs, runs, wickets per bowler
   const recentBalls = [];
+  let currentPartnership = { runs: 0, balls: 0, strikerRuns: 0, nonStrikerRuns: 0, strikerId: null, nonStrikerId: null };
   
   // Initialize scorecard with all players (DNB)
   batting.forEach((p, i) => {
@@ -181,20 +182,27 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
       let ballRuns = 0;
       let isLegal = true;
 
+      // Partnership tracking
+      if (currentPartnership.strikerId !== (batsman.id || batsman.name)) {
+          // If striker changed (e.g. new innings or just started), sync IDs
+          currentPartnership.strikerId = (batsman.id || batsman.name);
+          currentPartnership.nonStrikerId = batting[nonStrikerIdx]?.id || batting[nonStrikerIdx]?.name;
+      }
+
       if (result === "WD") {
         runs += 1;
         scorecard.extras.wides += 1;
         bowlerStats[bowlerId].runs += 1;
         runsThisOver += 1;
+        currentPartnership.runs += 1; // Wide adds to partnership total but not to individual balls
         isLegal = false;
       } else if (result === "NB") {
         runs += 1;
         scorecard.extras.noBalls += 1;
         bowlerStats[bowlerId].runs += 1;
         runsThisOver += 1;
+        currentPartnership.runs += 1;
         isLegal = false;
-        // Simplified: next ball isn't free hit, but the batsman is safe? 
-        // User didn't specify free hit logic in detail, keeping it simple.
       } else if (result === "W") {
         wickets += 1;
         scorecard.batting[batsman.id || batsman.name].status = "out";
@@ -202,6 +210,9 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
         bowlerStats[bowlerId].balls += 1;
         bowlerStats[bowlerId].wickets += 1;
         
+        // Reset Partnership on wicket
+        currentPartnership = { runs: 0, balls: 0, strikerRuns: 0, nonStrikerRuns: 0, strikerId: null, nonStrikerId: null };
+
         if (nextBatsmanIdx < batting.length) {
             strikerIdx = nextBatsmanIdx++;
             scorecard.batting[batting[strikerIdx].id || batting[strikerIdx].name].status = "not out";
@@ -215,6 +226,11 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
         bowlerStats[bowlerId].runs += ballRuns;
         bowlerStats[bowlerId].balls += 1;
         
+        // Update Partnership
+        currentPartnership.runs += ballRuns;
+        currentPartnership.balls += 1;
+        currentPartnership.strikerRuns += ballRuns;
+
         const batStat = scorecard.batting[batsman.id || batsman.name];
         batStat.runs += ballRuns;
         batStat.balls += 1;
@@ -225,6 +241,9 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
         // Strike rotation
         if (ballRuns % 2 !== 0) {
             [strikerIdx, nonStrikerIdx] = [nonStrikerIdx, strikerIdx];
+            // Also rotate partnership individual trackers
+            [currentPartnership.strikerRuns, currentPartnership.nonStrikerRuns] = [currentPartnership.nonStrikerRuns, currentPartnership.strikerRuns];
+            [currentPartnership.strikerId, currentPartnership.nonStrikerId] = [currentPartnership.nonStrikerId, currentPartnership.strikerId];
         }
       }
 
@@ -239,11 +258,16 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
 
       // NEW/OLD ARCHITECTURE: Record every ball in the 'balls' section
       const ballId = `${currentOver}_${legalBallsInOver}_${Date.now()}`; // Unique key for the ball
+      const ballRuns = result === "W" ? 0 : (result === "WD" || result === "NB" ? 1 : (parseInt(result) || 0));
+      const isWicket = result === "W";
+      
       const ballData = {
         inning: inningNumber,
         over: currentOver,
         ball: legalBallsInOver,
         result,
+        ballRuns, // Numeric runs for charts
+        isWicket, // Boolean for charts
         batsman: batsman.name,
         bowler: bowler.name,
         score: `${runs}/${wickets}`,
@@ -269,6 +293,7 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
         nonStriker: batting[nonStrikerIdx]?.name || "None",
         bowler: bowler.name,
         recentBalls,
+        partnership: currentPartnership, // ADDED: Active partnership data
         target: chaseTarget,
         result,
         lastBall: ballData // Include latest ball data in snapshot too
