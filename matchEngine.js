@@ -150,15 +150,63 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
 
   let lastBowlerId = null;
 
+  const calculateWinProbability = (runs, wickets, over, ball, target) => {
+    if (target === null) {
+      // 1st Innings: Heuristic based on projected score
+      const totalBalls = oversLimit * 6;
+      const ballsDone = (over * 6) + ball;
+      const projected = ballsDone > 0 ? (runs / ballsDone) * totalBalls : 160;
+      let prob = 50 + (projected - 160) / 2.5;
+      prob -= (wickets * 3); 
+      return Math.max(15, Math.min(85, Math.round(prob)));
+    } else {
+      // 2nd Innings: Based on RRR and Wickets
+      const totalBalls = oversLimit * 6;
+      const ballsDone = (over * 6) + ball;
+      const ballsLeft = Math.max(1, totalBalls - ballsDone);
+      const runsLeft = target - runs;
+      if (runsLeft <= 0) return 100;
+      const rrr = (runsLeft / ballsLeft) * 6;
+      const wicketsLeft = 10 - wickets;
+      let prob = 100 - (rrr * 8) + (wicketsLeft * 4) - 20;
+      return Math.max(0, Math.min(100, Math.round(prob)));
+    }
+  };
+
+  const target = chaseTarget || 9999; // For 1st innings, target is high
+
   while (currentOver < oversLimit && wickets < 10 && (chaseTarget === null || runs < chaseTarget)) {
     // Select bowler for the over
-    const possibleBowlers = bowling.filter(p => {
+    const possibleBowlers = bowling.map((p, index) => ({ ...p, originalIndex: index }))
+      .filter(p => {
         const id = p.id || p.name;
         const stats = bowlerStats[id] || { overs: 0 };
         return id !== lastBowlerId && stats.overs < 4;
+      });
+    
+    // Sort possible bowlers: 
+    // Frontline Bowlers (index 7-10) get highest priority
+    // All-rounders (index 4-6) get medium priority
+    // Top order (index 0-3) get lowest priority
+    possibleBowlers.sort((a, b) => {
+        const getPriority = (idx) => {
+            if (idx >= 7) return 3; // Main Bowler
+            if (idx >= 4) return 2; // All-rounder
+            return 1; // Part-timer
+        };
+        const prioA = getPriority(a.originalIndex);
+        const prioB = getPriority(b.originalIndex);
+        if (prioA !== prioB) return prioB - prioA;
+        // If same priority, pick the one with fewer overs bowled
+        const statsA = bowlerStats[a.id || a.name]?.overs || 0;
+        const statsB = bowlerStats[b.id || b.name]?.overs || 0;
+        return statsA - statsB;
     });
-    // Fallback if no legal bowler found (shouldn't happen in 11-man squad)
-    const bowler = possibleBowlers[0] || bowling[Math.floor(rng.next() * bowling.length)];
+
+    // Pick among best available
+    const poolSize = possibleBowlers.length >= 3 ? 3 : possibleBowlers.length;
+    const bowler = possibleBowlers[Math.floor(rng.next() * poolSize)] || bowling[10];
+    
     const bowlerId = bowler.id || bowler.name;
     lastBowlerId = bowlerId;
 
@@ -294,6 +342,7 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
         bowler: bowler.name,
         recentBalls,
         partnership: currentPartnership, // ADDED: Active partnership data
+        winProbability: calculateWinProbability(runs, wickets, currentOver, legalBallsInOver, chaseTarget),
         target: chaseTarget,
         result,
         lastBall: ballData // Include latest ball data in snapshot too
