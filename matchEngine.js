@@ -256,14 +256,17 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
       } else if (result === "W") {
         wickets += 1;
         const outBatsman = batsman;
+        const batStat = scorecard.batting[outBatsman.id || outBatsman.name];
         lastWicket = {
             name: outBatsman.name,
+            playerRuns: batStat.runs,
+            playerBalls: batStat.balls + 1, // Including the ball they got out on
             score: runs,
             overs: `${currentOver}.${legalBallsInOver + 1}`
         };
         
-        scorecard.batting[outBatsman.id || outBatsman.name].status = "out";
-        scorecard.batting[outBatsman.id || outBatsman.name].balls += 1;
+        batStat.status = "out";
+        batStat.balls += 1;
         bowlerStats[bowlerId].balls += 1;
         bowlerStats[bowlerId].wickets += 1;
         
