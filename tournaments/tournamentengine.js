@@ -23,6 +23,12 @@ async function createTournament({ templateKey, season, teams, tournamentName, fi
     });
   }
 
+  // If autoMode is enabled, override all fixture timestamps to 'now' for immediate sequential execution
+  if (autoMode) {
+    const now = new Date().toISOString();
+    tournamentFixtures = tournamentFixtures.map(f => ({ ...f, utcTimestamp: now }));
+  }
+
   const tournamentData = {
     id: tournamentId,
     name: tournamentName || `${template.name} ${season}`,

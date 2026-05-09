@@ -1032,6 +1032,12 @@ const server = http.createServer(async (req, res) => {
       try {
         const payload = await parseRequestBody(req);
         const tournamentId = await tournamentEngine.createTournament(payload);
+        
+        // If autoMode, trigger the first match immediately without waiting for the 30s poll
+        if (payload.autoMode) {
+          tournamentEngine.runNextMatch(tournamentId).catch(err => console.error("Initial auto-run failed:", err));
+        }
+
         jsonResponse(res, 200, { message: "Tournament saved successfully.", tournamentId });
       } catch (error) {
         jsonResponse(res, 500, { error: error.message });
