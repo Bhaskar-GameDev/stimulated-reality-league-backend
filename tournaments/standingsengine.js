@@ -1,9 +1,22 @@
 function updateStandings(standings, result) {
-  const { teamA, teamB, winner, teamAScore, teamBScore, teamAOvers, teamBOvers } = result;
+  const { teamA, teamB, winner, teamAScore, teamBScore, teamAOvers, teamBOvers, group } = result;
 
-  const update = (teamId, name, won, runsScored, oversFaced, runsConceded, oversBowled) => {
+  const update = (teamId, name, won, runsScored, oversFaced, runsConceded, oversBowled, groupName) => {
     if (!standings[teamId]) {
-      standings[teamId] = { teamId, teamName: name, played: 0, won: 0, lost: 0, points: 0, nrr: 0, runsScored: 0, oversFaced: 0, runsConceded: 0, oversBowled: 0 };
+      standings[teamId] = { 
+        teamId, 
+        teamName: name, 
+        group: groupName || "A",
+        played: 0, 
+        won: 0, 
+        lost: 0, 
+        points: 0, 
+        nrr: 0, 
+        runsScored: 0, 
+        oversFaced: 0, 
+        runsConceded: 0, 
+        oversBowled: 0 
+      };
     }
     const s = standings[teamId];
     s.played += 1;
@@ -20,8 +33,8 @@ function updateStandings(standings, result) {
     s.nrr = calculateNRR(s.runsScored, s.oversFaced, s.runsConceded, s.oversBowled);
   };
 
-  update(teamA.id, teamA.name, winner === teamA.name, teamAScore, teamAOvers, teamBScore, teamBOvers);
-  update(teamB.id, teamB.name, winner === teamB.name, teamBScore, teamBOvers, teamAScore, teamAOvers);
+  update(teamA.id, teamA.name, winner === teamA.name, teamAScore, teamAOvers, teamBScore, teamBOvers, group);
+  update(teamB.id, teamB.name, winner === teamB.name, teamBScore, teamBOvers, teamAScore, teamAOvers, group);
   
   return standings;
 }
@@ -33,10 +46,22 @@ function calculateNRR(runsScored, oversFaced, runsConceded, oversBowled) {
 }
 
 function sortStandings(standings) {
-  return Object.values(standings).sort((a, b) => {
+  const list = Object.values(standings);
+  return list.sort((a, b) => {
+    if (a.group !== b.group) return a.group.localeCompare(b.group);
     if (b.points !== a.points) return b.points - a.points;
     return b.nrr - a.nrr;
   });
 }
 
-module.exports = { updateStandings, sortStandings };
+function getGroupStandings(standings) {
+  const sorted = sortStandings(standings);
+  const groups = {};
+  sorted.forEach(s => {
+    if (!groups[s.group]) groups[s.group] = [];
+    groups[s.group].push(s);
+  });
+  return groups;
+}
+
+module.exports = { updateStandings, sortStandings, getGroupStandings };

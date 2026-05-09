@@ -7,7 +7,7 @@ const statsEngine = require("./statsengine");
 const fixtureGenerator = require("./fixturegenerator");
 const templates = require("./tournamenttemplates");
 
-async function createTournament({ templateKey, season, teams, tournamentName, fixtures, startDate, country, overs }) {
+async function createTournament({ templateKey, season, teams, tournamentName, fixtures, startDate, country, overs, autoMode }) {
   const template = templates[templateKey];
   const tournamentId = `TOURN_${Date.now()}`;
   
@@ -27,8 +27,10 @@ async function createTournament({ templateKey, season, teams, tournamentName, fi
     id: tournamentId,
     name: tournamentName || `${template.name} ${season}`,
     status: "upcoming",
+    stage: template.format === "group_knockout" ? "league" : "league",
     season,
     templateKey,
+    autoMode: !!autoMode,
     format: template.format,
     overs: overs || template.overs || 20, // Use provided overs or template default
     teams,
@@ -59,11 +61,11 @@ async function runNextMatch(tournamentId) {
 
   const fixture = tournament.fixtures[nextFixtureIndex];
   
-  // REAL-TIME CHECK: Only run if the match is due
+  // REAL-TIME CHECK: Only run if the match is due (unless autoMode is on)
   const now = new Date();
   const scheduledTime = new Date(fixture.utcTimestamp);
   
-  if (now < scheduledTime) {
+  if (!tournament.autoMode && now < scheduledTime) {
     console.log(`Match ${fixture.matchId} is scheduled for ${fixture.utcTimestamp}. Waiting...`);
     return { status: "waiting", scheduledTime: fixture.utcTimestamp };
   }
@@ -98,6 +100,12 @@ async function runNextMatch(tournamentId) {
     });
 
     await processMatchResult(tournamentId, nextFixtureIndex, result);
+    
+    // If auto-mode, trigger next match after a small delay
+    if (tournament.autoMode) {
+      setTimeout(() => runNextMatch(tournamentId), 2000);
+    }
+
     return { status: "completed", matchId: fixture.matchId };
   } catch (error) {
     console.error("Match simulation failed", error);
@@ -119,7 +127,8 @@ async function processMatchResult(tournamentId, fixtureIndex, rawResult) {
     teamAScore: rawResult.firstInnings.runs,
     teamBScore: rawResult.secondInnings.runs,
     teamAOvers: parseFloat(rawResult.firstInnings.overs),
-    teamBOvers: parseFloat(rawResult.secondInnings.overs)
+    teamBOvers: parseFloat(rawResult.secondInnings.overs),
+    group: fixture.group || "A"
   };
 
   // Update Standings (Decoupled Path)
@@ -136,6 +145,44 @@ async function processMatchResult(tournamentId, fixtureIndex, rawResult) {
     winner: rawResult.result.winner,
     resultSummary: rawResult.result.margin ? `${rawResult.result.winner} won by ${rawResult.result.margin}` : "Match tied"
   });
+
+  // Knockout propagation logic
+  const currentFixturesSnap = await db.ref(`tournaments/${tournamentId}/fixtures`).once("value");
+  const fixtures = currentFixturesSnap.val() || [];
+  let fixturesChanged = false;
+
+  const winnerSF1 = fixtures.find(f => f.matchId === "SF1")?.winner;
+  const winnerSF2 = fixtures.find(f => f.matchId === "SF2")?.winner;
+  const winnerQ1 = fixtures.find(f => f.matchId === "PLY_Q1")?.winner;
+  const winnerEL = fixtures.find(f => f.matchId === "PLY_EL")?.winner;
+
+  fixtures.forEach((f, idx) => {
+    if (f.status !== "scheduled") return;
+
+    if (f.matchId === "FINAL" && tournament.format === "group_knockout") {
+      if (winnerSF1 && f.teamA.name === "TBD") { f.teamA = { id: winnerSF1, name: winnerSF1 }; fixturesChanged = true; }
+      if (winnerSF2 && f.teamB.name === "TBD") { f.teamB = { id: winnerSF2, name: winnerSF2 }; fixturesChanged = true; }
+    }
+    
+    if (tournament.format === "league") { // IPL Style
+      if (f.matchId === "PLY_Q2") {
+        const loserQ1 = fixtures.find(fi => fi.matchId === "PLY_Q1")?.winner === fixtures.find(fi => fi.matchId === "PLY_Q1")?.teamA.name 
+          ? fixtures.find(fi => fi.matchId === "PLY_Q1")?.teamB 
+          : fixtures.find(fi => fi.matchId === "PLY_Q1")?.teamA;
+        if (loserQ1 && f.teamA.name === "TBD") { f.teamA = loserQ1; fixturesChanged = true; }
+        if (winnerEL && f.teamB.name === "TBD") { f.teamB = { id: winnerEL, name: winnerEL }; fixturesChanged = true; }
+      }
+      if (f.matchId === "PLY_FN") {
+        const winnerQ2 = fixtures.find(fi => fi.matchId === "PLY_Q2")?.winner;
+        if (winnerQ1 && f.teamA.name === "TBD") { f.teamA = { id: winnerQ1, name: winnerQ1 }; fixturesChanged = true; }
+        if (winnerQ2 && f.teamB.name === "TBD") { f.teamB = { id: winnerQ2, name: winnerQ2 }; fixturesChanged = true; }
+      }
+    }
+  });
+
+  if (fixturesChanged) {
+    await db.ref(`tournaments/${tournamentId}/fixtures`).set(fixtures);
+  }
 
   // Narrative Trigger (Placeholder for Step B)
   await generateNarrative(tournamentId, rawResult);
@@ -180,19 +227,65 @@ async function advanceToPlayoffs(tournamentId) {
   const tournamentSnap = await db.ref(`tournaments/${tournamentId}`).once("value");
   const tournament = tournamentSnap.val();
   
-  const sorted = standingsEngine.sortStandings(tournament.standings);
-  const top4 = sorted.slice(0, 4);
+  if (tournament.format === "group_knockout") {
+    const groupStandings = standingsEngine.getGroupStandings(tournament.standings);
+    const winners = Object.keys(groupStandings).map(g => groupStandings[g][0]);
 
-  // Example IPL Style Playoffs
-  const playoffs = [
-    { matchId: `PLY_Q1`, teamA: top4[0], teamB: top4[1], stage: "Qualifier 1", status: "scheduled" },
-    { matchId: `PLY_EL`, teamA: top4[2], teamB: top4[3], stage: "Eliminator", status: "scheduled" },
-    { matchId: `PLY_Q2`, teamA: "TBD", teamB: "TBD", stage: "Qualifier 2", status: "scheduled" },
-    { matchId: `PLY_FN`, teamA: "TBD", teamB: "TBD", stage: "Final", status: "scheduled" }
-  ];
+    // Semi Finals for World Cup (4 groups)
+    const playoffs = [
+      { 
+        matchId: `SF1`, 
+        teamA: { id: winners[0].teamId, name: winners[0].teamName }, 
+        teamB: { id: winners[1].teamId, name: winners[1].teamName }, 
+        stage: "Semi Final 1", status: "scheduled", utcTimestamp: new Date().toISOString() 
+      },
+      { 
+        matchId: `SF2`, 
+        teamA: { id: winners[2].teamId, name: winners[2].teamName }, 
+        teamB: { id: winners[3].teamId, name: winners[3].teamName }, 
+        stage: "Semi Final 2", status: "scheduled", utcTimestamp: new Date().toISOString() 
+      },
+      { 
+        matchId: `FINAL`, 
+        teamA: { id: "TBD", name: "TBD" }, 
+        teamB: { id: "TBD", name: "TBD" }, 
+        stage: "Final", status: "scheduled", utcTimestamp: new Date().toISOString() 
+      }
+    ];
 
-  await db.ref(`tournaments/${tournamentId}/fixtures`).set([...tournament.fixtures, ...playoffs]);
-  await db.ref(`tournaments/${tournamentId}/stage`).set("playoffs");
+    await db.ref(`tournaments/${tournamentId}/fixtures`).set([...tournament.fixtures, ...playoffs]);
+    await db.ref(`tournaments/${tournamentId}/stage`).set("playoffs");
+  } else {
+    // IPL Style Playoffs
+    const sorted = standingsEngine.sortStandings(tournament.standings);
+    const top4 = sorted.slice(0, 4);
+
+    const playoffs = [
+      { 
+        matchId: `PLY_Q1`, 
+        teamA: { id: top4[0].teamId, name: top4[0].teamName }, 
+        teamB: { id: top4[1].teamId, name: top4[1].teamName }, 
+        stage: "Qualifier 1", status: "scheduled", utcTimestamp: new Date().toISOString() 
+      },
+      { 
+        matchId: `PLY_EL`, 
+        teamA: { id: top4[2].teamId, name: top4[2].teamName }, 
+        teamB: { id: top4[3].teamId, name: top4[3].teamName }, 
+        stage: "Eliminator", status: "scheduled", utcTimestamp: new Date().toISOString() 
+      },
+      { 
+        matchId: `PLY_Q2`, teamA: { id: "TBD", name: "TBD" }, teamB: { id: "TBD", name: "TBD" }, 
+        stage: "Qualifier 2", status: "scheduled", utcTimestamp: new Date().toISOString() 
+      },
+      { 
+        matchId: `PLY_FN`, teamA: { id: "TBD", name: "TBD" }, teamB: { id: "TBD", name: "TBD" }, 
+        stage: "Final", status: "scheduled", utcTimestamp: new Date().toISOString() 
+      }
+    ];
+
+    await db.ref(`tournaments/${tournamentId}/fixtures`).set([...tournament.fixtures, ...playoffs]);
+    await db.ref(`tournaments/${tournamentId}/stage`).set("playoffs");
+  }
 }
 
 module.exports = { createTournament, runNextMatch, processMatchResult };

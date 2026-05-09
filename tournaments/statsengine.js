@@ -1,5 +1,7 @@
 function updateTournamentStats(stats, matchResult) {
-  // stats: { playerStats: { playerId: { runs, wickets, balls, matches } } }
+  // stats: { playerStats: { playerId: { id, name, runs, wickets, balls, matches } } }
+  if (!stats.playerStats) stats.playerStats = {};
+  
   const players = [...matchResult.teamAPlayers, ...matchResult.teamBPlayers];
   
   players.forEach(p => {
@@ -16,4 +18,18 @@ function updateTournamentStats(stats, matchResult) {
   return stats;
 }
 
-module.exports = { updateTournamentStats };
+function getLeaderboard(stats) {
+  const players = Object.values(stats.playerStats || {});
+  
+  const orangeCap = [...players]
+    .sort((a, b) => b.runs - a.runs)
+    .slice(0, 10);
+    
+  const purpleCap = [...players]
+    .sort((a, b) => b.wickets - a.wickets)
+    .slice(0, 10);
+    
+  return { orangeCap, purpleCap };
+}
+
+module.exports = { updateTournamentStats, getLeaderboard };

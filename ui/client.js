@@ -678,11 +678,13 @@ module.exports = `
         const template = document.getElementById("tournamentTemplate").value;
         const season = document.getElementById("tournamentSeason").value;
         const name = document.getElementById("tournamentNameInput").value;
+        const autoMode = document.getElementById("autoSimTournament").checked;
 
         await postJson("/api/tournaments/save", {
           templateKey: template,
           season: Number(season),
           tournamentName: name,
+          autoMode: autoMode,
           teams: Array.from(selectedTournamentTeams).map(name => ({ id: name, name })),
           fixtures: generatedFixtures
         });
@@ -719,7 +721,10 @@ module.exports = `
         )).join("") || "<p class='note'>No tournaments found.</p>";
 
         document.querySelectorAll("[data-tid]").forEach(btn => {
-          btn.addEventListener("click", () => fetchStandings(btn.dataset.tid));
+          btn.addEventListener("click", () => {
+            fetchStandings(btn.dataset.tid);
+            fetchLeaders(btn.dataset.tid);
+          });
         });
       } catch (err) {
         console.error("Failed to load tournaments");
@@ -752,11 +757,36 @@ module.exports = `
       }
     }
 
-    async function init() {
-      updateFormState();
-      await refresh();
-      setInterval(refresh, 3000);
-      setInterval(refreshTournaments, 10000);
+    async function fetchLeaders(tid) {
+      try {
+        const leadersContainer = document.getElementById("leadersContainer");
+        leadersContainer.innerHTML = "<p class='note'>Loading stats...</p>";
+        const res = await fetch("/api/tournaments/leaders/" + tid);
+        const data = await res.json();
+
+        const orangeHtml = data.orangeCap.map((p, i) => 
+          '<tr><td style="padding: 0.4rem;">' + (i+1) + '. ' + escapeHtml(p.name) + '</td><td style="padding: 0.4rem; text-align:right;"><strong>' + p.runs + '</strong></td></tr>'
+        ).join("");
+
+        const purpleHtml = data.purpleCap.map((p, i) => 
+          '<tr><td style="padding: 0.4rem;">' + (i+1) + '. ' + escapeHtml(p.name) + '</td><td style="padding: 0.4rem; text-align:right;"><strong>' + p.wickets + '</strong></td></tr>'
+        ).join("");
+
+        leadersContainer.innerHTML = (
+          '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">'
+            + '<div>'
+              + '<h4 style="color: #f59e0b; margin-bottom: 0.5rem; font-size: 0.8rem;">Orange Cap</h4>'
+              + '<table style="width:100%; font-size: 0.75rem;">' + orangeHtml + '</table>'
+            + '</div>'
+            + '<div>'
+              + '<h4 style="color: #8b5cf6; margin-bottom: 0.5rem; font-size: 0.8rem;">Purple Cap</h4>'
+              + '<table style="width:100%; font-size: 0.75rem;">' + purpleHtml + '</table>'
+            + '</div>'
+          + '</div>'
+        );
+      } catch (err) {
+        document.getElementById("leadersContainer").innerHTML = "<p class='note'>Failed to load stats.</p>";
+      }
     }
 
     init();

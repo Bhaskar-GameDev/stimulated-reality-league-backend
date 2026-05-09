@@ -174,6 +174,11 @@ ${styles}
                 </div>
                 <p id="teamCountLabel" class="note" style="font-weight: 700; color: var(--primary);">0 teams selected</p>
               </div>
+
+              <div class="form-group" style="margin-top: 1rem; display: flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.05); padding: 0.75rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);">
+                <input type="checkbox" id="autoSimTournament" style="width: 20px; height: 20px; cursor: pointer;">
+                <label for="autoSimTournament" style="font-weight: 700; color: var(--primary); cursor: pointer; margin: 0;">Enable Automated Simulation (Run matches one after another)</label>
+              </div>
             </div>
 
             <button type="button" id="generateTournamentBtn" class="btn btn-primary btn-full" style="margin-top: 1rem;">Generate Season Fixtures</button>
@@ -193,6 +198,13 @@ ${styles}
           <h2 class="card-title">Tournament Standings</h2>
           <div id="standingsContainer" class="standings-view">
             <p class="note">Select a tournament to view points table.</p>
+          </div>
+        </div>
+
+        <div class="card small-card">
+          <h2 class="card-title">Tournament Leaders</h2>
+          <div id="leadersContainer" class="leaders-view">
+            <p class="note">Select a tournament to view Orange & Purple caps.</p>
           </div>
         </div>
 

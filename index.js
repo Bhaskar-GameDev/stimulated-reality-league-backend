@@ -13,6 +13,7 @@ const matchService = require("./services/matchService");
 const tournamentEngine = require("./tournaments/tournamentengine");
 const fixtureGenerator = require("./tournaments/fixturegenerator");
 const standingsEngine = require("./tournaments/standingsengine");
+const statsEngine = require("./tournaments/statsengine");
 const templates = require("./tournaments/tournamenttemplates");
 
 let PORT = Number(process.env.PORT || 3000);
@@ -1044,6 +1045,18 @@ const server = http.createServer(async (req, res) => {
         const snap = await db.ref(`tournaments/${tid}/standings`).once("value");
         const standings = snap.val() || {};
         jsonResponse(res, 200, standingsEngine.sortStandings(standings));
+      } catch (error) {
+        jsonResponse(res, 500, { error: error.message });
+      }
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname.startsWith("/api/tournaments/leaders/")) {
+      try {
+        const tid = requestUrl.pathname.split("/").pop();
+        const snap = await db.ref(`tournaments/${tid}/stats`).once("value");
+        const stats = snap.val() || { playerStats: {} };
+        jsonResponse(res, 200, statsEngine.getLeaderboard(stats));
       } catch (error) {
         jsonResponse(res, 500, { error: error.message });
       }
