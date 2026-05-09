@@ -140,6 +140,7 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
   const bowlerStats = {}; // Tracks overs, runs, wickets per bowler
   const recentBalls = [];
   let currentPartnership = { runs: 0, balls: 0, strikerRuns: 0, nonStrikerRuns: 0, strikerId: null, nonStrikerId: null };
+  let lastWicket = null;
   
   // Initialize scorecard with all players (DNB)
   batting.forEach((p, i) => {
@@ -219,6 +220,7 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
     while (legalBallsInOver < 6 && wickets < 10 && (runs < target)) {
       if (abortSignal?.aborted) return;
 
+      let currentMilestone = null;
       const batsman = batting[strikerIdx];
       const context = {
         currentOver, currentBallInOver: legalBallsInOver, totalOvers: oversLimit, 
@@ -253,8 +255,15 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
         isLegal = false;
       } else if (result === "W") {
         wickets += 1;
-        scorecard.batting[batsman.id || batsman.name].status = "out";
-        scorecard.batting[batsman.id || batsman.name].balls += 1;
+        const outBatsman = batsman;
+        lastWicket = {
+            name: outBatsman.name,
+            score: runs,
+            overs: `${currentOver}.${legalBallsInOver + 1}`
+        };
+        
+        scorecard.batting[outBatsman.id || outBatsman.name].status = "out";
+        scorecard.batting[outBatsman.id || outBatsman.name].balls += 1;
         bowlerStats[bowlerId].balls += 1;
         bowlerStats[bowlerId].wickets += 1;
         
@@ -280,8 +289,13 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
         currentPartnership.strikerRuns += ballRuns;
 
         const batStat = scorecard.batting[batsman.id || batsman.name];
+        const oldRuns = batStat.runs;
         batStat.runs += ballRuns;
         batStat.balls += 1;
+        
+        // Milestone check for celebration
+        if (oldRuns < 50 && batStat.runs >= 50) currentMilestone = { type: '50', player: batsman.name };
+        else if (oldRuns < 100 && batStat.runs >= 100) currentMilestone = { type: '100', player: batsman.name };
         if (ballRuns === 4) batStat.fours += 1;
         if (ballRuns === 6) batStat.sixes += 1;
         batStat.strikeRate = Number(((batStat.runs / batStat.balls) * 100).toFixed(1));
@@ -318,6 +332,8 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
         isWicket, // Boolean for charts
         batsman: batsman.name,
         bowler: bowler.name,
+        milestone: currentMilestone,
+        lastWicket: lastWicket,
         score: `${runs}/${wickets}`,
         cumulativeRuns: runs,
         wickets: wickets,
@@ -343,6 +359,8 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
         recentBalls,
         partnership: currentPartnership, // ADDED: Active partnership data
         winProbability: calculateWinProbability(runs, wickets, currentOver, legalBallsInOver, chaseTarget),
+        milestone: currentMilestone,
+        lastWicket: lastWicket,
         target: chaseTarget,
         result,
         lastBall: ballData // Include latest ball data in snapshot too
