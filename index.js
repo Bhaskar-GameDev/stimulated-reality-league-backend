@@ -11,6 +11,9 @@ const { buildHtmlPage } = require("./ui/page");
 const lineupService = require("./services/lineupService");
 const matchService = require("./services/matchService");
 const tournamentEngine = require("./tournaments/tournamentengine");
+const fixtureGenerator = require("./tournaments/fixturegenerator");
+const standingsEngine = require("./tournaments/standingsengine");
+const templates = require("./tournaments/tournamenttemplates");
 
 let PORT = Number(process.env.PORT || 3000);
 const serverStartedAt = new Date().toISOString();
@@ -987,6 +990,62 @@ const server = http.createServer(async (req, res) => {
       } catch (error) {
         logger.error("API /api/admin/cleanup failed", error);
         jsonResponse(res, 400, { error: error.message });
+      }
+      return;
+    }
+
+    // --- Tournament Engine Endpoints ---
+    if (req.method === "GET" && requestUrl.pathname === "/api/tournaments/list") {
+      try {
+        const snap = await db.ref("tournaments").once("value");
+        const data = snap.val() || {};
+        jsonResponse(res, 200, Object.values(data));
+      } catch (error) {
+        jsonResponse(res, 500, { error: error.message });
+      }
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/tournaments/generate") {
+      try {
+        const { templateKey, season, teams, tournamentName } = await parseRequestBody(req);
+        const template = templates[templateKey];
+        if (!template) throw new Error("Invalid tournament template.");
+
+        const fixtures = fixtureGenerator.createFullTournamentSchedule(teams, {
+          format: template.format,
+          rounds: template.rounds || 1,
+          groupCount: template.groupCount,
+          startDate: new Date(),
+          country: "India"
+        });
+
+        jsonResponse(res, 200, { fixtures });
+      } catch (error) {
+        jsonResponse(res, 400, { error: error.message });
+      }
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/tournaments/save") {
+      try {
+        const payload = await parseRequestBody(req);
+        const tournamentId = await tournamentEngine.createTournament(payload);
+        jsonResponse(res, 200, { message: "Tournament saved successfully.", tournamentId });
+      } catch (error) {
+        jsonResponse(res, 500, { error: error.message });
+      }
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname.startsWith("/api/tournaments/standings/")) {
+      try {
+        const tid = requestUrl.pathname.split("/").pop();
+        const snap = await db.ref(`tournaments/${tid}/standings`).once("value");
+        const standings = snap.val() || {};
+        jsonResponse(res, 200, standingsEngine.sortStandings(standings));
+      } catch (error) {
+        jsonResponse(res, 500, { error: error.message });
       }
       return;
     }
