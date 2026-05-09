@@ -237,18 +237,44 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
       recentBalls.push(result);
       if (recentBalls.length > 12) recentBalls.shift();
 
+      // NEW/OLD ARCHITECTURE: Record every ball in the 'balls' section
+      const ballId = `${currentOver}_${legalBallsInOver}_${Date.now()}`; // Unique key for the ball
+      const ballData = {
+        inning: inningNumber,
+        over: currentOver,
+        ball: legalBallsInOver,
+        result,
+        batsman: batsman.name,
+        bowler: bowler.name,
+        score: `${runs}/${wickets}`,
+        cumulativeRuns: runs,
+        wickets: wickets,
+        timestamp: Date.now()
+      };
+
       // Update Firebase
-      const ballKey = `${currentOver}_${legalBallsInOver}`;
       const updates = {};
+      
+      // 1. The persistent history of balls
+      updates[`matches/${matchId}/balls/${inningNumber}/${ballId}`] = ballData;
+      
+      // 2. The live snapshot for the dashboard/main UI
       updates[`matches/${matchId}/snapshot`] = {
-        inning: inningNumber, runs, wickets, overs: `${currentOver}.${legalBallsInOver}`,
+        inning: inningNumber, 
+        runs, 
+        wickets, 
+        over: currentOver,
+        ball: legalBallsInOver,
         striker: batting[strikerIdx]?.name || "None",
         nonStriker: batting[nonStrikerIdx]?.name || "None",
         bowler: bowler.name,
         recentBalls,
         target: chaseTarget,
-        result
+        result,
+        lastBall: ballData // Include latest ball data in snapshot too
       };
+
+      // 3. Scorecard update
       updates[`matches/${matchId}/scorecard/${inningNumber}`] = {
           batting: Object.values(scorecard.batting).sort((a,b) => a.pos - b.pos),
           bowling: Object.values(bowlerStats),
