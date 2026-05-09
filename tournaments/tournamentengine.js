@@ -76,6 +76,12 @@ async function runNextMatch(tournamentId) {
     return { status: "waiting", scheduledTime: fixture.utcTimestamp };
   }
 
+  // Safety check: Don't run if teams are not yet decided (TBD)
+  if (fixture.teamA.id === "TBD" || fixture.teamB.id === "TBD") {
+    console.log(`Match ${fixture.matchId} is waiting for teams to be decided.`);
+    return { status: "waiting", message: "Teams not yet decided" };
+  }
+
   try {
     await db.ref(`tournaments/${tournamentId}/status`).set("live");
     await db.ref(`tournaments/${tournamentId}/fixtures/${nextFixtureIndex}/status`).set("live");
