@@ -297,8 +297,8 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
         batStat.balls += 1;
         
         // Milestone check for celebration
-        if (oldRuns < 50 && batStat.runs >= 50) currentMilestone = { type: '50', player: batsman.name };
-        else if (oldRuns < 100 && batStat.runs >= 100) currentMilestone = { type: '100', player: batsman.name };
+        if (oldRuns < 50 && batStat.runs >= 50) currentMilestone = { id: `${batsman.name}_50`, type: '50', player: batsman.name };
+        else if (oldRuns < 100 && batStat.runs >= 100) currentMilestone = { id: `${batsman.name}_100`, type: '100', player: batsman.name };
         if (ballRuns === 4) batStat.fours += 1;
         if (ballRuns === 6) batStat.sixes += 1;
         batStat.strikeRate = Number(((batStat.runs / batStat.balls) * 100).toFixed(1));
@@ -488,7 +488,15 @@ async function startMatch(matchId, teamA, teamB, options = {}) {
   const result = { winner, margin, summary: `${winner} won by ${margin}` };
   await db.ref(`matches/${matchId}/result`).set(result);
   await db.ref(`matches/${matchId}/status`).set("completed");
-  await db.ref(`matches/list/${matchId}`).update({ status: "completed", resultSummary: result.summary });
+  await db.ref(`matches/list/${matchId}`).update({ 
+    status: "completed", 
+    resultSummary: result.summary,
+    winner: result.winner,
+    scoreA: `${firstInnings.runs}/${firstInnings.wickets}`,
+    oversA: firstInnings.overs,
+    scoreB: `${secondInnings.runs}/${secondInnings.wickets}`,
+    oversB: secondInnings.overs
+  });
 
   return { matchId, result, firstInnings, secondInnings };
 }

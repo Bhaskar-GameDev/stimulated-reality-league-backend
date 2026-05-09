@@ -7,7 +7,7 @@ const statsEngine = require("./statsengine");
 const fixtureGenerator = require("./fixturegenerator");
 const templates = require("./tournamenttemplates");
 
-async function createTournament({ templateKey, season, teams, tournamentName, fixtures, startDate, country }) {
+async function createTournament({ templateKey, season, teams, tournamentName, fixtures, startDate, country, overs }) {
   const template = templates[templateKey];
   const tournamentId = `TOURN_${Date.now()}`;
   
@@ -17,6 +17,7 @@ async function createTournament({ templateKey, season, teams, tournamentName, fi
     tournamentFixtures = fixtureGenerator.createFullTournamentSchedule(teams, {
       format: template.format,
       rounds: template.rounds || 1,
+      groupCount: template.groupCount, // Pass groupCount from template
       startDate: startDate || new Date(),
       country: country || template.defaultCountry || "India"
     });
@@ -29,7 +30,7 @@ async function createTournament({ templateKey, season, teams, tournamentName, fi
     season,
     templateKey,
     format: template.format,
-    overs: template.overs || 20, // Added overs property
+    overs: overs || template.overs || 20, // Use provided overs or template default
     teams,
     fixtures: tournamentFixtures,
     standings: {},
