@@ -303,12 +303,13 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
     bowlerStats[bowlerId].economy = Number((bowlerStats[bowlerId].runs / (bowlerStats[bowlerId].balls / 6)).toFixed(2));
     
     // Over summary commentary
+    const lastBatsman = batting[strikerIdx];
     const overSummaryCommId = String(ballsBowled + (inningNumber - 1) * 120).padStart(3, "0") + "_over";
     const overSummary = {
         result: "dot", // dummy
         isOverEnd: true,
-        batsman,
-        bowler,
+        batsman: lastBatsman,
+        bowler: bowler, // bowler is already in scope from the outer loop
         battingTeam: battingTeamName,
         bowlingTeam: bowlingTeamName,
         venue,
