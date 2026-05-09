@@ -235,20 +235,30 @@ async function advanceToPlayoffs(tournamentId) {
   
   if (tournament.format === "group_knockout") {
     const groupStandings = standingsEngine.getGroupStandings(tournament.standings);
-    const winners = Object.keys(groupStandings).map(g => groupStandings[g][0]);
+    const groupA = groupStandings["A"] || [];
+    const groupB = groupStandings["B"] || [];
 
-    // Semi Finals for World Cup (4 groups)
+    if (groupA.length < 2 || groupB.length < 2) {
+      console.warn("Not enough teams in groups for semi-finals. Advancing top winners.");
+    }
+
+    const A1 = groupA[0];
+    const A2 = groupA[1];
+    const B1 = groupB[0];
+    const B2 = groupB[1];
+
+    // Semi Finals (Cross-group: A1 vs B2, B1 vs A2)
     const playoffs = [
       { 
         matchId: `SF1`, 
-        teamA: { id: winners[0].teamId, name: winners[0].teamName }, 
-        teamB: { id: winners[1].teamId, name: winners[1].teamName }, 
+        teamA: { id: A1.teamId, name: A1.teamName }, 
+        teamB: { id: B2.teamId, name: B2.teamName }, 
         stage: "Semi Final 1", status: "scheduled", utcTimestamp: new Date().toISOString() 
       },
       { 
         matchId: `SF2`, 
-        teamA: { id: winners[2].teamId, name: winners[2].teamName }, 
-        teamB: { id: winners[3].teamId, name: winners[3].teamName }, 
+        teamA: { id: B1.teamId, name: B1.teamName }, 
+        teamB: { id: A2.teamId, name: A2.teamName }, 
         stage: "Semi Final 2", status: "scheduled", utcTimestamp: new Date().toISOString() 
       },
       { 

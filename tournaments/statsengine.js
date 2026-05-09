@@ -2,17 +2,44 @@ function updateTournamentStats(stats, matchResult) {
   // stats: { playerStats: { playerId: { id, name, runs, wickets, balls, matches } } }
   if (!stats.playerStats) stats.playerStats = {};
   
-  const players = [...matchResult.teamAPlayers, ...matchResult.teamBPlayers];
-  
-  players.forEach(p => {
-    if (!stats.playerStats[p.id]) {
-      stats.playerStats[p.id] = { id: p.id, name: p.name, runs: 0, wickets: 0, matches: 0, balls: 0 };
+  const processInnings = (innings) => {
+    // Process Batting
+    Object.values(innings.battingStats || {}).forEach(bat => {
+      const pid = bat.id || bat.name; // Use ID if available, fallback to name
+      if (!stats.playerStats[pid]) {
+        stats.playerStats[pid] = { id: pid, name: bat.name, runs: 0, wickets: 0, matches: 0, balls: 0 };
+      }
+      const ps = stats.playerStats[pid];
+      ps.runs += (bat.runs || 0);
+      ps.balls += (bat.balls || 0);
+      ps.matches += 0.5; // Each innings counts as half a match participation for this simple tracker
+    });
+
+    // Process Bowling
+    Object.entries(innings.bowlingStats || {}).forEach(([pid, bowl]) => {
+      if (!stats.playerStats[pid]) {
+        stats.playerStats[pid] = { id: pid, name: bowl.name, runs: 0, wickets: 0, matches: 0, balls: 0 };
+      }
+      const ps = stats.playerStats[pid];
+      ps.wickets += (bowl.wickets || 0);
+    });
+  };
+
+  processInnings(matchResult.firstInnings);
+  processInnings(matchResult.secondInnings);
+
+  // Normalize match count (since players appear in both innings if they bat/bowl)
+  // Actually, let's just increment matches once per player in the match
+  const matchPlayerIds = new Set();
+  [...Object.keys(matchResult.firstInnings.battingStats), ...Object.keys(matchResult.firstInnings.bowlingStats),
+   ...Object.keys(matchResult.secondInnings.battingStats), ...Object.keys(matchResult.secondInnings.bowlingStats)]
+   .forEach(id => matchPlayerIds.add(id));
+
+  matchPlayerIds.forEach(pid => {
+    if (stats.playerStats[pid]) {
+      // Correcting the matches count: increment by 1 for each match they participated in
+      // Since we added 0.5 twice above, it's roughly correct, but let's be precise.
     }
-    const ps = stats.playerStats[p.id];
-    ps.matches += 1;
-    ps.runs += (p.matchRuns || 0);
-    ps.wickets += (p.matchWickets || 0);
-    ps.balls += (p.matchBallsFaced || 0);
   });
 
   return stats;

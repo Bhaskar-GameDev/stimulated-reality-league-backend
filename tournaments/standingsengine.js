@@ -23,6 +23,8 @@ function updateStandings(standings, result) {
     if (won) {
       s.won += 1;
       s.points += 2;
+    } else if (winner === "Tie") {
+      s.points += 1;
     } else {
       s.lost += 1;
     }

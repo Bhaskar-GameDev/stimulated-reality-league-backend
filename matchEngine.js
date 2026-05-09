@@ -440,7 +440,7 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
       `**INNINGS OVER!** ${battingTeamName} set a target of ${runs + 1} runs.`
   );
 
-  return finalSummary;
+  return { ...finalSummary, battingStats: scorecard.batting, bowlingStats: bowlerStats };
 }
 
 async function startMatch(matchId, teamA, teamB, options = {}) {
