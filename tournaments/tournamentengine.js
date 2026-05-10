@@ -57,6 +57,16 @@ async function createTournament({ templateKey, season, teams, tournamentName, fi
   };
 
   await db.ref(`tournaments/${tournamentId}`).set(tournamentData);
+  
+  // Create lightweight index for listing
+  await db.ref(`tournaments_list/${tournamentId}`).set({
+    id: tournamentData.id,
+    name: tournamentData.name,
+    status: tournamentData.status,
+    season: tournamentData.season,
+    format: tournamentData.format
+  });
+
   return tournamentId;
 }
 
@@ -79,6 +89,7 @@ async function runNextMatch(tournamentId) {
       return advanceToPlayoffs(tournamentId);
     }
     await db.ref(`tournaments/${tournamentId}/status`).set("completed");
+    await db.ref(`tournaments_list/${tournamentId}/status`).set("completed");
     return;
   }
 
@@ -101,6 +112,7 @@ async function runNextMatch(tournamentId) {
 
   try {
     await db.ref(`tournaments/${tournamentId}/status`).set("live");
+    await db.ref(`tournaments_list/${tournamentId}/status`).set("live");
     await db.ref(`tournaments/${tournamentId}/matches/${fixture.matchId}/status`).set("live");
     
     // Resolve players for both teams
@@ -239,6 +251,7 @@ async function processMatchResult(tournamentId, matchId, rawResult) {
   if (matchId === "FINAL" || matchId === "PLY_FN") {
     await db.ref(`tournaments/${tournamentId}/winner`).set(rawResult.result.winner);
     await db.ref(`tournaments/${tournamentId}/status`).set("completed");
+    await db.ref(`tournaments_list/${tournamentId}/status`).set("completed");
   }
 
   if (matchesChanged) {
@@ -279,6 +292,7 @@ async function archiveTournament(tournamentId) {
 
   // Clean up live node
   await db.ref(`tournaments/${tournamentId}`).remove();
+  await db.ref(`tournaments_list/${tournamentId}`).remove();
   console.log(`Tournament ${tournamentId} archived to ${archivePath}`);
 }
 

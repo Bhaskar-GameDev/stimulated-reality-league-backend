@@ -103,7 +103,14 @@ module.exports = `
 
     function updateTeamDropdowns() {
       const gender = genderToggle.value;
-      const filteredTeams = teamData.filter(team => team.gender === gender);
+      const matchType = matchTypeSelect.value;
+      
+      let targetGender = gender;
+      if (gender === "men" && matchType === "ODI") {
+        targetGender = "ODI Men";
+      }
+
+      const filteredTeams = teamData.filter(team => team.gender === targetGender);
       const html = filteredTeams.map(team =>
         '<option value="' + escapeHtml(team.name) + '">' + escapeHtml(team.name) + "</option>"
       ).join("");
@@ -117,6 +124,7 @@ module.exports = `
     }
 
     genderToggle.addEventListener("change", updateTeamDropdowns);
+    matchTypeSelect.addEventListener("change", updateTeamDropdowns);
 
 
 
@@ -821,6 +829,12 @@ module.exports = `
       } catch (err) {
         document.getElementById("leadersContainer").innerHTML = "<p class='note'>Failed to load stats.</p>";
       }
+    }
+
+    async function init() {
+      updateTeamDropdowns();
+      await refresh();
+      setInterval(refresh, 2000);
     }
 
     init();

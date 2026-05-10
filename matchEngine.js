@@ -404,8 +404,8 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
       // Update Firebase
       const updates = {};
       
-      // 1. The persistent history of balls
-      updates[`matches/${matchId}/balls/${inningNumber}/${ballId}`] = ballData;
+      // 1. The persistent history of balls (Moved to separate root node for flat structure)
+      updates[`match_balls/${matchId}/${inningNumber}/${ballId}`] = ballData;
       
       // 2. The live snapshot for the dashboard/main UI
       updates[`matches/${matchId}/snapshot`] = {
@@ -427,17 +427,17 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
         lastBall: ballData // Include latest ball data in snapshot too
       };
 
-      // 3. Scorecard update
-      updates[`matches/${matchId}/scorecard/${inningNumber}`] = {
+      // 3. Scorecard update (Moved to separate root node)
+      updates[`match_scorecards/${matchId}/${inningNumber}`] = {
           batting: Object.values(scorecard.batting).sort((a,b) => a.pos - b.pos),
           bowling: Object.values(bowlerStats),
           extras: scorecard.extras,
           total: { runs, wickets, overs: `${currentOver}.${legalBallsInOver}` }
       };
       
-      // Commentary
+      // Commentary (Moved to separate root node)
       const commId = String(ballsBowled + (inningNumber - 1) * 120).padStart(3, "0");
-      updates[`matches/${matchId}/commentary/${commId}`] = commentaryEngine.generate(matchId, {
+      updates[`match_commentary/${matchId}/${commId}`] = commentaryEngine.generate(matchId, {
           result, batsman, bowler, battingTeam: battingTeamName, bowlingTeam: bowlingTeamName, venue,
           state: { 
             runs, wickets, over: currentOver, ball: legalBallsInOver, 
@@ -473,7 +473,7 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
             totalOvers: oversLimit
         }
     };
-    await db.ref(`matches/${matchId}/commentary/${overSummaryCommId}`).set(commentaryEngine.generate(matchId, overSummary));
+    await db.ref(`match_commentary/${matchId}/${overSummaryCommId}`).set(commentaryEngine.generate(matchId, overSummary));
 
     // Rotate strike at end of over
     if (wickets < 10 && strikerIdx !== -1 && runs < (chaseTarget || Infinity)) {
@@ -488,12 +488,12 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
       ballsBowled,
       finishedAt: Date.now() 
   };
-  await db.ref(`matches/${matchId}/innings/${inningNumber}/summary`).set(finalSummary);
+  await db.ref(`match_innings_summary/${matchId}/${inningNumber}`).set(finalSummary);
 
   // Match/Innings End Commentary
   const endCommId = String(ballsBowled + (inningNumber - 1) * 120 + 1).padStart(3, "0") + "_end";
   const endContext = inningNumber === 2 ? "match_end" : "innings_end";
-  await db.ref(`matches/${matchId}/commentary/${endCommId}`).set(
+  await db.ref(`match_commentary/${matchId}/${endCommId}`).set(
       inningNumber === 2 ? `**MATCH OVER!** ${battingTeamName} finished at ${runs}/${wickets} in ${currentOver}.${legalBallsInOver} overs.` :
       `**INNINGS OVER!** ${battingTeamName} set a target of ${runs + 1} runs.`
   );
@@ -516,7 +516,7 @@ async function startMatch(matchId, teamA, teamB, options = {}) {
   const lineups = {};
   lineups[teamAName] = teamA;
   lineups[teamBName] = teamB;
-  await db.ref(`matches/${matchId}/lineups`).set(lineups);
+  await db.ref(`match_lineups/${matchId}`).set(lineups);
 
   // Innings 1: Team A bats
   const firstInnings = await simulateInnings(matchId, 1, teamA, teamB, {

@@ -25,7 +25,7 @@ const STORAGE_PATH = path.join(__dirname, "schedules.json");
 // Poll for due tournament matches every 30 seconds
 setInterval(async () => {
   try {
-    const tournamentsSnap = await db.ref("tournaments").once("value");
+    const tournamentsSnap = await db.ref("tournaments_list").once("value");
     const tournaments = tournamentsSnap.val();
     if (!tournaments) return;
 
@@ -274,10 +274,6 @@ async function readDb(refPath) {
 }
 
 async function getActiveMatchesSummary() {
-  if (activeMatches.size > 0) {
-    return Array.from(activeMatches.values());
-  }
-  // Fall back to Firebase for any matches that survived a server restart
   const activeSchedules = schedules.filter(item => item.status === "running" || item.status === "paused");
   if (activeSchedules.length === 0) return [];
 
@@ -287,7 +283,11 @@ async function getActiveMatchesSummary() {
         readDb(`matches/${schedule.matchId}/meta`),
         readDb(`matches/${schedule.matchId}/snapshot`)
       ]);
-      if (!state) return null;
+      
+      const inMemoryMatch = activeMatches.get(schedule.matchId);
+      
+      if (!state && !inMemoryMatch) return null;
+      
       return {
         matchId: schedule.matchId,
         status: schedule.status,
@@ -296,11 +296,13 @@ async function getActiveMatchesSummary() {
         teamBName: schedule.teamBName,
         overs: schedule.overs,
         delayMs: schedule.delayMs,
-        startedAt: meta?.startTime ? new Date(meta.startTime).toISOString() : undefined,
-        ...state
+        startedAt: meta?.startTime ? new Date(meta.startTime).toISOString() : (inMemoryMatch?.startedAt || new Date().toISOString()),
+        ...inMemoryMatch, // Fallback base
+        ...state // Firebase live snapshot overwrites memory properties (score, wickets, over)
       };
     })
   );
+  
   return results.filter(Boolean);
 }
 
@@ -422,8 +424,8 @@ async function initScorecardsForMatch(matchId, teamAWithIds, teamBWithIds) {
       };
     });
 
-    await db.ref(`matches/${matchId}/scorecard/1`).set(scorecard1);
-    await db.ref(`matches/${matchId}/scorecard/2`).set(scorecard2);
+    await db.ref(`match_scorecards/${matchId}/1`).set(scorecard1);
+    await db.ref(`match_scorecards/${matchId}/2`).set(scorecard2);
   } catch (error) {
     console.error(`Unable to initialize scorecards for ${matchId}:`, error);
   }
@@ -740,7 +742,7 @@ const server = http.createServer(async (req, res) => {
         }, {});
         
         const lineups = lineupService.getAllLineups() || {};
-        const tournamentsSnap = await db.ref("tournaments").once("value");
+        const tournamentsSnap = await db.ref("tournaments_list").once("value");
         const tournaments = tournamentsSnap.val() || {};
         const activeTournaments = Object.values(tournaments).filter(t => t.status !== "completed");
 
@@ -984,9 +986,15 @@ const server = http.createServer(async (req, res) => {
 
             if (shouldDelete) {
               await db.ref(`${node}/${key}`).remove();
-              // Also clean up matches/list if node is matches
               if (node === "matches") {
                 await db.ref(`matches/list/${key}`).remove();
+                await db.ref(`match_balls/${key}`).remove();
+                await db.ref(`match_scorecards/${key}`).remove();
+                await db.ref(`match_commentary/${key}`).remove();
+                await db.ref(`match_innings_summary/${key}`).remove();
+                await db.ref(`match_lineups/${key}`).remove();
+              } else if (node === "tournaments") {
+                await db.ref(`tournaments_list/${key}`).remove();
               }
               deleteCount++;
             }
@@ -1005,7 +1013,7 @@ const server = http.createServer(async (req, res) => {
     // --- Tournament Engine Endpoints ---
     if (req.method === "GET" && requestUrl.pathname === "/api/tournaments/list") {
       try {
-        const snap = await db.ref("tournaments").once("value");
+        const snap = await db.ref("tournaments_list").once("value");
         const data = snap.val() || {};
         jsonResponse(res, 200, Object.values(data));
       } catch (error) {

@@ -71,7 +71,6 @@ ${styles}
                   <select id="genderToggle" class="form-control">
                     <option value="men" selected>Men</option>
                     <option value="women">Women</option>
-                    <option value="ODI Men">ODI Men (2025)</option>
                   </select>
                 </div>
                 <div class="form-group">
