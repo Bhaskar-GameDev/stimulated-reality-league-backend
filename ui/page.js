@@ -90,7 +90,52 @@ ${styles}
                 </div>
               </div>
 
-              <div class="form-group">
+              <!-- GUIDED SIMULATION -->
+              <div class="card" style="margin-top: 1rem; padding: 1rem; background: rgba(0,0,0,0.02); border: 1px solid var(--gray-200);">
+                <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0;">
+                  <input type="checkbox" id="guidedSimToggle" style="width: 18px; height: 18px; cursor: pointer;">
+                  <label for="guidedSimToggle" style="font-weight: 700; cursor: pointer; margin: 0; color: var(--primary);">Enable Guided Match Simulation</label>
+                </div>
+                
+                <div id="guidedSimOptions" style="display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed var(--gray-300);">
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="preferredWinner">Preferred Winner</label>
+                      <select id="preferredWinner" class="form-control">
+                        <option value="">None (Random)</option>
+                        <option value="teamA">Team A</option>
+                        <option value="teamB">Team B</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label for="targetScore">Target 1st Innings Score</label>
+                      <input type="number" id="targetScore" class="form-control" placeholder="e.g. 185" />
+                    </div>
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="narrativeType">Match Narrative</label>
+                      <select id="narrativeType" class="form-control">
+                        <option value="random">Random</option>
+                        <option value="thriller">Thriller</option>
+                        <option value="one-sided">One-sided</option>
+                        <option value="comeback">Comeback</option>
+                        <option value="low-scoring">Low Scoring</option>
+                        <option value="high-scoring">High Scoring</option>
+                        <option value="last-over-finish">Last Over Finish</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label for="intensity">Intensity: <span id="intensityVal">0.5</span></label>
+                      <input type="range" id="intensity" class="form-control" min="0" max="1" step="0.05" value="0.5" />
+                      <small class="note" style="display: block; margin-top: 0.25rem;">0 = Random, 1 = Heavily Scripted</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- END GUIDED SIMULATION -->
+
+              <div class="form-group" style="margin-top: 1rem;">
                 <label for="startAt">Start Time (Optional)</label>
                 <input type="datetime-local" id="startAt" name="startAt" class="form-control" />
               </div>

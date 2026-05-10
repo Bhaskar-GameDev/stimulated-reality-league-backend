@@ -411,16 +411,34 @@ module.exports = `
     document.getElementById("matchForm").addEventListener("submit", async event => {
       event.preventDefault();
       const formData = new FormData(event.target);
-        const payload = {
-          matchType: formData.get("matchType"),
-          overs: Number(formData.get("overs")),
-          teamA: formData.get("teamA"),
-          teamB: formData.get("teamB"),
-          teamAPlayingXI: [], // Backend will resolve from Firebase
-          teamBPlayingXI: [], // Backend will resolve from Firebase
-          delayMs: Number(formData.get("delayMs")),
-          startAt: formData.get("startAt") ? new Date(formData.get("startAt")).toISOString() : null
-        };
+      
+      const guidedSimEnabled = document.getElementById("guidedSimToggle")?.checked || false;
+      let guidedSimulationSettings = { enabled: false };
+      
+      if (guidedSimEnabled) {
+          const prefWin = document.getElementById("preferredWinner").value;
+          const preferredWinnerName = prefWin === "teamA" ? formData.get("teamA") : (prefWin === "teamB" ? formData.get("teamB") : null);
+          
+          guidedSimulationSettings = {
+              enabled: true,
+              preferredWinner: preferredWinnerName,
+              targetScore: Number(document.getElementById("targetScore").value) || null,
+              intensity: Number(document.getElementById("intensity").value),
+              narrativeType: document.getElementById("narrativeType").value
+          };
+      }
+
+      const payload = {
+        matchType: formData.get("matchType"),
+        overs: Number(formData.get("overs")),
+        teamA: formData.get("teamA"),
+        teamB: formData.get("teamB"),
+        teamAPlayingXI: [], // Backend will resolve from Firebase
+        teamBPlayingXI: [], // Backend will resolve from Firebase
+        delayMs: Number(formData.get("delayMs")),
+        startAt: formData.get("startAt") ? new Date(formData.get("startAt")).toISOString() : null,
+        guidedSimulationSettings: guidedSimulationSettings
+      };
 
 
       if (payload.teamA === payload.teamB) {
@@ -489,6 +507,22 @@ module.exports = `
         oversInput.value = selected.overs;
       }
     });
+
+    const guidedSimToggle = document.getElementById("guidedSimToggle");
+    if (guidedSimToggle) {
+        guidedSimToggle.addEventListener("change", (e) => {
+            const opts = document.getElementById("guidedSimOptions");
+            if (opts) opts.style.display = e.target.checked ? "block" : "none";
+        });
+        
+        const intensityInput = document.getElementById("intensity");
+        if (intensityInput) {
+            intensityInput.addEventListener("input", (e) => {
+                const valSpan = document.getElementById("intensityVal");
+                if (valSpan) valSpan.textContent = e.target.value;
+            });
+        }
+    }
 
 
 

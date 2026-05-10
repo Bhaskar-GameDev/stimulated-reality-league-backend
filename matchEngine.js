@@ -1,6 +1,7 @@
 const db = require("./firebase");
 const commentaryEngine = require("./utils/commentaryEngine");
 const { createSeededRandom } = require("./utils/random");
+const GuidedSimulationController = require("./guidedSimulationController");
 
 const DEFAULT_PROBABILITIES = {
   dot: 0.35,
@@ -112,7 +113,12 @@ function simulateBall(batsman, bowler, context) {
   if (extraRand < 0.03) return "WD"; // Wide
   if (extraRand < 0.04) return "NB"; // No Ball
 
-  const p = calculateAdjustedProbabilities(batsman, bowler, context);
+  let p = calculateAdjustedProbabilities(batsman, bowler, context);
+  
+  if (context.guidedSimulationSettings && context.guidedSimulationSettings.enabled) {
+      p = GuidedSimulationController.applySteering(p, context);
+  }
+
   const r = context.rng.next();
 
   let cumulative = 0;
@@ -128,7 +134,7 @@ function simulateBall(batsman, bowler, context) {
 }
 
 async function simulateInnings(matchId, inningNumber, batting, bowling, options = {}) {
-  const { oversLimit = 20, delayMs = 100, rng, chaseTarget = null, battingTeamName, bowlingTeamName, venue, abortSignal, onBall } = options;
+  const { oversLimit = 20, delayMs = 100, rng, chaseTarget = null, battingTeamName, bowlingTeamName, venue, abortSignal, onBall, guidedSimulationSettings } = options;
   
   console.log(`[MATCH:${matchId}] Starting Inning ${inningNumber}. Target: ${isNaN(chaseTarget) || chaseTarget === null ? "N/A" : chaseTarget}`);
   const target = isNaN(chaseTarget) || chaseTarget === null ? Infinity : chaseTarget;
@@ -225,7 +231,7 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
       const context = {
         currentOver, currentBallInOver: legalBallsInOver, totalOvers: oversLimit, 
         wicketsFallen: wickets, isChasing: chaseTarget !== null, target: chaseTarget, 
-        currentScore: runs, rng
+        currentScore: runs, rng, battingTeamName, bowlingTeamName, guidedSimulationSettings
       };
 
       const result = simulateBall(batsman, bowler, context);
@@ -444,7 +450,7 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
 }
 
 async function startMatch(matchId, teamA, teamB, options = {}) {
-  const { teamAName = "Team A", teamBName = "Team B", oversLimit = 20, delayMs = 100, venue = "International Stadium" } = options;
+  const { teamAName = "Team A", teamBName = "Team B", oversLimit = 20, delayMs = 100, venue = "International Stadium", guidedSimulationSettings } = options;
   const rng = createSeededRandom(matchId);
 
   const initData = {
@@ -462,12 +468,12 @@ async function startMatch(matchId, teamA, teamB, options = {}) {
 
   // Innings 1: Team A bats
   const firstInnings = await simulateInnings(matchId, 1, teamA, teamB, {
-      oversLimit, delayMs, rng, battingTeamName: teamAName, bowlingTeamName: teamBName, venue
+      oversLimit, delayMs, rng, battingTeamName: teamAName, bowlingTeamName: teamBName, venue, guidedSimulationSettings
   });
 
   // Innings 2: Team B bats
   const secondInnings = await simulateInnings(matchId, 2, teamB, teamA, {
-      oversLimit, delayMs, rng, chaseTarget: firstInnings.runs + 1, battingTeamName: teamBName, bowlingTeamName: teamAName, venue
+      oversLimit, delayMs, rng, chaseTarget: firstInnings.runs + 1, battingTeamName: teamBName, bowlingTeamName: teamAName, venue, guidedSimulationSettings
   });
 
   // Calculate Result
