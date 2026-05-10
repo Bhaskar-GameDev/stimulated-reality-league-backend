@@ -674,68 +674,68 @@
       {
         "name": "V Kohli",
         "role": "batsman",
-        "type": "balanced",
+        "type": "anchor-aggressor",
         "batting": {
           "base": {
-            "1": 0.451,
-            "2": 0.086,
-            "4": 0.117,
-            "6": 0.038,
-            "dot": 0.281,
-            "wicket": 0.027
+            "1": 0.381,
+            "2": 0.094,
+            "4": 0.128,
+            "6": 0.031,
+            "dot": 0.338,
+            "wicket": 0.028
           },
           "aggression": {
-            "powerplay": 0.751,
-            "middle": 0.981,
-            "death": 1
+            "powerplay": 0.72,
+            "middle": 1.00,
+            "death": 0.88
           },
-          "consistency": 0.98,
-          "temperament": 1,
-          "runningBetweenWickets": 1,
-          "vsPace": 0.85,
-          "vsSpin": 0.972
+          "consistency": 0.97,
+          "temperament": 1.00,
+          "runningBetweenWickets": 1.00,
+          "vsPace": 0.87,
+          "vsSpin": 0.96
         },
         "bowling": {
           "base": {
-            "1": 0.464,
-            "2": 0.113,
-            "4": 0.143,
-            "6": 0.032,
-            "dot": 0.232,
-            "wicket": 0.016
+            "1": 0.420,
+            "2": 0.100,
+            "4": 0.160,
+            "6": 0.050,
+            "dot": 0.220,
+            "wicket": 0.050
           },
           "aggression": {
-            "powerplay": 1,
-            "middle": 0.214,
-            "death": 0.4
+            "powerplay": 0.10,
+            "middle": 0.60,
+            "death": 0.30
           },
-          "economyControl": 0.329,
-          "wicketTaking": 0.526,
-          "accuracy": 0.434,
-          "variation": 0.855,
-          "vsRightHand": 0.5,
-          "vsLeftHand": 0.5
+          "economyControl": 0.35,
+          "wicketTaking": 0.25,
+          "accuracy": 0.40,
+          "variation": 0.30,
+          "vsRightHand": 0.50,
+          "vsLeftHand": 0.50
         },
         "behavior": {
-          "chaseBoost": 1,
-          "collapseResistance": 0.98,
-          "deathFinishing": 1,
-          "pressureHandling": 0.268,
-          "deathOverSkill": 0.4,
-          "newBallSwing": 1,
-          "tailResistance": 0.8,
-          "sloggingAbility": 0.394
+          "chaseBoost": 1.00,
+          "collapseResistance": 0.97,
+          "deathFinishing": 0.82,
+          "pressureHandling": 1.00,
+          "deathOverSkill": 0.75,
+          "newBallSwing": 0.40,
+          "tailResistance": 0.50,
+          "sloggingAbility": 0.55
         },
         "stamina": {
-          "initial": 1,
-          "decayRate": 0.012
+          "initial": 1.00,
+          "decayRate": 0.010
         },
-        "form": 0.876,
+        "form": 0.91,
         "fielding": {
-          "catching": 0.8,
-          "ground": 0.8
+          "catching": 0.85,
+          "ground": 0.90
         },
-        "experience": 1,
+        "experience": 1.00,
         "id": "PL_4a56b4e537"
       },
       {
