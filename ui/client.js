@@ -632,7 +632,7 @@ module.exports = `
     });
 
     function renderTournamentTeamSelection() {
-      const filteredTeams = teamData.filter(team => team.gender === "men");
+      const filteredTeams = teamData.filter(team => team.gender === "men" || team.gender === "ODI Men");
       
       tournamentTeamListEl.innerHTML = filteredTeams.map(team => {
         const isSelected = selectedTournamentTeams.has(team.name);

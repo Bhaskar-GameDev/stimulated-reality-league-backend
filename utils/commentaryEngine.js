@@ -40,24 +40,31 @@ const COMMENTARY_POOL = {
         { text: "Dot ball. Pressure building on {batsman} here.", intensity: "high", weight: 12 },
         { text: "Nicely bowled. {bowler} keeping it tight in this over.", weight: 10 },
         { text: "Swing and a miss! {batsman} tries to go big but misses the line completely.", weight: 8 },
-        { text: "Excellent accuracy. {bowler} is hitting the corridor of uncertainty consistently.", playerType: "workhorse", weight: 15 }
+        { text: "Excellent accuracy. {bowler} is hitting the corridor of uncertainty consistently.", playerType: "workhorse", weight: 15 },
+        { text: "They're building patiently. Respecting the good deliveries here.", format: "ODI", phase: "middle", weight: 12 },
+        { text: "Required rate climbing. {batsman} needs to find the gaps soon.", format: "ODI", intensity: "high", weight: 10 }
     ],
     "1": [
         { text: "Just a single. {batsman} tucks it to the leg side.", weight: 10 },
         { text: "Tapped away for one. Rotating the strike is key here.", weight: 10 },
         { text: "Good running. They scramble for a quick single.", weight: 8 },
-        { text: "Played with soft hands. {batsman} takes a comfortable single.", weight: 10 }
+        { text: "Played with soft hands. {batsman} takes a comfortable single.", weight: 10 },
+        { text: "Sensible cricket. Taking the single and keeping the scoreboard ticking.", format: "ODI", phase: "middle", weight: 15 }
     ],
     "2": [
         { text: "Two more added to the total. Good hustle between the wickets.", weight: 10 },
         { text: "Pushed into the gap, and they come back for the second. Excellent running.", weight: 10 },
-        { text: "Deep into the pocket, they challenge the arm and win. Two runs for {batsman}.", weight: 8 }
+        { text: "Deep into the pocket, they challenge the arm and win. Two runs for {batsman}.", weight: 8 },
+        { text: "Brilliant placement, and even better running. Converting ones into twos is crucial here.", format: "ODI", phase: "middle", weight: 12 }
     ],
     "over_summary": [
         { text: "End of the over. {battingTeam} are {score}. {runs_in_over} runs from it.", weight: 10 },
         { text: "That's a tidy over from {bowler}. Just {runs_in_over} off it.", weight: 8 },
         { text: "Expensive over! {battingTeam} shifting gears here. {score} at the end of over {over}.", intensity: "high", weight: 10 },
-        { text: "A momentum-shifting over. {battingTeam} looking strong at {score}.", intensity: "high", weight: 12 }
+        { text: "A momentum-shifting over. {battingTeam} looking strong at {score}.", intensity: "high", weight: 12 },
+        { text: "Important partnership developing here. {battingTeam} laying a solid foundation.", format: "ODI", phase: "middle", weight: 15 },
+        { text: "Time to accelerate now! The platform is set for {battingTeam}.", format: "ODI", phase: "death", weight: 15 },
+        { text: "Brilliant death-over execution from {bowlingTeam}. Giving nothing away.", format: "ODI", phase: "death", weight: 12 }
     ],
     "milestone_50": [
         { text: "**RAISE THE BAT!** A brilliant half-century for {batsman}. He's been the backbone of this innings.", weight: 10 },
@@ -119,7 +126,8 @@ class CommentaryEngine {
             const runsNeeded = target - runs;
             if (ballsRemaining > 0) {
                 const rrr = (runsNeeded / (ballsRemaining / 6));
-                if (rrr > 12 || (ballsRemaining < 18 && runsNeeded < 25)) {
+                const criticalRRR = (totalOvers === 50) ? 9 : 12;
+                if (rrr > criticalRRR || (ballsRemaining < 18 && runsNeeded < 25)) {
                     intensity = "high";
                     if (ballsRemaining < 12) isCloseFinish = true;
                 }
@@ -128,7 +136,8 @@ class CommentaryEngine {
             intensity = "high";
         }
 
-        return { phase, intensity, isChasing, ballsRemaining, isCloseFinish };
+        const isODI = totalOvers === 50;
+        return { phase, intensity, isChasing, ballsRemaining, isCloseFinish, format: isODI ? "ODI" : "T20" };
     }
 
     generate(matchId, eventData) {
@@ -207,6 +216,7 @@ class CommentaryEngine {
             if (t.intensity && t.intensity !== context.intensity) return false;
             if (t.context && t.context !== specificContext) return false;
             if (t.wicketType && t.wicketType !== wicketType) return false;
+            if (t.format && t.format !== context.format) return false;
             if (t.playerType && batsman?.type && !batsman.type.toLowerCase().includes(t.playerType)) return false;
             return true;
         });

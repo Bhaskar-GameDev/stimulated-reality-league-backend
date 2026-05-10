@@ -1,0 +1,7393 @@
+{
+  "India": [
+    {
+      "name": "Rohit Sharma",
+      "role": "batsman",
+      "type": "aggressive",
+      "batting": {
+        "base": {
+          "1": 0.27,
+          "2": 0.06,
+          "4": 0.14,
+          "6": 0.07,
+          "dot": 0.44,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 1.0,
+          "middle": 0.9,
+          "death": 0.88
+        },
+        "consistency": 0.78,
+        "temperament": 0.82,
+        "runningBetweenWickets": 0.65,
+        "vsPace": 0.78,
+        "vsSpin": 0.74
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.861,
+        "collapseResistance": 0.78,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.82,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.624,
+        "sloggingAbility": 0.84
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.741,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 1.0,
+      "id": "PL_9fb7f71b83"
+    },
+    {
+      "name": "Shubman Gill",
+      "role": "batsman",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.94,
+        "temperament": 0.92,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.966,
+        "collapseResistance": 0.94,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.92,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.752,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.893,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.8,
+      "id": "PL_d11f0ca950"
+    },
+    {
+      "name": "Virat Kohli",
+      "role": "batsman",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.98,
+        "temperament": 1.0,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8,
+        "form": 0.92
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 1.0,
+        "collapseResistance": 0.98,
+        "deathFinishing": 0.88,
+        "pressureHandling": 1.0,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.784,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.931,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 1.0,
+      "id": "PL_d7b25335d3"
+    },
+    {
+      "name": "Shreyas Iyer",
+      "role": "batsman",
+      "type": "aggressive",
+      "batting": {
+        "base": {
+          "1": 0.27,
+          "2": 0.06,
+          "4": 0.14,
+          "6": 0.07,
+          "dot": 0.44,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.95,
+          "middle": 0.85,
+          "death": 1.0
+        },
+        "consistency": 0.78,
+        "temperament": 0.82,
+        "runningBetweenWickets": 0.65,
+        "vsPace": 0.78,
+        "vsSpin": 0.74
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.861,
+        "collapseResistance": 0.78,
+        "deathFinishing": 1.0,
+        "pressureHandling": 0.82,
+        "deathOverSkill": 0.8,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.624,
+        "sloggingAbility": 0.84
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.741,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.8,
+      "id": "PL_01e8e23eff"
+    },
+    {
+      "name": "KL Rahul",
+      "role": "batsman",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.85,
+      "id": "PL_476f4b9848"
+    },
+    {
+      "name": "Hardik Pandya",
+      "role": "allrounder",
+      "type": "aggressive",
+      "batting": {
+        "base": {
+          "1": 0.27,
+          "2": 0.06,
+          "4": 0.14,
+          "6": 0.07,
+          "dot": 0.44,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.95,
+          "middle": 0.85,
+          "death": 1.0
+        },
+        "consistency": 0.78,
+        "temperament": 0.82,
+        "runningBetweenWickets": 0.65,
+        "vsPace": 0.78,
+        "vsSpin": 0.74
+      },
+      "bowling": {
+        "base": {
+          "1": 0.33,
+          "2": 0.09,
+          "4": 0.11,
+          "6": 0.025,
+          "dot": 0.44,
+          "wicket": 0.025
+        },
+        "aggression": {
+          "powerplay": 0.68,
+          "middle": 0.72,
+          "death": 0.82
+        },
+        "economyControl": 0.68,
+        "wicketTaking": 0.6,
+        "accuracy": 0.65,
+        "variation": 0.62,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.861,
+        "collapseResistance": 0.78,
+        "deathFinishing": 1.0,
+        "pressureHandling": 0.82,
+        "deathOverSkill": 0.8,
+        "newBallSwing": 0.68,
+        "tailResistance": 0.624,
+        "sloggingAbility": 0.84
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.741,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.82,
+      "id": "PL_0f1f307c2a"
+    },
+    {
+      "name": "Ravindra Jadeja",
+      "role": "allrounder",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.33,
+          "2": 0.09,
+          "4": 0.11,
+          "6": 0.025,
+          "dot": 0.44,
+          "wicket": 0.025
+        },
+        "aggression": {
+          "powerplay": 0.68,
+          "middle": 0.72,
+          "death": 0.82
+        },
+        "economyControl": 0.68,
+        "wicketTaking": 0.6,
+        "accuracy": 0.65,
+        "variation": 0.62,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.68,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.9,
+      "id": "PL_4d2474ffbc"
+    },
+    {
+      "name": "Axar Patel",
+      "role": "allrounder",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.33,
+          "2": 0.09,
+          "4": 0.11,
+          "6": 0.025,
+          "dot": 0.44,
+          "wicket": 0.025
+        },
+        "aggression": {
+          "powerplay": 0.68,
+          "middle": 0.72,
+          "death": 0.82
+        },
+        "economyControl": 0.68,
+        "wicketTaking": 0.6,
+        "accuracy": 0.65,
+        "variation": 0.62,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.68,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.78,
+      "id": "PL_187147786a"
+    },
+    {
+      "name": "Kuldeep Yadav",
+      "role": "bowler",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.06,
+          "4": 0.08,
+          "6": 0.02,
+          "dot": 0.49,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.6
+        },
+        "consistency": 0.4,
+        "temperament": 0.4,
+        "runningBetweenWickets": 0.5,
+        "vsPace": 0.45,
+        "vsSpin": 0.45
+      },
+      "bowling": {
+        "base": {
+          "1": 0.28,
+          "2": 0.08,
+          "4": 0.09,
+          "6": 0.02,
+          "dot": 0.5,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.72,
+          "middle": 0.65,
+          "death": 0.9
+        },
+        "economyControl": 0.82,
+        "wicketTaking": 0.88,
+        "accuracy": 0.8,
+        "variation": 0.9,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.42,
+        "collapseResistance": 0.4,
+        "deathFinishing": 0.6,
+        "pressureHandling": 0.4,
+        "deathOverSkill": 0.48,
+        "newBallSwing": 0.72,
+        "tailResistance": 0.32,
+        "sloggingAbility": 0.24
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.38,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.78,
+      "id": "PL_a464c3836e"
+    },
+    {
+      "name": "Mohammed Shami",
+      "role": "bowler",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.06,
+          "4": 0.08,
+          "6": 0.02,
+          "dot": 0.49,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.6
+        },
+        "consistency": 0.4,
+        "temperament": 0.4,
+        "runningBetweenWickets": 0.5,
+        "vsPace": 0.45,
+        "vsSpin": 0.45
+      },
+      "bowling": {
+        "base": {
+          "1": 0.28,
+          "2": 0.08,
+          "4": 0.09,
+          "6": 0.02,
+          "dot": 0.5,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.72,
+          "middle": 0.65,
+          "death": 0.9
+        },
+        "economyControl": 0.85,
+        "wicketTaking": 0.92,
+        "accuracy": 0.9,
+        "variation": 0.78,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.42,
+        "collapseResistance": 0.4,
+        "deathFinishing": 0.6,
+        "pressureHandling": 0.4,
+        "deathOverSkill": 0.48,
+        "newBallSwing": 0.72,
+        "tailResistance": 0.32,
+        "sloggingAbility": 0.24
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.38,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.88,
+      "id": "PL_7ce94cb2e2"
+    },
+    {
+      "name": "Arshdeep Singh",
+      "role": "bowler",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.06,
+          "4": 0.08,
+          "6": 0.02,
+          "dot": 0.49,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.6
+        },
+        "consistency": 0.4,
+        "temperament": 0.4,
+        "runningBetweenWickets": 0.5,
+        "vsPace": 0.45,
+        "vsSpin": 0.45
+      },
+      "bowling": {
+        "base": {
+          "1": 0.28,
+          "2": 0.08,
+          "4": 0.09,
+          "6": 0.02,
+          "dot": 0.5,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.72,
+          "middle": 0.65,
+          "death": 0.9
+        },
+        "economyControl": 0.82,
+        "wicketTaking": 0.75,
+        "accuracy": 0.8,
+        "variation": 0.78,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.42,
+        "collapseResistance": 0.4,
+        "deathFinishing": 0.6,
+        "pressureHandling": 0.4,
+        "deathOverSkill": 0.48,
+        "newBallSwing": 0.72,
+        "tailResistance": 0.32,
+        "sloggingAbility": 0.24
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.38,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.7,
+      "id": "PL_df1f602810"
+    }
+  ],
+  "Australia": [
+    {
+      "name": "Travis Head",
+      "role": "batsman",
+      "type": "aggressive",
+      "batting": {
+        "base": {
+          "1": 0.27,
+          "2": 0.06,
+          "4": 0.14,
+          "6": 0.07,
+          "dot": 0.44,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 1.0,
+          "middle": 0.92,
+          "death": 0.98
+        },
+        "consistency": 0.78,
+        "temperament": 0.82,
+        "runningBetweenWickets": 0.65,
+        "vsPace": 0.78,
+        "vsSpin": 0.74
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.861,
+        "collapseResistance": 0.78,
+        "deathFinishing": 0.98,
+        "pressureHandling": 0.82,
+        "deathOverSkill": 0.784,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.624,
+        "sloggingAbility": 0.84
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.741,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.82,
+      "id": "PL_7303eafaa4"
+    },
+    {
+      "name": "Mitchell Marsh",
+      "role": "allrounder",
+      "type": "aggressive",
+      "batting": {
+        "base": {
+          "1": 0.27,
+          "2": 0.06,
+          "4": 0.14,
+          "6": 0.07,
+          "dot": 0.44,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.95,
+          "middle": 0.85,
+          "death": 1.0
+        },
+        "consistency": 0.78,
+        "temperament": 0.82,
+        "runningBetweenWickets": 0.65,
+        "vsPace": 0.78,
+        "vsSpin": 0.74
+      },
+      "bowling": {
+        "base": {
+          "1": 0.33,
+          "2": 0.09,
+          "4": 0.11,
+          "6": 0.025,
+          "dot": 0.44,
+          "wicket": 0.025
+        },
+        "aggression": {
+          "powerplay": 0.68,
+          "middle": 0.72,
+          "death": 0.82
+        },
+        "economyControl": 0.68,
+        "wicketTaking": 0.6,
+        "accuracy": 0.65,
+        "variation": 0.62,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.861,
+        "collapseResistance": 0.78,
+        "deathFinishing": 1.0,
+        "pressureHandling": 0.82,
+        "deathOverSkill": 0.8,
+        "newBallSwing": 0.68,
+        "tailResistance": 0.624,
+        "sloggingAbility": 0.84
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.741,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.85,
+      "id": "PL_839b796be4"
+    },
+    {
+      "name": "Steve Smith",
+      "role": "batsman",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.92,
+      "id": "PL_597fc4e903"
+    },
+    {
+      "name": "Marnus Labuschagne",
+      "role": "allrounder",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.33,
+          "2": 0.09,
+          "4": 0.11,
+          "6": 0.025,
+          "dot": 0.44,
+          "wicket": 0.025
+        },
+        "aggression": {
+          "powerplay": 0.68,
+          "middle": 0.72,
+          "death": 0.82
+        },
+        "economyControl": 0.68,
+        "wicketTaking": 0.6,
+        "accuracy": 0.65,
+        "variation": 0.62,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.68,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.78,
+      "id": "PL_661528fd5a"
+    },
+    {
+      "name": "Alex Carey",
+      "role": "batsman",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.8,
+      "id": "PL_14627eb789"
+    },
+    {
+      "name": "Josh Inglis",
+      "role": "batsman",
+      "type": "aggressive",
+      "batting": {
+        "base": {
+          "1": 0.27,
+          "2": 0.06,
+          "4": 0.14,
+          "6": 0.07,
+          "dot": 0.44,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.95,
+          "middle": 0.85,
+          "death": 1.0
+        },
+        "consistency": 0.78,
+        "temperament": 0.82,
+        "runningBetweenWickets": 0.65,
+        "vsPace": 0.78,
+        "vsSpin": 0.74
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.861,
+        "collapseResistance": 0.78,
+        "deathFinishing": 1.0,
+        "pressureHandling": 0.82,
+        "deathOverSkill": 0.8,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.624,
+        "sloggingAbility": 0.84
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.741,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.68,
+      "id": "PL_658ec9b686"
+    },
+    {
+      "name": "Sean Abbott",
+      "role": "allrounder",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.33,
+          "2": 0.09,
+          "4": 0.11,
+          "6": 0.025,
+          "dot": 0.44,
+          "wicket": 0.025
+        },
+        "aggression": {
+          "powerplay": 0.68,
+          "middle": 0.72,
+          "death": 0.82
+        },
+        "economyControl": 0.68,
+        "wicketTaking": 0.6,
+        "accuracy": 0.65,
+        "variation": 0.62,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.68,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.72,
+      "id": "PL_7c63493e8d"
+    },
+    {
+      "name": "Pat Cummins",
+      "role": "allrounder",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.33,
+          "2": 0.09,
+          "4": 0.11,
+          "6": 0.025,
+          "dot": 0.44,
+          "wicket": 0.025
+        },
+        "aggression": {
+          "powerplay": 0.68,
+          "middle": 0.72,
+          "death": 0.82
+        },
+        "economyControl": 0.68,
+        "wicketTaking": 0.9,
+        "accuracy": 0.92,
+        "variation": 0.62,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.68,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.9,
+      "id": "PL_52eac7757c"
+    },
+    {
+      "name": "Mitchell Starc",
+      "role": "bowler",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.06,
+          "4": 0.08,
+          "6": 0.02,
+          "dot": 0.49,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.6
+        },
+        "consistency": 0.4,
+        "temperament": 0.4,
+        "runningBetweenWickets": 0.5,
+        "vsPace": 0.45,
+        "vsSpin": 0.45
+      },
+      "bowling": {
+        "base": {
+          "1": 0.28,
+          "2": 0.08,
+          "4": 0.09,
+          "6": 0.02,
+          "dot": 0.5,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.72,
+          "middle": 0.65,
+          "death": 0.9
+        },
+        "economyControl": 0.82,
+        "wicketTaking": 0.88,
+        "accuracy": 0.8,
+        "variation": 0.85,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.42,
+        "collapseResistance": 0.4,
+        "deathFinishing": 0.6,
+        "pressureHandling": 0.4,
+        "deathOverSkill": 0.48,
+        "newBallSwing": 0.72,
+        "tailResistance": 0.32,
+        "sloggingAbility": 0.24
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.38,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.92,
+      "id": "PL_35883bfe66"
+    },
+    {
+      "name": "Josh Hazlewood",
+      "role": "bowler",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.06,
+          "4": 0.08,
+          "6": 0.02,
+          "dot": 0.49,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.6
+        },
+        "consistency": 0.4,
+        "temperament": 0.4,
+        "runningBetweenWickets": 0.5,
+        "vsPace": 0.45,
+        "vsSpin": 0.45
+      },
+      "bowling": {
+        "base": {
+          "1": 0.28,
+          "2": 0.08,
+          "4": 0.09,
+          "6": 0.02,
+          "dot": 0.5,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.72,
+          "middle": 0.65,
+          "death": 0.9
+        },
+        "economyControl": 0.82,
+        "wicketTaking": 0.75,
+        "accuracy": 0.8,
+        "variation": 0.78,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.42,
+        "collapseResistance": 0.4,
+        "deathFinishing": 0.6,
+        "pressureHandling": 0.4,
+        "deathOverSkill": 0.48,
+        "newBallSwing": 0.72,
+        "tailResistance": 0.32,
+        "sloggingAbility": 0.24
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.38,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.92,
+      "id": "PL_4aef664379"
+    },
+    {
+      "name": "Adam Zampa",
+      "role": "bowler",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.06,
+          "4": 0.08,
+          "6": 0.02,
+          "dot": 0.49,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.6
+        },
+        "consistency": 0.4,
+        "temperament": 0.4,
+        "runningBetweenWickets": 0.5,
+        "vsPace": 0.45,
+        "vsSpin": 0.45
+      },
+      "bowling": {
+        "base": {
+          "1": 0.28,
+          "2": 0.08,
+          "4": 0.09,
+          "6": 0.02,
+          "dot": 0.5,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.72,
+          "middle": 0.65,
+          "death": 0.9
+        },
+        "economyControl": 0.82,
+        "wicketTaking": 0.75,
+        "accuracy": 0.8,
+        "variation": 0.78,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.42,
+        "collapseResistance": 0.4,
+        "deathFinishing": 0.6,
+        "pressureHandling": 0.4,
+        "deathOverSkill": 0.48,
+        "newBallSwing": 0.72,
+        "tailResistance": 0.32,
+        "sloggingAbility": 0.24
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.38,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.85,
+      "id": "PL_7905cafb7f"
+    }
+  ],
+  "England": [
+    {
+      "name": "Phil Salt",
+      "role": "batsman",
+      "type": "aggressive",
+      "batting": {
+        "base": {
+          "1": 0.27,
+          "2": 0.06,
+          "4": 0.14,
+          "6": 0.07,
+          "dot": 0.44,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.95,
+          "middle": 0.85,
+          "death": 1.0
+        },
+        "consistency": 0.78,
+        "temperament": 0.82,
+        "runningBetweenWickets": 0.65,
+        "vsPace": 0.78,
+        "vsSpin": 0.74
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.861,
+        "collapseResistance": 0.78,
+        "deathFinishing": 1.0,
+        "pressureHandling": 0.82,
+        "deathOverSkill": 0.8,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.624,
+        "sloggingAbility": 0.84
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.741,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.68,
+      "id": "PL_0e07030bbe"
+    },
+    {
+      "name": "Ben Duckett",
+      "role": "batsman",
+      "type": "aggressive",
+      "batting": {
+        "base": {
+          "1": 0.27,
+          "2": 0.06,
+          "4": 0.14,
+          "6": 0.07,
+          "dot": 0.44,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.95,
+          "middle": 0.85,
+          "death": 1.0
+        },
+        "consistency": 0.78,
+        "temperament": 0.82,
+        "runningBetweenWickets": 0.65,
+        "vsPace": 0.78,
+        "vsSpin": 0.74
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.861,
+        "collapseResistance": 0.78,
+        "deathFinishing": 1.0,
+        "pressureHandling": 0.82,
+        "deathOverSkill": 0.8,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.624,
+        "sloggingAbility": 0.84
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.741,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.7,
+      "id": "PL_6ec34fae08"
+    },
+    {
+      "name": "Joe Root",
+      "role": "batsman",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.92,
+      "id": "PL_4220a4f538"
+    },
+    {
+      "name": "Harry Brook",
+      "role": "batsman",
+      "type": "aggressive",
+      "batting": {
+        "base": {
+          "1": 0.27,
+          "2": 0.06,
+          "4": 0.14,
+          "6": 0.07,
+          "dot": 0.44,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.95,
+          "middle": 0.85,
+          "death": 1.0
+        },
+        "consistency": 0.78,
+        "temperament": 0.82,
+        "runningBetweenWickets": 0.65,
+        "vsPace": 0.78,
+        "vsSpin": 0.74
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.861,
+        "collapseResistance": 0.78,
+        "deathFinishing": 1.0,
+        "pressureHandling": 0.82,
+        "deathOverSkill": 0.8,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.624,
+        "sloggingAbility": 0.84
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.741,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.72,
+      "id": "PL_1e06ba138d"
+    },
+    {
+      "name": "Jos Buttler",
+      "role": "batsman",
+      "type": "aggressive",
+      "batting": {
+        "base": {
+          "1": 0.27,
+          "2": 0.06,
+          "4": 0.14,
+          "6": 0.07,
+          "dot": 0.44,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.95,
+          "middle": 0.88,
+          "death": 1.0
+        },
+        "consistency": 0.78,
+        "temperament": 0.82,
+        "runningBetweenWickets": 0.65,
+        "vsPace": 0.78,
+        "vsSpin": 0.74
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.861,
+        "collapseResistance": 0.78,
+        "deathFinishing": 1.0,
+        "pressureHandling": 0.82,
+        "deathOverSkill": 0.8,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.624,
+        "sloggingAbility": 0.84
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.741,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.9,
+      "id": "PL_291dab3cb9"
+    },
+    {
+      "name": "Liam Livingstone",
+      "role": "allrounder",
+      "type": "aggressive",
+      "batting": {
+        "base": {
+          "1": 0.27,
+          "2": 0.06,
+          "4": 0.14,
+          "6": 0.07,
+          "dot": 0.44,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.95,
+          "middle": 0.85,
+          "death": 1.0
+        },
+        "consistency": 0.78,
+        "temperament": 0.82,
+        "runningBetweenWickets": 0.65,
+        "vsPace": 0.78,
+        "vsSpin": 0.74
+      },
+      "bowling": {
+        "base": {
+          "1": 0.33,
+          "2": 0.09,
+          "4": 0.11,
+          "6": 0.025,
+          "dot": 0.44,
+          "wicket": 0.025
+        },
+        "aggression": {
+          "powerplay": 0.68,
+          "middle": 0.72,
+          "death": 0.82
+        },
+        "economyControl": 0.68,
+        "wicketTaking": 0.6,
+        "accuracy": 0.65,
+        "variation": 0.62,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.861,
+        "collapseResistance": 0.78,
+        "deathFinishing": 1.0,
+        "pressureHandling": 0.82,
+        "deathOverSkill": 0.8,
+        "newBallSwing": 0.68,
+        "tailResistance": 0.624,
+        "sloggingAbility": 0.84
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.741,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.75,
+      "id": "PL_75620de541"
+    },
+    {
+      "name": "Jamie Smith",
+      "role": "batsman",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.62,
+      "id": "PL_895786f56a"
+    },
+    {
+      "name": "Adil Rashid",
+      "role": "bowler",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.06,
+          "4": 0.08,
+          "6": 0.02,
+          "dot": 0.49,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.6
+        },
+        "consistency": 0.4,
+        "temperament": 0.4,
+        "runningBetweenWickets": 0.5,
+        "vsPace": 0.45,
+        "vsSpin": 0.45
+      },
+      "bowling": {
+        "base": {
+          "1": 0.28,
+          "2": 0.08,
+          "4": 0.09,
+          "6": 0.02,
+          "dot": 0.5,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.72,
+          "middle": 0.65,
+          "death": 0.9
+        },
+        "economyControl": 0.82,
+        "wicketTaking": 0.82,
+        "accuracy": 0.8,
+        "variation": 0.88,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.42,
+        "collapseResistance": 0.4,
+        "deathFinishing": 0.6,
+        "pressureHandling": 0.4,
+        "deathOverSkill": 0.48,
+        "newBallSwing": 0.72,
+        "tailResistance": 0.32,
+        "sloggingAbility": 0.24
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.38,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.88,
+      "id": "PL_a7c6a66a7e"
+    },
+    {
+      "name": "Jofra Archer",
+      "role": "bowler",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.06,
+          "4": 0.08,
+          "6": 0.02,
+          "dot": 0.49,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.6
+        },
+        "consistency": 0.4,
+        "temperament": 0.4,
+        "runningBetweenWickets": 0.5,
+        "vsPace": 0.45,
+        "vsSpin": 0.45
+      },
+      "bowling": {
+        "base": {
+          "1": 0.28,
+          "2": 0.08,
+          "4": 0.09,
+          "6": 0.02,
+          "dot": 0.5,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.72,
+          "middle": 0.65,
+          "death": 0.9
+        },
+        "economyControl": 0.82,
+        "wicketTaking": 0.75,
+        "accuracy": 0.8,
+        "variation": 0.78,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.42,
+        "collapseResistance": 0.4,
+        "deathFinishing": 0.6,
+        "pressureHandling": 0.4,
+        "deathOverSkill": 0.48,
+        "newBallSwing": 0.72,
+        "tailResistance": 0.32,
+        "sloggingAbility": 0.24
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.38,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.72,
+      "id": "PL_7ac6deebea"
+    },
+    {
+      "name": "Saqib Mahmood",
+      "role": "bowler",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.06,
+          "4": 0.08,
+          "6": 0.02,
+          "dot": 0.49,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.6
+        },
+        "consistency": 0.4,
+        "temperament": 0.4,
+        "runningBetweenWickets": 0.5,
+        "vsPace": 0.45,
+        "vsSpin": 0.45
+      },
+      "bowling": {
+        "base": {
+          "1": 0.28,
+          "2": 0.08,
+          "4": 0.09,
+          "6": 0.02,
+          "dot": 0.5,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.72,
+          "middle": 0.65,
+          "death": 0.9
+        },
+        "economyControl": 0.82,
+        "wicketTaking": 0.75,
+        "accuracy": 0.8,
+        "variation": 0.78,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.42,
+        "collapseResistance": 0.4,
+        "deathFinishing": 0.6,
+        "pressureHandling": 0.4,
+        "deathOverSkill": 0.48,
+        "newBallSwing": 0.72,
+        "tailResistance": 0.32,
+        "sloggingAbility": 0.24
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.38,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.65,
+      "id": "PL_edcc0732cc"
+    },
+    {
+      "name": "Mark Wood",
+      "role": "bowler",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.06,
+          "4": 0.08,
+          "6": 0.02,
+          "dot": 0.49,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.6
+        },
+        "consistency": 0.4,
+        "temperament": 0.4,
+        "runningBetweenWickets": 0.5,
+        "vsPace": 0.45,
+        "vsSpin": 0.45
+      },
+      "bowling": {
+        "base": {
+          "1": 0.28,
+          "2": 0.08,
+          "4": 0.09,
+          "6": 0.02,
+          "dot": 0.5,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.72,
+          "middle": 0.65,
+          "death": 0.9
+        },
+        "economyControl": 0.82,
+        "wicketTaking": 0.75,
+        "accuracy": 0.8,
+        "variation": 0.78,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.42,
+        "collapseResistance": 0.4,
+        "deathFinishing": 0.6,
+        "pressureHandling": 0.4,
+        "deathOverSkill": 0.48,
+        "newBallSwing": 0.72,
+        "tailResistance": 0.32,
+        "sloggingAbility": 0.24
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.38,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.75,
+      "id": "PL_3148bfdf55"
+    }
+  ],
+  "South Africa": [
+    {
+      "name": "Ryan Rickelton",
+      "role": "batsman",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.58,
+      "id": "PL_1e74289890"
+    },
+    {
+      "name": "Temba Bavuma",
+      "role": "batsman",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.82,
+      "id": "PL_b1915de3ed"
+    },
+    {
+      "name": "Aiden Markram",
+      "role": "allrounder",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.33,
+          "2": 0.09,
+          "4": 0.11,
+          "6": 0.025,
+          "dot": 0.44,
+          "wicket": 0.025
+        },
+        "aggression": {
+          "powerplay": 0.68,
+          "middle": 0.72,
+          "death": 0.82
+        },
+        "economyControl": 0.68,
+        "wicketTaking": 0.6,
+        "accuracy": 0.65,
+        "variation": 0.62,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.68,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.82,
+      "id": "PL_2424c5e863"
+    },
+    {
+      "name": "Rassie van der Dussen",
+      "role": "batsman",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.8,
+      "id": "PL_9727c37401"
+    },
+    {
+      "name": "Heinrich Klaasen",
+      "role": "batsman",
+      "type": "aggressive",
+      "batting": {
+        "base": {
+          "1": 0.27,
+          "2": 0.06,
+          "4": 0.14,
+          "6": 0.07,
+          "dot": 0.44,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.88,
+          "middle": 0.9,
+          "death": 1.0
+        },
+        "consistency": 0.78,
+        "temperament": 0.82,
+        "runningBetweenWickets": 0.65,
+        "vsPace": 0.78,
+        "vsSpin": 0.74
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.861,
+        "collapseResistance": 0.78,
+        "deathFinishing": 1.0,
+        "pressureHandling": 0.82,
+        "deathOverSkill": 0.8,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.624,
+        "sloggingAbility": 0.84
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.741,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.65,
+      "id": "PL_3945121a81"
+    },
+    {
+      "name": "David Miller",
+      "role": "batsman",
+      "type": "aggressive",
+      "batting": {
+        "base": {
+          "1": 0.27,
+          "2": 0.06,
+          "4": 0.14,
+          "6": 0.07,
+          "dot": 0.44,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.95,
+          "middle": 0.85,
+          "death": 1.0
+        },
+        "consistency": 0.78,
+        "temperament": 0.82,
+        "runningBetweenWickets": 0.65,
+        "vsPace": 0.78,
+        "vsSpin": 0.74
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.861,
+        "collapseResistance": 0.78,
+        "deathFinishing": 1.0,
+        "pressureHandling": 0.82,
+        "deathOverSkill": 0.8,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.624,
+        "sloggingAbility": 0.84
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.741,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.9,
+      "id": "PL_9831baa50e"
+    },
+    {
+      "name": "Marco Jansen",
+      "role": "allrounder",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.33,
+          "2": 0.09,
+          "4": 0.11,
+          "6": 0.025,
+          "dot": 0.44,
+          "wicket": 0.025
+        },
+        "aggression": {
+          "powerplay": 0.68,
+          "middle": 0.72,
+          "death": 0.82
+        },
+        "economyControl": 0.68,
+        "wicketTaking": 0.6,
+        "accuracy": 0.65,
+        "variation": 0.62,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.68,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.68,
+      "id": "PL_2ff9b05acc"
+    },
+    {
+      "name": "Keshav Maharaj",
+      "role": "bowler",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.06,
+          "4": 0.08,
+          "6": 0.02,
+          "dot": 0.49,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.6
+        },
+        "consistency": 0.4,
+        "temperament": 0.4,
+        "runningBetweenWickets": 0.5,
+        "vsPace": 0.45,
+        "vsSpin": 0.45
+      },
+      "bowling": {
+        "base": {
+          "1": 0.28,
+          "2": 0.08,
+          "4": 0.09,
+          "6": 0.02,
+          "dot": 0.5,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.72,
+          "middle": 0.65,
+          "death": 0.9
+        },
+        "economyControl": 0.88,
+        "wicketTaking": 0.82,
+        "accuracy": 0.85,
+        "variation": 0.78,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.42,
+        "collapseResistance": 0.4,
+        "deathFinishing": 0.6,
+        "pressureHandling": 0.4,
+        "deathOverSkill": 0.48,
+        "newBallSwing": 0.72,
+        "tailResistance": 0.32,
+        "sloggingAbility": 0.24
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.38,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.82,
+      "id": "PL_0df7c58687"
+    },
+    {
+      "name": "Kagiso Rabada",
+      "role": "bowler",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.06,
+          "4": 0.08,
+          "6": 0.02,
+          "dot": 0.49,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.6
+        },
+        "consistency": 0.4,
+        "temperament": 0.4,
+        "runningBetweenWickets": 0.5,
+        "vsPace": 0.45,
+        "vsSpin": 0.45
+      },
+      "bowling": {
+        "base": {
+          "1": 0.28,
+          "2": 0.08,
+          "4": 0.09,
+          "6": 0.02,
+          "dot": 0.5,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.72,
+          "middle": 0.65,
+          "death": 0.9
+        },
+        "economyControl": 0.82,
+        "wicketTaking": 0.92,
+        "accuracy": 0.88,
+        "variation": 0.78,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.42,
+        "collapseResistance": 0.4,
+        "deathFinishing": 0.6,
+        "pressureHandling": 0.4,
+        "deathOverSkill": 0.48,
+        "newBallSwing": 0.72,
+        "tailResistance": 0.32,
+        "sloggingAbility": 0.24
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.38,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.88,
+      "id": "PL_6e8ba3ce3e"
+    },
+    {
+      "name": "Corbin Bosch",
+      "role": "allrounder",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.33,
+          "2": 0.09,
+          "4": 0.11,
+          "6": 0.025,
+          "dot": 0.44,
+          "wicket": 0.025
+        },
+        "aggression": {
+          "powerplay": 0.68,
+          "middle": 0.72,
+          "death": 0.82
+        },
+        "economyControl": 0.68,
+        "wicketTaking": 0.6,
+        "accuracy": 0.65,
+        "variation": 0.62,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.68,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.6,
+      "id": "PL_75497eb298"
+    },
+    {
+      "name": "Tabraiz Shamsi",
+      "role": "bowler",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.06,
+          "4": 0.08,
+          "6": 0.02,
+          "dot": 0.49,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.6
+        },
+        "consistency": 0.4,
+        "temperament": 0.4,
+        "runningBetweenWickets": 0.5,
+        "vsPace": 0.45,
+        "vsSpin": 0.45
+      },
+      "bowling": {
+        "base": {
+          "1": 0.28,
+          "2": 0.08,
+          "4": 0.09,
+          "6": 0.02,
+          "dot": 0.5,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.72,
+          "middle": 0.65,
+          "death": 0.9
+        },
+        "economyControl": 0.82,
+        "wicketTaking": 0.75,
+        "accuracy": 0.8,
+        "variation": 0.78,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.42,
+        "collapseResistance": 0.4,
+        "deathFinishing": 0.6,
+        "pressureHandling": 0.4,
+        "deathOverSkill": 0.48,
+        "newBallSwing": 0.72,
+        "tailResistance": 0.32,
+        "sloggingAbility": 0.24
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.38,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.78,
+      "id": "PL_12d12d022c"
+    }
+  ],
+  "New Zealand": [
+    {
+      "name": "Devon Conway",
+      "role": "batsman",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.78,
+      "id": "PL_00b24895c9"
+    },
+    {
+      "name": "Will Young",
+      "role": "batsman",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.72,
+      "id": "PL_62768f13c6"
+    },
+    {
+      "name": "Kane Williamson",
+      "role": "batsman",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.97,
+        "temperament": 0.98,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 1.0,
+        "collapseResistance": 0.97,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.98,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.776,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.921,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 1.0,
+      "id": "PL_3d555c1844"
+    },
+    {
+      "name": "Daryl Mitchell",
+      "role": "allrounder",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.93,
+        "temperament": 0.9,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.33,
+          "2": 0.09,
+          "4": 0.11,
+          "6": 0.025,
+          "dot": 0.44,
+          "wicket": 0.025
+        },
+        "aggression": {
+          "powerplay": 0.68,
+          "middle": 0.72,
+          "death": 0.82
+        },
+        "economyControl": 0.68,
+        "wicketTaking": 0.6,
+        "accuracy": 0.65,
+        "variation": 0.62,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.945,
+        "collapseResistance": 0.93,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.9,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.68,
+        "tailResistance": 0.744,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.883,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.8,
+      "id": "PL_9a7018b554"
+    },
+    {
+      "name": "Tom Latham",
+      "role": "batsman",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.88,
+      "id": "PL_46e9e17e89"
+    },
+    {
+      "name": "Glenn Phillips",
+      "role": "allrounder",
+      "type": "aggressive",
+      "batting": {
+        "base": {
+          "1": 0.27,
+          "2": 0.06,
+          "4": 0.14,
+          "6": 0.07,
+          "dot": 0.44,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.95,
+          "middle": 0.85,
+          "death": 1.0
+        },
+        "consistency": 0.78,
+        "temperament": 0.82,
+        "runningBetweenWickets": 0.65,
+        "vsPace": 0.78,
+        "vsSpin": 0.74
+      },
+      "bowling": {
+        "base": {
+          "1": 0.33,
+          "2": 0.09,
+          "4": 0.11,
+          "6": 0.025,
+          "dot": 0.44,
+          "wicket": 0.025
+        },
+        "aggression": {
+          "powerplay": 0.68,
+          "middle": 0.72,
+          "death": 0.82
+        },
+        "economyControl": 0.68,
+        "wicketTaking": 0.6,
+        "accuracy": 0.65,
+        "variation": 0.62,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.861,
+        "collapseResistance": 0.78,
+        "deathFinishing": 1.0,
+        "pressureHandling": 0.82,
+        "deathOverSkill": 0.8,
+        "newBallSwing": 0.68,
+        "tailResistance": 0.624,
+        "sloggingAbility": 0.84
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.741,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.75,
+      "id": "PL_f752ab65bc"
+    },
+    {
+      "name": "Rachin Ravindra",
+      "role": "allrounder",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.33,
+          "2": 0.09,
+          "4": 0.11,
+          "6": 0.025,
+          "dot": 0.44,
+          "wicket": 0.025
+        },
+        "aggression": {
+          "powerplay": 0.68,
+          "middle": 0.72,
+          "death": 0.82
+        },
+        "economyControl": 0.68,
+        "wicketTaking": 0.6,
+        "accuracy": 0.65,
+        "variation": 0.62,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.68,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.68,
+      "id": "PL_cd5625ef8d"
+    },
+    {
+      "name": "Mitchell Santner",
+      "role": "allrounder",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.33,
+          "2": 0.09,
+          "4": 0.11,
+          "6": 0.025,
+          "dot": 0.44,
+          "wicket": 0.025
+        },
+        "aggression": {
+          "powerplay": 0.68,
+          "middle": 0.72,
+          "death": 0.82
+        },
+        "economyControl": 0.68,
+        "wicketTaking": 0.6,
+        "accuracy": 0.65,
+        "variation": 0.62,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.68,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.82,
+      "id": "PL_e637937b31"
+    },
+    {
+      "name": "Matt Henry",
+      "role": "bowler",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.06,
+          "4": 0.08,
+          "6": 0.02,
+          "dot": 0.49,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.6
+        },
+        "consistency": 0.4,
+        "temperament": 0.4,
+        "runningBetweenWickets": 0.5,
+        "vsPace": 0.45,
+        "vsSpin": 0.45
+      },
+      "bowling": {
+        "base": {
+          "1": 0.28,
+          "2": 0.08,
+          "4": 0.09,
+          "6": 0.02,
+          "dot": 0.5,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.72,
+          "middle": 0.65,
+          "death": 0.9
+        },
+        "economyControl": 0.82,
+        "wicketTaking": 0.75,
+        "accuracy": 0.8,
+        "variation": 0.78,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.42,
+        "collapseResistance": 0.4,
+        "deathFinishing": 0.6,
+        "pressureHandling": 0.4,
+        "deathOverSkill": 0.48,
+        "newBallSwing": 0.72,
+        "tailResistance": 0.32,
+        "sloggingAbility": 0.24
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.38,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.8,
+      "id": "PL_186e6e203d"
+    },
+    {
+      "name": "Will O'Rourke",
+      "role": "bowler",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.06,
+          "4": 0.08,
+          "6": 0.02,
+          "dot": 0.49,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.6
+        },
+        "consistency": 0.4,
+        "temperament": 0.4,
+        "runningBetweenWickets": 0.5,
+        "vsPace": 0.45,
+        "vsSpin": 0.45
+      },
+      "bowling": {
+        "base": {
+          "1": 0.28,
+          "2": 0.08,
+          "4": 0.09,
+          "6": 0.02,
+          "dot": 0.5,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.72,
+          "middle": 0.65,
+          "death": 0.9
+        },
+        "economyControl": 0.82,
+        "wicketTaking": 0.75,
+        "accuracy": 0.8,
+        "variation": 0.78,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.42,
+        "collapseResistance": 0.4,
+        "deathFinishing": 0.6,
+        "pressureHandling": 0.4,
+        "deathOverSkill": 0.48,
+        "newBallSwing": 0.72,
+        "tailResistance": 0.32,
+        "sloggingAbility": 0.24
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.38,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.6,
+      "id": "PL_b8657b0587"
+    },
+    {
+      "name": "Lockie Ferguson",
+      "role": "bowler",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.06,
+          "4": 0.08,
+          "6": 0.02,
+          "dot": 0.49,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.6
+        },
+        "consistency": 0.4,
+        "temperament": 0.4,
+        "runningBetweenWickets": 0.5,
+        "vsPace": 0.45,
+        "vsSpin": 0.45
+      },
+      "bowling": {
+        "base": {
+          "1": 0.28,
+          "2": 0.08,
+          "4": 0.09,
+          "6": 0.02,
+          "dot": 0.5,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.72,
+          "middle": 0.65,
+          "death": 0.9
+        },
+        "economyControl": 0.82,
+        "wicketTaking": 0.75,
+        "accuracy": 0.8,
+        "variation": 0.78,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.42,
+        "collapseResistance": 0.4,
+        "deathFinishing": 0.6,
+        "pressureHandling": 0.4,
+        "deathOverSkill": 0.48,
+        "newBallSwing": 0.72,
+        "tailResistance": 0.32,
+        "sloggingAbility": 0.24
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.38,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.78,
+      "id": "PL_601fe7c67c"
+    }
+  ],
+  "Pakistan": [
+    {
+      "name": "Fakhar Zaman",
+      "role": "batsman",
+      "type": "aggressive",
+      "batting": {
+        "base": {
+          "1": 0.27,
+          "2": 0.06,
+          "4": 0.14,
+          "6": 0.07,
+          "dot": 0.44,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.95,
+          "middle": 0.85,
+          "death": 1.0
+        },
+        "consistency": 0.78,
+        "temperament": 0.82,
+        "runningBetweenWickets": 0.65,
+        "vsPace": 0.78,
+        "vsSpin": 0.74
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.861,
+        "collapseResistance": 0.78,
+        "deathFinishing": 1.0,
+        "pressureHandling": 0.82,
+        "deathOverSkill": 0.8,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.624,
+        "sloggingAbility": 0.84
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.741,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.85,
+      "id": "PL_d8a74a7638"
+    },
+    {
+      "name": "Saim Ayub",
+      "role": "batsman",
+      "type": "aggressive",
+      "batting": {
+        "base": {
+          "1": 0.27,
+          "2": 0.06,
+          "4": 0.14,
+          "6": 0.07,
+          "dot": 0.44,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.95,
+          "middle": 0.85,
+          "death": 1.0
+        },
+        "consistency": 0.78,
+        "temperament": 0.82,
+        "runningBetweenWickets": 0.65,
+        "vsPace": 0.78,
+        "vsSpin": 0.74
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.861,
+        "collapseResistance": 0.78,
+        "deathFinishing": 1.0,
+        "pressureHandling": 0.82,
+        "deathOverSkill": 0.8,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.624,
+        "sloggingAbility": 0.84
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.741,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.6,
+      "id": "PL_47b273cd36"
+    },
+    {
+      "name": "Babar Azam",
+      "role": "batsman",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.96,
+        "temperament": 0.98,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.95
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 1.0,
+        "collapseResistance": 0.96,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.98,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.768,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.912,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.95,
+      "id": "PL_67015a2d72"
+    },
+    {
+      "name": "Mohammad Rizwan",
+      "role": "batsman",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.88,
+      "id": "PL_f8fd47c047"
+    },
+    {
+      "name": "Salman Agha",
+      "role": "allrounder",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.33,
+          "2": 0.09,
+          "4": 0.11,
+          "6": 0.025,
+          "dot": 0.44,
+          "wicket": 0.025
+        },
+        "aggression": {
+          "powerplay": 0.68,
+          "middle": 0.72,
+          "death": 0.82
+        },
+        "economyControl": 0.68,
+        "wicketTaking": 0.6,
+        "accuracy": 0.65,
+        "variation": 0.62,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.68,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.65,
+      "id": "PL_5c8f2cb6dd"
+    },
+    {
+      "name": "Tayyab Tahir",
+      "role": "batsman",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.58,
+      "id": "PL_0a972adbd6"
+    },
+    {
+      "name": "Shadab Khan",
+      "role": "allrounder",
+      "type": "aggressive",
+      "batting": {
+        "base": {
+          "1": 0.27,
+          "2": 0.06,
+          "4": 0.14,
+          "6": 0.07,
+          "dot": 0.44,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.95,
+          "middle": 0.85,
+          "death": 1.0
+        },
+        "consistency": 0.78,
+        "temperament": 0.82,
+        "runningBetweenWickets": 0.65,
+        "vsPace": 0.78,
+        "vsSpin": 0.74
+      },
+      "bowling": {
+        "base": {
+          "1": 0.33,
+          "2": 0.09,
+          "4": 0.11,
+          "6": 0.025,
+          "dot": 0.44,
+          "wicket": 0.025
+        },
+        "aggression": {
+          "powerplay": 0.68,
+          "middle": 0.72,
+          "death": 0.82
+        },
+        "economyControl": 0.68,
+        "wicketTaking": 0.6,
+        "accuracy": 0.65,
+        "variation": 0.62,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.861,
+        "collapseResistance": 0.78,
+        "deathFinishing": 1.0,
+        "pressureHandling": 0.82,
+        "deathOverSkill": 0.8,
+        "newBallSwing": 0.68,
+        "tailResistance": 0.624,
+        "sloggingAbility": 0.84
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.741,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.8,
+      "id": "PL_b048a77894"
+    },
+    {
+      "name": "Mohammad Nawaz",
+      "role": "allrounder",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.33,
+          "2": 0.09,
+          "4": 0.11,
+          "6": 0.025,
+          "dot": 0.44,
+          "wicket": 0.025
+        },
+        "aggression": {
+          "powerplay": 0.68,
+          "middle": 0.72,
+          "death": 0.82
+        },
+        "economyControl": 0.68,
+        "wicketTaking": 0.6,
+        "accuracy": 0.65,
+        "variation": 0.62,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.68,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.78,
+      "id": "PL_1bc5162f9d"
+    },
+    {
+      "name": "Shaheen Afridi",
+      "role": "bowler",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.06,
+          "4": 0.08,
+          "6": 0.02,
+          "dot": 0.49,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.6
+        },
+        "consistency": 0.4,
+        "temperament": 0.4,
+        "runningBetweenWickets": 0.5,
+        "vsPace": 0.45,
+        "vsSpin": 0.45
+      },
+      "bowling": {
+        "base": {
+          "1": 0.28,
+          "2": 0.08,
+          "4": 0.09,
+          "6": 0.02,
+          "dot": 0.5,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.72,
+          "middle": 0.65,
+          "death": 0.9
+        },
+        "economyControl": 0.85,
+        "wicketTaking": 0.9,
+        "accuracy": 0.88,
+        "variation": 0.78,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.42,
+        "collapseResistance": 0.4,
+        "deathFinishing": 0.6,
+        "pressureHandling": 0.4,
+        "deathOverSkill": 0.48,
+        "newBallSwing": 0.72,
+        "tailResistance": 0.32,
+        "sloggingAbility": 0.24
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.38,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.8,
+      "id": "PL_0107f5ccdb"
+    },
+    {
+      "name": "Naseem Shah",
+      "role": "bowler",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.06,
+          "4": 0.08,
+          "6": 0.02,
+          "dot": 0.49,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.6
+        },
+        "consistency": 0.4,
+        "temperament": 0.4,
+        "runningBetweenWickets": 0.5,
+        "vsPace": 0.45,
+        "vsSpin": 0.45
+      },
+      "bowling": {
+        "base": {
+          "1": 0.28,
+          "2": 0.08,
+          "4": 0.09,
+          "6": 0.02,
+          "dot": 0.5,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.72,
+          "middle": 0.65,
+          "death": 0.9
+        },
+        "economyControl": 0.82,
+        "wicketTaking": 0.75,
+        "accuracy": 0.8,
+        "variation": 0.78,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.42,
+        "collapseResistance": 0.4,
+        "deathFinishing": 0.6,
+        "pressureHandling": 0.4,
+        "deathOverSkill": 0.48,
+        "newBallSwing": 0.72,
+        "tailResistance": 0.32,
+        "sloggingAbility": 0.24
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.38,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.72,
+      "id": "PL_36cebd9881"
+    },
+    {
+      "name": "Haris Rauf",
+      "role": "bowler",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.06,
+          "4": 0.08,
+          "6": 0.02,
+          "dot": 0.49,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.6
+        },
+        "consistency": 0.4,
+        "temperament": 0.4,
+        "runningBetweenWickets": 0.5,
+        "vsPace": 0.45,
+        "vsSpin": 0.45
+      },
+      "bowling": {
+        "base": {
+          "1": 0.28,
+          "2": 0.08,
+          "4": 0.09,
+          "6": 0.02,
+          "dot": 0.5,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.72,
+          "middle": 0.65,
+          "death": 0.9
+        },
+        "economyControl": 0.82,
+        "wicketTaking": 0.75,
+        "accuracy": 0.8,
+        "variation": 0.78,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.42,
+        "collapseResistance": 0.4,
+        "deathFinishing": 0.6,
+        "pressureHandling": 0.4,
+        "deathOverSkill": 0.48,
+        "newBallSwing": 0.72,
+        "tailResistance": 0.32,
+        "sloggingAbility": 0.24
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.38,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.75,
+      "id": "PL_30dc89af35"
+    }
+  ],
+  "West Indies": [
+    {
+      "name": "Brandon King",
+      "role": "batsman",
+      "type": "aggressive",
+      "batting": {
+        "base": {
+          "1": 0.27,
+          "2": 0.06,
+          "4": 0.14,
+          "6": 0.07,
+          "dot": 0.44,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.95,
+          "middle": 0.85,
+          "death": 1.0
+        },
+        "consistency": 0.78,
+        "temperament": 0.82,
+        "runningBetweenWickets": 0.65,
+        "vsPace": 0.78,
+        "vsSpin": 0.74
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.861,
+        "collapseResistance": 0.78,
+        "deathFinishing": 1.0,
+        "pressureHandling": 0.82,
+        "deathOverSkill": 0.8,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.624,
+        "sloggingAbility": 0.84
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.741,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.72,
+      "id": "PL_dc9810befd"
+    },
+    {
+      "name": "Shai Hope",
+      "role": "batsman",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.88,
+      "id": "PL_9a42da42b3"
+    },
+    {
+      "name": "Keacy Carty",
+      "role": "batsman",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.6,
+      "id": "PL_076789cc7f"
+    },
+    {
+      "name": "Shimron Hetmyer",
+      "role": "batsman",
+      "type": "aggressive",
+      "batting": {
+        "base": {
+          "1": 0.27,
+          "2": 0.06,
+          "4": 0.14,
+          "6": 0.07,
+          "dot": 0.44,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.95,
+          "middle": 0.85,
+          "death": 1.0
+        },
+        "consistency": 0.78,
+        "temperament": 0.82,
+        "runningBetweenWickets": 0.65,
+        "vsPace": 0.78,
+        "vsSpin": 0.74
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.861,
+        "collapseResistance": 0.78,
+        "deathFinishing": 1.0,
+        "pressureHandling": 0.82,
+        "deathOverSkill": 0.8,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.624,
+        "sloggingAbility": 0.84
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.741,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.78,
+      "id": "PL_47ae72b7b3"
+    },
+    {
+      "name": "Nicholas Pooran",
+      "role": "batsman",
+      "type": "aggressive",
+      "batting": {
+        "base": {
+          "1": 0.27,
+          "2": 0.06,
+          "4": 0.14,
+          "6": 0.07,
+          "dot": 0.44,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.92,
+          "middle": 0.88,
+          "death": 1.0
+        },
+        "consistency": 0.78,
+        "temperament": 0.82,
+        "runningBetweenWickets": 0.65,
+        "vsPace": 0.78,
+        "vsSpin": 0.74
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.861,
+        "collapseResistance": 0.78,
+        "deathFinishing": 1.0,
+        "pressureHandling": 0.82,
+        "deathOverSkill": 0.8,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.624,
+        "sloggingAbility": 0.84
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.741,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.65,
+      "id": "PL_b995c3078c"
+    },
+    {
+      "name": "Roston Chase",
+      "role": "allrounder",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.33,
+          "2": 0.09,
+          "4": 0.11,
+          "6": 0.025,
+          "dot": 0.44,
+          "wicket": 0.025
+        },
+        "aggression": {
+          "powerplay": 0.68,
+          "middle": 0.72,
+          "death": 0.82
+        },
+        "economyControl": 0.68,
+        "wicketTaking": 0.6,
+        "accuracy": 0.65,
+        "variation": 0.62,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.68,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.82,
+      "id": "PL_a5fa354885"
+    },
+    {
+      "name": "Jason Holder",
+      "role": "allrounder",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.33,
+          "2": 0.09,
+          "4": 0.11,
+          "6": 0.025,
+          "dot": 0.44,
+          "wicket": 0.025
+        },
+        "aggression": {
+          "powerplay": 0.68,
+          "middle": 0.72,
+          "death": 0.82
+        },
+        "economyControl": 0.68,
+        "wicketTaking": 0.6,
+        "accuracy": 0.65,
+        "variation": 0.62,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.68,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.88,
+      "id": "PL_63e55e2436"
+    },
+    {
+      "name": "Akeal Hosein",
+      "role": "allrounder",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.33,
+          "2": 0.09,
+          "4": 0.11,
+          "6": 0.025,
+          "dot": 0.44,
+          "wicket": 0.025
+        },
+        "aggression": {
+          "powerplay": 0.68,
+          "middle": 0.72,
+          "death": 0.82
+        },
+        "economyControl": 0.68,
+        "wicketTaking": 0.6,
+        "accuracy": 0.65,
+        "variation": 0.62,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.68,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.72,
+      "id": "PL_f1589986eb"
+    },
+    {
+      "name": "Alzarri Joseph",
+      "role": "bowler",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.06,
+          "4": 0.08,
+          "6": 0.02,
+          "dot": 0.49,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.6
+        },
+        "consistency": 0.4,
+        "temperament": 0.4,
+        "runningBetweenWickets": 0.5,
+        "vsPace": 0.45,
+        "vsSpin": 0.45
+      },
+      "bowling": {
+        "base": {
+          "1": 0.28,
+          "2": 0.08,
+          "4": 0.09,
+          "6": 0.02,
+          "dot": 0.5,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.72,
+          "middle": 0.65,
+          "death": 0.9
+        },
+        "economyControl": 0.82,
+        "wicketTaking": 0.75,
+        "accuracy": 0.8,
+        "variation": 0.78,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.42,
+        "collapseResistance": 0.4,
+        "deathFinishing": 0.6,
+        "pressureHandling": 0.4,
+        "deathOverSkill": 0.48,
+        "newBallSwing": 0.72,
+        "tailResistance": 0.32,
+        "sloggingAbility": 0.24
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.38,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.68,
+      "id": "PL_2547271370"
+    },
+    {
+      "name": "Gudakesh Motie",
+      "role": "bowler",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.06,
+          "4": 0.08,
+          "6": 0.02,
+          "dot": 0.49,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.6
+        },
+        "consistency": 0.4,
+        "temperament": 0.4,
+        "runningBetweenWickets": 0.5,
+        "vsPace": 0.45,
+        "vsSpin": 0.45
+      },
+      "bowling": {
+        "base": {
+          "1": 0.28,
+          "2": 0.08,
+          "4": 0.09,
+          "6": 0.02,
+          "dot": 0.5,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.72,
+          "middle": 0.65,
+          "death": 0.9
+        },
+        "economyControl": 0.82,
+        "wicketTaking": 0.75,
+        "accuracy": 0.8,
+        "variation": 0.78,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.42,
+        "collapseResistance": 0.4,
+        "deathFinishing": 0.6,
+        "pressureHandling": 0.4,
+        "deathOverSkill": 0.48,
+        "newBallSwing": 0.72,
+        "tailResistance": 0.32,
+        "sloggingAbility": 0.24
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.38,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.65,
+      "id": "PL_b920cae1c7"
+    },
+    {
+      "name": "Shamar Joseph",
+      "role": "bowler",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.06,
+          "4": 0.08,
+          "6": 0.02,
+          "dot": 0.49,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.6
+        },
+        "consistency": 0.4,
+        "temperament": 0.4,
+        "runningBetweenWickets": 0.5,
+        "vsPace": 0.45,
+        "vsSpin": 0.45
+      },
+      "bowling": {
+        "base": {
+          "1": 0.28,
+          "2": 0.08,
+          "4": 0.09,
+          "6": 0.02,
+          "dot": 0.5,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.72,
+          "middle": 0.65,
+          "death": 0.9
+        },
+        "economyControl": 0.82,
+        "wicketTaking": 0.75,
+        "accuracy": 0.8,
+        "variation": 0.78,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.42,
+        "collapseResistance": 0.4,
+        "deathFinishing": 0.6,
+        "pressureHandling": 0.4,
+        "deathOverSkill": 0.48,
+        "newBallSwing": 0.72,
+        "tailResistance": 0.32,
+        "sloggingAbility": 0.24
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.38,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.62,
+      "id": "PL_482da6be98"
+    }
+  ],
+  "Sri Lanka": [
+    {
+      "name": "Pathum Nissanka",
+      "role": "batsman",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.75,
+      "id": "PL_82566d4cf0"
+    },
+    {
+      "name": "Kusal Mendis",
+      "role": "batsman",
+      "type": "aggressive",
+      "batting": {
+        "base": {
+          "1": 0.27,
+          "2": 0.06,
+          "4": 0.14,
+          "6": 0.07,
+          "dot": 0.44,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.95,
+          "middle": 0.85,
+          "death": 1.0
+        },
+        "consistency": 0.78,
+        "temperament": 0.82,
+        "runningBetweenWickets": 0.65,
+        "vsPace": 0.78,
+        "vsSpin": 0.74
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.861,
+        "collapseResistance": 0.78,
+        "deathFinishing": 1.0,
+        "pressureHandling": 0.82,
+        "deathOverSkill": 0.8,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.624,
+        "sloggingAbility": 0.84
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.741,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.8,
+      "id": "PL_66070925db"
+    },
+    {
+      "name": "Kamindu Mendis",
+      "role": "allrounder",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.33,
+          "2": 0.09,
+          "4": 0.11,
+          "6": 0.025,
+          "dot": 0.44,
+          "wicket": 0.025
+        },
+        "aggression": {
+          "powerplay": 0.68,
+          "middle": 0.72,
+          "death": 0.82
+        },
+        "economyControl": 0.68,
+        "wicketTaking": 0.6,
+        "accuracy": 0.65,
+        "variation": 0.62,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.68,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.7,
+      "id": "PL_a407ea0a25"
+    },
+    {
+      "name": "Charith Asalanka",
+      "role": "batsman",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.72,
+      "id": "PL_61c39b8cd9"
+    },
+    {
+      "name": "Dasun Shanaka",
+      "role": "allrounder",
+      "type": "aggressive",
+      "batting": {
+        "base": {
+          "1": 0.27,
+          "2": 0.06,
+          "4": 0.14,
+          "6": 0.07,
+          "dot": 0.44,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.95,
+          "middle": 0.85,
+          "death": 1.0
+        },
+        "consistency": 0.78,
+        "temperament": 0.82,
+        "runningBetweenWickets": 0.65,
+        "vsPace": 0.78,
+        "vsSpin": 0.74
+      },
+      "bowling": {
+        "base": {
+          "1": 0.33,
+          "2": 0.09,
+          "4": 0.11,
+          "6": 0.025,
+          "dot": 0.44,
+          "wicket": 0.025
+        },
+        "aggression": {
+          "powerplay": 0.68,
+          "middle": 0.72,
+          "death": 0.82
+        },
+        "economyControl": 0.68,
+        "wicketTaking": 0.6,
+        "accuracy": 0.65,
+        "variation": 0.62,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.861,
+        "collapseResistance": 0.78,
+        "deathFinishing": 1.0,
+        "pressureHandling": 0.82,
+        "deathOverSkill": 0.8,
+        "newBallSwing": 0.68,
+        "tailResistance": 0.624,
+        "sloggingAbility": 0.84
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.741,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.82,
+      "id": "PL_d1013ca492"
+    },
+    {
+      "name": "Janith Liyanage",
+      "role": "batsman",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.55,
+      "id": "PL_8b21d755a4"
+    },
+    {
+      "name": "Wanindu Hasaranga",
+      "role": "allrounder",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.33,
+          "2": 0.09,
+          "4": 0.11,
+          "6": 0.025,
+          "dot": 0.44,
+          "wicket": 0.025
+        },
+        "aggression": {
+          "powerplay": 0.68,
+          "middle": 0.72,
+          "death": 0.82
+        },
+        "economyControl": 0.68,
+        "wicketTaking": 0.9,
+        "accuracy": 0.65,
+        "variation": 0.95,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.68,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.78,
+      "id": "PL_c9b68b9f56"
+    },
+    {
+      "name": "Dunith Wellalage",
+      "role": "allrounder",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.33,
+          "2": 0.09,
+          "4": 0.11,
+          "6": 0.025,
+          "dot": 0.44,
+          "wicket": 0.025
+        },
+        "aggression": {
+          "powerplay": 0.68,
+          "middle": 0.72,
+          "death": 0.82
+        },
+        "economyControl": 0.68,
+        "wicketTaking": 0.6,
+        "accuracy": 0.65,
+        "variation": 0.62,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.68,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.65,
+      "id": "PL_e7987dae7c"
+    },
+    {
+      "name": "Maheesh Theekshana",
+      "role": "bowler",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.06,
+          "4": 0.08,
+          "6": 0.02,
+          "dot": 0.49,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.6
+        },
+        "consistency": 0.4,
+        "temperament": 0.4,
+        "runningBetweenWickets": 0.5,
+        "vsPace": 0.45,
+        "vsSpin": 0.45
+      },
+      "bowling": {
+        "base": {
+          "1": 0.28,
+          "2": 0.08,
+          "4": 0.09,
+          "6": 0.02,
+          "dot": 0.5,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.72,
+          "middle": 0.65,
+          "death": 0.9
+        },
+        "economyControl": 0.82,
+        "wicketTaking": 0.88,
+        "accuracy": 0.8,
+        "variation": 0.92,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.42,
+        "collapseResistance": 0.4,
+        "deathFinishing": 0.6,
+        "pressureHandling": 0.4,
+        "deathOverSkill": 0.48,
+        "newBallSwing": 0.72,
+        "tailResistance": 0.32,
+        "sloggingAbility": 0.24
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.38,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.72,
+      "id": "PL_3d2ddf7632"
+    },
+    {
+      "name": "Dushmantha Chameera",
+      "role": "bowler",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.06,
+          "4": 0.08,
+          "6": 0.02,
+          "dot": 0.49,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.6
+        },
+        "consistency": 0.4,
+        "temperament": 0.4,
+        "runningBetweenWickets": 0.5,
+        "vsPace": 0.45,
+        "vsSpin": 0.45
+      },
+      "bowling": {
+        "base": {
+          "1": 0.28,
+          "2": 0.08,
+          "4": 0.09,
+          "6": 0.02,
+          "dot": 0.5,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.72,
+          "middle": 0.65,
+          "death": 0.9
+        },
+        "economyControl": 0.82,
+        "wicketTaking": 0.75,
+        "accuracy": 0.8,
+        "variation": 0.78,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.42,
+        "collapseResistance": 0.4,
+        "deathFinishing": 0.6,
+        "pressureHandling": 0.4,
+        "deathOverSkill": 0.48,
+        "newBallSwing": 0.72,
+        "tailResistance": 0.32,
+        "sloggingAbility": 0.24
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.38,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.72,
+      "id": "PL_77232cbee2"
+    },
+    {
+      "name": "Dilshan Madushanka",
+      "role": "bowler",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.06,
+          "4": 0.08,
+          "6": 0.02,
+          "dot": 0.49,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.6
+        },
+        "consistency": 0.4,
+        "temperament": 0.4,
+        "runningBetweenWickets": 0.5,
+        "vsPace": 0.45,
+        "vsSpin": 0.45
+      },
+      "bowling": {
+        "base": {
+          "1": 0.28,
+          "2": 0.08,
+          "4": 0.09,
+          "6": 0.02,
+          "dot": 0.5,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.72,
+          "middle": 0.65,
+          "death": 0.9
+        },
+        "economyControl": 0.82,
+        "wicketTaking": 0.75,
+        "accuracy": 0.8,
+        "variation": 0.78,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.42,
+        "collapseResistance": 0.4,
+        "deathFinishing": 0.6,
+        "pressureHandling": 0.4,
+        "deathOverSkill": 0.48,
+        "newBallSwing": 0.72,
+        "tailResistance": 0.32,
+        "sloggingAbility": 0.24
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.38,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.65,
+      "id": "PL_a677de25d2"
+    }
+  ],
+  "Bangladesh": [
+    {
+      "name": "Tanzid Hasan",
+      "role": "batsman",
+      "type": "aggressive",
+      "batting": {
+        "base": {
+          "1": 0.27,
+          "2": 0.06,
+          "4": 0.14,
+          "6": 0.07,
+          "dot": 0.44,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.95,
+          "middle": 0.85,
+          "death": 1.0
+        },
+        "consistency": 0.78,
+        "temperament": 0.82,
+        "runningBetweenWickets": 0.65,
+        "vsPace": 0.78,
+        "vsSpin": 0.74
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.861,
+        "collapseResistance": 0.78,
+        "deathFinishing": 1.0,
+        "pressureHandling": 0.82,
+        "deathOverSkill": 0.8,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.624,
+        "sloggingAbility": 0.84
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.741,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.6,
+      "id": "PL_df09f8b455"
+    },
+    {
+      "name": "Soumya Sarkar",
+      "role": "batsman",
+      "type": "aggressive",
+      "batting": {
+        "base": {
+          "1": 0.27,
+          "2": 0.06,
+          "4": 0.14,
+          "6": 0.07,
+          "dot": 0.44,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.95,
+          "middle": 0.85,
+          "death": 1.0
+        },
+        "consistency": 0.78,
+        "temperament": 0.82,
+        "runningBetweenWickets": 0.65,
+        "vsPace": 0.78,
+        "vsSpin": 0.74
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.861,
+        "collapseResistance": 0.78,
+        "deathFinishing": 1.0,
+        "pressureHandling": 0.82,
+        "deathOverSkill": 0.8,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.624,
+        "sloggingAbility": 0.84
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.741,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.75,
+      "id": "PL_f73476723f"
+    },
+    {
+      "name": "Nazmul Hossain Shanto",
+      "role": "batsman",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.7,
+      "id": "PL_deb6d37dbc"
+    },
+    {
+      "name": "Towhid Hridoy",
+      "role": "batsman",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.62,
+      "id": "PL_d2267cf46d"
+    },
+    {
+      "name": "Mushfiqur Rahim",
+      "role": "batsman",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.95,
+      "id": "PL_0d7f915989"
+    },
+    {
+      "name": "Mahmudullah",
+      "role": "allrounder",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.33,
+          "2": 0.09,
+          "4": 0.11,
+          "6": 0.025,
+          "dot": 0.44,
+          "wicket": 0.025
+        },
+        "aggression": {
+          "powerplay": 0.68,
+          "middle": 0.72,
+          "death": 0.82
+        },
+        "economyControl": 0.68,
+        "wicketTaking": 0.6,
+        "accuracy": 0.65,
+        "variation": 0.62,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.68,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.9,
+      "id": "PL_86f2bde973"
+    },
+    {
+      "name": "Jaker Ali",
+      "role": "allrounder",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.33,
+          "2": 0.09,
+          "4": 0.11,
+          "6": 0.025,
+          "dot": 0.44,
+          "wicket": 0.025
+        },
+        "aggression": {
+          "powerplay": 0.68,
+          "middle": 0.72,
+          "death": 0.82
+        },
+        "economyControl": 0.68,
+        "wicketTaking": 0.6,
+        "accuracy": 0.65,
+        "variation": 0.62,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.68,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.6,
+      "id": "PL_97af4187f6"
+    },
+    {
+      "name": "Mehidy Hasan Miraz",
+      "role": "allrounder",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.33,
+          "2": 0.09,
+          "4": 0.11,
+          "6": 0.025,
+          "dot": 0.44,
+          "wicket": 0.025
+        },
+        "aggression": {
+          "powerplay": 0.68,
+          "middle": 0.72,
+          "death": 0.82
+        },
+        "economyControl": 0.68,
+        "wicketTaking": 0.6,
+        "accuracy": 0.65,
+        "variation": 0.62,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.68,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.78,
+      "id": "PL_23575d54d5"
+    },
+    {
+      "name": "Rishad Hossain",
+      "role": "bowler",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.06,
+          "4": 0.08,
+          "6": 0.02,
+          "dot": 0.49,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.6
+        },
+        "consistency": 0.4,
+        "temperament": 0.4,
+        "runningBetweenWickets": 0.5,
+        "vsPace": 0.45,
+        "vsSpin": 0.45
+      },
+      "bowling": {
+        "base": {
+          "1": 0.28,
+          "2": 0.08,
+          "4": 0.09,
+          "6": 0.02,
+          "dot": 0.5,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.72,
+          "middle": 0.65,
+          "death": 0.9
+        },
+        "economyControl": 0.82,
+        "wicketTaking": 0.75,
+        "accuracy": 0.8,
+        "variation": 0.78,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.42,
+        "collapseResistance": 0.4,
+        "deathFinishing": 0.6,
+        "pressureHandling": 0.4,
+        "deathOverSkill": 0.48,
+        "newBallSwing": 0.72,
+        "tailResistance": 0.32,
+        "sloggingAbility": 0.24
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.38,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.58,
+      "id": "PL_ca60a99214"
+    },
+    {
+      "name": "Taskin Ahmed",
+      "role": "bowler",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.06,
+          "4": 0.08,
+          "6": 0.02,
+          "dot": 0.49,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.6
+        },
+        "consistency": 0.4,
+        "temperament": 0.4,
+        "runningBetweenWickets": 0.5,
+        "vsPace": 0.45,
+        "vsSpin": 0.45
+      },
+      "bowling": {
+        "base": {
+          "1": 0.28,
+          "2": 0.08,
+          "4": 0.09,
+          "6": 0.02,
+          "dot": 0.5,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.72,
+          "middle": 0.65,
+          "death": 0.9
+        },
+        "economyControl": 0.82,
+        "wicketTaking": 0.75,
+        "accuracy": 0.8,
+        "variation": 0.78,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.42,
+        "collapseResistance": 0.4,
+        "deathFinishing": 0.6,
+        "pressureHandling": 0.4,
+        "deathOverSkill": 0.48,
+        "newBallSwing": 0.72,
+        "tailResistance": 0.32,
+        "sloggingAbility": 0.24
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.38,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.72,
+      "id": "PL_ea94cbafe3"
+    },
+    {
+      "name": "Mustafizur Rahman",
+      "role": "bowler",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.06,
+          "4": 0.08,
+          "6": 0.02,
+          "dot": 0.49,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.6
+        },
+        "consistency": 0.4,
+        "temperament": 0.4,
+        "runningBetweenWickets": 0.5,
+        "vsPace": 0.45,
+        "vsSpin": 0.45
+      },
+      "bowling": {
+        "base": {
+          "1": 0.28,
+          "2": 0.08,
+          "4": 0.09,
+          "6": 0.02,
+          "dot": 0.5,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.72,
+          "middle": 0.65,
+          "death": 0.9
+        },
+        "economyControl": 0.82,
+        "wicketTaking": 0.75,
+        "accuracy": 0.8,
+        "variation": 0.9,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.42,
+        "collapseResistance": 0.4,
+        "deathFinishing": 0.6,
+        "pressureHandling": 0.4,
+        "deathOverSkill": 0.48,
+        "newBallSwing": 0.72,
+        "tailResistance": 0.32,
+        "sloggingAbility": 0.24
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.38,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.85,
+      "id": "PL_7d6d4f944e"
+    }
+  ],
+  "Afghanistan": [
+    {
+      "name": "Rahmanullah Gurbaz",
+      "role": "batsman",
+      "type": "aggressive",
+      "batting": {
+        "base": {
+          "1": 0.27,
+          "2": 0.06,
+          "4": 0.14,
+          "6": 0.07,
+          "dot": 0.44,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.95,
+          "middle": 0.85,
+          "death": 1.0
+        },
+        "consistency": 0.78,
+        "temperament": 0.82,
+        "runningBetweenWickets": 0.65,
+        "vsPace": 0.78,
+        "vsSpin": 0.74
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.861,
+        "collapseResistance": 0.78,
+        "deathFinishing": 1.0,
+        "pressureHandling": 0.82,
+        "deathOverSkill": 0.8,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.624,
+        "sloggingAbility": 0.84
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.741,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.75,
+      "id": "PL_a40ab1c2a9"
+    },
+    {
+      "name": "Ibrahim Zadran",
+      "role": "batsman",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.7,
+      "id": "PL_76aa4aa072"
+    },
+    {
+      "name": "Rahmat Shah",
+      "role": "batsman",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.82,
+      "id": "PL_c8e6a0508f"
+    },
+    {
+      "name": "Hashmatullah Shahidi",
+      "role": "batsman",
+      "type": "defensive",
+      "batting": {
+        "base": {
+          "1": 0.38,
+          "2": 0.09,
+          "4": 0.09,
+          "6": 0.02,
+          "dot": 0.39,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.65,
+          "middle": 0.72,
+          "death": 0.75
+        },
+        "consistency": 0.92,
+        "temperament": 0.95,
+        "runningBetweenWickets": 0.82,
+        "vsPace": 0.85,
+        "vsSpin": 0.88
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.997,
+        "collapseResistance": 0.92,
+        "deathFinishing": 0.75,
+        "pressureHandling": 0.95,
+        "deathOverSkill": 0.6,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.736,
+        "sloggingAbility": 0.24
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.874,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.82,
+      "id": "PL_2cd4b4f2d6"
+    },
+    {
+      "name": "Azmatullah Omarzai",
+      "role": "allrounder",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.33,
+          "2": 0.09,
+          "4": 0.11,
+          "6": 0.025,
+          "dot": 0.44,
+          "wicket": 0.025
+        },
+        "aggression": {
+          "powerplay": 0.68,
+          "middle": 0.72,
+          "death": 0.82
+        },
+        "economyControl": 0.68,
+        "wicketTaking": 0.6,
+        "accuracy": 0.65,
+        "variation": 0.62,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.68,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.65,
+      "id": "PL_5bc15b1d66"
+    },
+    {
+      "name": "Najibullah Zadran",
+      "role": "batsman",
+      "type": "aggressive",
+      "batting": {
+        "base": {
+          "1": 0.27,
+          "2": 0.06,
+          "4": 0.14,
+          "6": 0.07,
+          "dot": 0.44,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.95,
+          "middle": 0.85,
+          "death": 1.0
+        },
+        "consistency": 0.78,
+        "temperament": 0.82,
+        "runningBetweenWickets": 0.65,
+        "vsPace": 0.78,
+        "vsSpin": 0.74
+      },
+      "bowling": {
+        "base": {
+          "1": 0.45,
+          "2": 0.1,
+          "4": 0.15,
+          "6": 0.035,
+          "dot": 0.25,
+          "wicket": 0.02
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.5
+        },
+        "economyControl": 0.3,
+        "wicketTaking": 0.3,
+        "accuracy": 0.4,
+        "variation": 0.3,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.861,
+        "collapseResistance": 0.78,
+        "deathFinishing": 1.0,
+        "pressureHandling": 0.82,
+        "deathOverSkill": 0.8,
+        "newBallSwing": 0.5,
+        "tailResistance": 0.624,
+        "sloggingAbility": 0.84
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.741,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.82,
+      "id": "PL_5b412de771"
+    },
+    {
+      "name": "Mohammad Nabi",
+      "role": "allrounder",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.33,
+          "2": 0.09,
+          "4": 0.11,
+          "6": 0.025,
+          "dot": 0.44,
+          "wicket": 0.025
+        },
+        "aggression": {
+          "powerplay": 0.68,
+          "middle": 0.72,
+          "death": 0.82
+        },
+        "economyControl": 0.68,
+        "wicketTaking": 0.6,
+        "accuracy": 0.65,
+        "variation": 0.62,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.68,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.9,
+      "id": "PL_97a36682ad"
+    },
+    {
+      "name": "Rashid Khan",
+      "role": "allrounder",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.08,
+          "4": 0.11,
+          "6": 0.04,
+          "dot": 0.42,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.78,
+          "middle": 0.82,
+          "death": 0.88
+        },
+        "consistency": 0.85,
+        "temperament": 0.88,
+        "runningBetweenWickets": 0.75,
+        "vsPace": 0.8,
+        "vsSpin": 0.8
+      },
+      "bowling": {
+        "base": {
+          "1": 0.33,
+          "2": 0.09,
+          "4": 0.11,
+          "6": 0.025,
+          "dot": 0.44,
+          "wicket": 0.025
+        },
+        "aggression": {
+          "powerplay": 0.68,
+          "middle": 0.72,
+          "death": 0.82
+        },
+        "economyControl": 0.9,
+        "wicketTaking": 0.95,
+        "accuracy": 0.65,
+        "variation": 0.98,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.924,
+        "collapseResistance": 0.85,
+        "deathFinishing": 0.88,
+        "pressureHandling": 0.88,
+        "deathOverSkill": 0.704,
+        "newBallSwing": 0.68,
+        "tailResistance": 0.68,
+        "sloggingAbility": 0.48
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.807,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.9,
+      "id": "PL_820596e64f"
+    },
+    {
+      "name": "Mujeeb Ur Rahman",
+      "role": "bowler",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.06,
+          "4": 0.08,
+          "6": 0.02,
+          "dot": 0.49,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.6
+        },
+        "consistency": 0.4,
+        "temperament": 0.4,
+        "runningBetweenWickets": 0.5,
+        "vsPace": 0.45,
+        "vsSpin": 0.45
+      },
+      "bowling": {
+        "base": {
+          "1": 0.28,
+          "2": 0.08,
+          "4": 0.09,
+          "6": 0.02,
+          "dot": 0.5,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.72,
+          "middle": 0.65,
+          "death": 0.9
+        },
+        "economyControl": 0.82,
+        "wicketTaking": 0.85,
+        "accuracy": 0.8,
+        "variation": 0.92,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.42,
+        "collapseResistance": 0.4,
+        "deathFinishing": 0.6,
+        "pressureHandling": 0.4,
+        "deathOverSkill": 0.48,
+        "newBallSwing": 0.72,
+        "tailResistance": 0.32,
+        "sloggingAbility": 0.24
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.38,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.82,
+      "id": "PL_a5f41597ad"
+    },
+    {
+      "name": "Fazalhaq Farooqi",
+      "role": "bowler",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.06,
+          "4": 0.08,
+          "6": 0.02,
+          "dot": 0.49,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.6
+        },
+        "consistency": 0.4,
+        "temperament": 0.4,
+        "runningBetweenWickets": 0.5,
+        "vsPace": 0.45,
+        "vsSpin": 0.45
+      },
+      "bowling": {
+        "base": {
+          "1": 0.28,
+          "2": 0.08,
+          "4": 0.09,
+          "6": 0.02,
+          "dot": 0.5,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.72,
+          "middle": 0.65,
+          "death": 0.9
+        },
+        "economyControl": 0.82,
+        "wicketTaking": 0.82,
+        "accuracy": 0.85,
+        "variation": 0.78,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.42,
+        "collapseResistance": 0.4,
+        "deathFinishing": 0.6,
+        "pressureHandling": 0.4,
+        "deathOverSkill": 0.48,
+        "newBallSwing": 0.72,
+        "tailResistance": 0.32,
+        "sloggingAbility": 0.24
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.38,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.72,
+      "id": "PL_fc4588b625"
+    },
+    {
+      "name": "Noor Ahmad",
+      "role": "bowler",
+      "type": "balanced",
+      "batting": {
+        "base": {
+          "1": 0.32,
+          "2": 0.06,
+          "4": 0.08,
+          "6": 0.02,
+          "dot": 0.49,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.5,
+          "middle": 0.5,
+          "death": 0.6
+        },
+        "consistency": 0.4,
+        "temperament": 0.4,
+        "runningBetweenWickets": 0.5,
+        "vsPace": 0.45,
+        "vsSpin": 0.45
+      },
+      "bowling": {
+        "base": {
+          "1": 0.28,
+          "2": 0.08,
+          "4": 0.09,
+          "6": 0.02,
+          "dot": 0.5,
+          "wicket": 0.03
+        },
+        "aggression": {
+          "powerplay": 0.72,
+          "middle": 0.65,
+          "death": 0.9
+        },
+        "economyControl": 0.82,
+        "wicketTaking": 0.75,
+        "accuracy": 0.8,
+        "variation": 0.78,
+        "vsRightHand": 0.5,
+        "vsLeftHand": 0.5
+      },
+      "behavior": {
+        "chaseBoost": 0.42,
+        "collapseResistance": 0.4,
+        "deathFinishing": 0.6,
+        "pressureHandling": 0.4,
+        "deathOverSkill": 0.48,
+        "newBallSwing": 0.72,
+        "tailResistance": 0.32,
+        "sloggingAbility": 0.24
+      },
+      "stamina": {
+        "initial": 1.0,
+        "decayRate": 0.012
+      },
+      "form": 0.38,
+      "fielding": {
+        "catching": 0.8,
+        "ground": 0.8
+      },
+      "experience": 0.65,
+      "id": "PL_9597eec6ac"
+    }
+  ]
+}

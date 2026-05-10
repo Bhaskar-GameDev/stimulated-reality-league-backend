@@ -13,10 +13,16 @@ const DEFAULT_PROBABILITIES = {
   "wicket": 0.04
 };
 
-function getMatchPhase(over) {
-  if (over < 6) return "powerplay"; // 1-6
-  if (over < 15) return "middle";   // 7-15
-  return "death";                  // 16-20
+function getMatchPhase(over, totalOvers, matchType) {
+  if (totalOvers === 50 || matchType === "ODI") {
+    if (over < 10) return "powerplay";
+    if (over < 40) return "middle";
+    return "death";
+  }
+  // Default T20 logic
+  if (over < 6) return "powerplay";
+  if (over < 15) return "middle";
+  return "death";
 }
 
 /**
@@ -37,26 +43,51 @@ function calculateAdjustedProbabilities(batsman, bowler, context) {
     "wicket": (Number(batBase.wicket || 0.04) + Number(bowlBase.wicket || 0.05)) / 2
   };
 
-  const phase = getMatchPhase(context.currentOver);
+  const phase = getMatchPhase(context.currentOver, context.totalOvers);
   const batsmanType = (batsman.type || "").toLowerCase();
   
   let boundaryMult = 1.0;
   let dotMult = 1.0;
   let wicketMult = 1.0;
+  let singleMult = 1.0;
+  let doubleMult = 1.0;
+
+  const isODI = context.totalOvers === 50 || context.matchType === "ODI";
 
   // Phase adjustments
   if (phase === "powerplay") {
-    boundaryMult = 1.4;
-    dotMult = 0.8;
-    wicketMult = 1.1;
+    boundaryMult = isODI ? 1.2 : 1.4;
+    dotMult = isODI ? 0.9 : 0.8;
+    wicketMult = isODI ? 1.15 : 1.1;
   } else if (phase === "middle") {
-    boundaryMult = 0.9;
-    dotMult = 0.9;
-    wicketMult = 0.8;
+    boundaryMult = isODI ? 0.6 : 0.9;
+    dotMult = isODI ? 0.8 : 0.9;
+    wicketMult = isODI ? 0.7 : 0.8;
+    singleMult = isODI ? 1.5 : 1.0;
+    doubleMult = isODI ? 1.3 : 1.0;
   } else if (phase === "death") {
-    boundaryMult = 2.2;
-    dotMult = 0.5;
-    wicketMult = 1.8;
+    boundaryMult = isODI ? 2.5 : 2.2;
+    dotMult = isODI ? 0.4 : 0.5;
+    wicketMult = isODI ? 2.0 : 1.8;
+  }
+
+  // Settling System for ODI
+  if (isODI && context.batsmanBalls !== undefined) {
+    if (context.batsmanBalls < 10) {
+      boundaryMult *= 0.6;
+      wicketMult *= 1.1;
+      dotMult *= 1.2;
+    } else if (context.batsmanBalls >= 30) {
+      boundaryMult *= 1.2;
+      wicketMult *= 0.8;
+      singleMult *= 1.1;
+    }
+  }
+
+  // Partnership Momentum for ODI
+  if (isODI && context.partnershipBalls !== undefined && context.partnershipBalls > 30) {
+    wicketMult *= 0.85;
+    singleMult *= 1.1;
   }
 
   // Batsman type impact
@@ -64,10 +95,11 @@ function calculateAdjustedProbabilities(batsman, bowler, context) {
     boundaryMult *= 1.3;
     wicketMult *= 1.2;
     dotMult *= 0.9;
-  } else if (batsmanType.includes("anchor")) {
+  } else if (batsmanType.includes("anchor") || batsmanType.includes("accumulator")) {
     boundaryMult *= 0.8;
     wicketMult *= 0.6;
     dotMult *= 1.1;
+    singleMult *= 1.2;
   }
 
   // Chase logic / Pressure
@@ -76,8 +108,10 @@ function calculateAdjustedProbabilities(batsman, bowler, context) {
     const runsRemaining = Math.max(0, context.target - context.currentScore);
     const rrr = ballsRemaining > 0 ? (runsRemaining / ballsRemaining) * 6 : 0;
     
-    if (rrr > 10) {
-      const urgency = Math.min(1.5, (rrr - 10) / 10);
+    // In ODI, urgency builds slightly differently
+    const criticalRRR = isODI ? 8 : 10;
+    if (rrr > criticalRRR) {
+      const urgency = Math.min(1.5, (rrr - criticalRRR) / criticalRRR);
       boundaryMult *= (1.0 + urgency);
       wicketMult *= (1.0 + urgency * 0.8);
       dotMult *= (1.0 - urgency * 0.3);
@@ -85,7 +119,8 @@ function calculateAdjustedProbabilities(batsman, bowler, context) {
   }
 
   // Wickets fallen pressure
-  if (context.wicketsFallen >= 7) {
+  const criticalWickets = isODI ? 5 : 7;
+  if (context.wicketsFallen >= criticalWickets) {
     wicketMult *= 1.5;
     boundaryMult *= 0.7;
   }
@@ -98,6 +133,8 @@ function calculateAdjustedProbabilities(batsman, bowler, context) {
   // Apply multipliers
   probs["4"] *= boundaryMult;
   probs["6"] *= boundaryMult;
+  probs["1"] *= singleMult;
+  probs["2"] *= doubleMult;
   probs["dot"] *= dotMult;
   probs["wicket"] *= wicketMult;
 
@@ -109,9 +146,13 @@ function calculateAdjustedProbabilities(batsman, bowler, context) {
 
 function simulateBall(batsman, bowler, context) {
   // First check for extras (Wide / No Ball) - approx 4% chance in T20
+  const isODI = context.totalOvers === 50 || context.matchType === "ODI";
   const extraRand = context.rng.next();
-  if (extraRand < 0.03) return "WD"; // Wide
-  if (extraRand < 0.04) return "NB"; // No Ball
+  const wideProb = isODI ? 0.02 : 0.03;
+  const nbProb = isODI ? 0.01 : 0.04;
+  
+  if (extraRand < wideProb) return "WD"; // Wide
+  if (extraRand < wideProb + nbProb) return "NB"; // No Ball
 
   let p = calculateAdjustedProbabilities(batsman, bowler, context);
   
@@ -134,7 +175,7 @@ function simulateBall(batsman, bowler, context) {
 }
 
 async function simulateInnings(matchId, inningNumber, batting, bowling, options = {}) {
-  const { oversLimit = 20, delayMs = 100, rng, chaseTarget = null, battingTeamName, bowlingTeamName, venue, abortSignal, onBall, guidedSimulationSettings } = options;
+  const { oversLimit = 20, delayMs = 100, rng, chaseTarget = null, battingTeamName, bowlingTeamName, venue, abortSignal, onBall, guidedSimulationSettings, matchType } = options;
   
   console.log(`[MATCH:${matchId}] Starting Inning ${inningNumber}. Target: ${isNaN(chaseTarget) || chaseTarget === null ? "N/A" : chaseTarget}`);
   const target = isNaN(chaseTarget) || chaseTarget === null ? Infinity : chaseTarget;
@@ -158,13 +199,15 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
   let lastBowlerId = null;
 
   const calculateWinProbability = (runs, wickets, over, ball, target) => {
+    const isODI = oversLimit === 50 || matchType === "ODI";
     if (target === null) {
       // 1st Innings: Heuristic based on projected score
       const totalBalls = oversLimit * 6;
       const ballsDone = (over * 6) + ball;
-      const projected = ballsDone > 0 ? (runs / ballsDone) * totalBalls : 160;
-      let prob = 50 + (projected - 160) / 2.5;
-      prob -= (wickets * 3); 
+      const baseProjected = isODI ? 270 : 160;
+      const projected = ballsDone > 0 ? (runs / ballsDone) * totalBalls : baseProjected;
+      let prob = 50 + (projected - baseProjected) / (isODI ? 4 : 2.5);
+      prob -= (wickets * (isODI ? 4 : 3)); 
       return Math.max(15, Math.min(85, Math.round(prob)));
     } else {
       // 2nd Innings: Based on RRR and Wickets
@@ -175,7 +218,11 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
       if (runsLeft <= 0) return 100;
       const rrr = (runsLeft / ballsLeft) * 6;
       const wicketsLeft = 10 - wickets;
-      let prob = 100 - (rrr * 8) + (wicketsLeft * 4) - 20;
+      
+      const rrrFactor = isODI ? 5 : 8;
+      const wktFactor = isODI ? 5 : 4;
+      
+      let prob = 100 - (rrr * rrrFactor) + (wicketsLeft * wktFactor) - (isODI ? 10 : 20);
       return Math.max(0, Math.min(100, Math.round(prob)));
     }
   };
@@ -184,11 +231,12 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
 
   while (currentOver < oversLimit && wickets < 10 && (chaseTarget === null || runs < chaseTarget)) {
     // Select bowler for the over
+    const maxOversPerBowler = (oversLimit === 50 || matchType === "ODI") ? Math.ceil(oversLimit / 5) : (oversLimit === 90 ? 25 : Math.ceil(oversLimit / 5));
     const possibleBowlers = bowling.map((p, index) => ({ ...p, originalIndex: index }))
       .filter(p => {
         const id = p.id || p.name;
         const stats = bowlerStats[id] || { overs: 0 };
-        return id !== lastBowlerId && stats.overs < 4;
+        return id !== lastBowlerId && stats.overs < maxOversPerBowler;
       });
     
     // Sort possible bowlers: 
@@ -228,10 +276,14 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
 
       let currentMilestone = null;
       const batsman = batting[strikerIdx];
+      const batStat = scorecard.batting[batsman.id || batsman.name];
       const context = {
         currentOver, currentBallInOver: legalBallsInOver, totalOvers: oversLimit, 
         wicketsFallen: wickets, isChasing: chaseTarget !== null, target: chaseTarget, 
-        currentScore: runs, rng, battingTeamName, bowlingTeamName, guidedSimulationSettings
+        currentScore: runs, rng, battingTeamName, bowlingTeamName, guidedSimulationSettings,
+        batsmanBalls: batStat ? batStat.balls : 0,
+        partnershipBalls: currentPartnership.balls,
+        matchType: matchType
       };
 
       const result = simulateBall(batsman, bowler, context);
