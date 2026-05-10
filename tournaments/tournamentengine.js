@@ -65,8 +65,16 @@ async function runNextMatch(tournamentId) {
   const tournament = tournamentSnap.val();
   if (tournament.status === "completed") return;
 
-  const nextMatchId = tournament.matchOrder.find(id => tournament.matches[id].status === "scheduled");
-  if (!nextMatchId) {
+  const matches = tournament.matches;
+  const scheduledMatchId = tournament.matchOrder.find(id => matches[id].status === "scheduled");
+  const liveMatchId = tournament.matchOrder.find(id => matches[id].status === "live");
+
+  if (!scheduledMatchId) {
+    if (liveMatchId) {
+      console.log(`Tournament ${tournamentId} is waiting for live match ${liveMatchId} to complete.`);
+      return { status: "waiting", message: "Live match in progress" };
+    }
+
     if (tournament.stage === "league") {
       return advanceToPlayoffs(tournamentId);
     }
@@ -74,7 +82,7 @@ async function runNextMatch(tournamentId) {
     return;
   }
 
-  const fixture = tournament.matches[nextMatchId];
+  const fixture = matches[scheduledMatchId];
   
   // REAL-TIME CHECK: Only run if the match is due (unless autoMode is on)
   const now = new Date();
@@ -177,9 +185,27 @@ async function processMatchResult(tournamentId, matchId, rawResult) {
   const winnerQ1 = matches["PLY_Q1"]?.winner;
   const winnerEL = matches["PLY_EL"]?.winner;
 
+  // Late-fill TBD teams from standings if advanceToPlayoffs ran early
+  const groupStandings = standingsEngine.getGroupStandings(newStandings);
+  const sortedStandings = standingsEngine.sortStandings(newStandings);
+
   Object.keys(matches).forEach(id => {
     const f = matches[id];
     if (f.status !== "scheduled") return;
+
+    // Fill SF/Knockouts from standings if they are still TBD
+    if (tournament.format === "group_knockout") {
+      const gA = groupStandings["A"] || [];
+      const gB = groupStandings["B"] || [];
+      if (id === "SF1") {
+        if (gA[0] && f.teamA.name === "TBD") { f.teamA = { id: gA[0].teamId, name: gA[0].teamName }; matchesChanged = true; }
+        if (gB[1] && f.teamB.name === "TBD") { f.teamB = { id: gB[1].teamId, name: gB[1].teamName }; matchesChanged = true; }
+      }
+      if (id === "SF2") {
+        if (gB[0] && f.teamA.name === "TBD") { f.teamA = { id: gB[0].teamId, name: gB[0].teamName }; matchesChanged = true; }
+        if (gA[1] && f.teamB.name === "TBD") { f.teamB = { id: gA[1].teamId, name: gA[1].teamName }; matchesChanged = true; }
+      }
+    }
 
     if (id === "FINAL" && tournament.format === "group_knockout") {
       if (winnerSF1 && f.teamA.name === "TBD") { f.teamA = { id: winnerSF1, name: winnerSF1 }; matchesChanged = true; }
@@ -187,6 +213,14 @@ async function processMatchResult(tournamentId, matchId, rawResult) {
     }
     
     if (tournament.format === "league") { // IPL Style
+      if (id === "PLY_Q1") {
+        if (sortedStandings[0] && f.teamA.name === "TBD") { f.teamA = { id: sortedStandings[0].teamId, name: sortedStandings[0].teamName }; matchesChanged = true; }
+        if (sortedStandings[1] && f.teamB.name === "TBD") { f.teamB = { id: sortedStandings[1].teamId, name: sortedStandings[1].teamName }; matchesChanged = true; }
+      }
+      if (id === "PLY_EL") {
+        if (sortedStandings[2] && f.teamA.name === "TBD") { f.teamA = { id: sortedStandings[2].teamId, name: sortedStandings[2].teamName }; matchesChanged = true; }
+        if (sortedStandings[3] && f.teamB.name === "TBD") { f.teamB = { id: sortedStandings[3].teamId, name: sortedStandings[3].teamName }; matchesChanged = true; }
+      }
       if (id === "PLY_Q2") {
         const q1Match = matches["PLY_Q1"];
         const loserQ1 = q1Match?.winner === q1Match?.teamA.name ? q1Match?.teamB : q1Match?.teamA;
