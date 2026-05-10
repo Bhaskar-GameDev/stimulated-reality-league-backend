@@ -29,29 +29,52 @@ class SteeringModifierCalculator {
 
         // TARGET SCORE STEERING
         if (targetScore && !context.isChasing) {
-            const expectedRR = targetScore / context.totalOvers;
             const ballsDone = (context.currentOver * 6) + context.currentBallInOver;
-            const currentRR = ballsDone > 0 ? (context.currentScore / (ballsDone / 6)) : expectedRR;
+            const ballsLeft = (context.totalOvers * 6) - ballsDone;
             
-            const deviation = expectedRR - currentRR;
-            if (deviation > 2.0) { // Scoring WAY too slowly
-                boundaryMult *= 2.0;
-                singleMult *= 1.5;
-                dotMult *= 0.3;
-                wicketMult *= 0.4;
-            } else if (deviation > 0.5) { // Scoring slowly
-                boundaryMult *= 1.5;
-                singleMult *= 1.3;
-                dotMult *= 0.6;
-                wicketMult *= 0.7;
-            } else if (deviation < -2.0) { // Scoring WAY too fast
-                dotMult *= 2.0;
-                wicketMult *= 2.0;
-                boundaryMult *= 0.3;
-            } else if (deviation < -0.5) { // Scoring fast
-                dotMult *= 1.5;
-                wicketMult *= 1.4;
-                boundaryMult *= 0.6;
+            if (ballsLeft > 0) {
+                const runsNeeded = Math.max(0, targetScore - context.currentScore);
+                const reqRR = (runsNeeded / ballsLeft) * 6;
+                const baseRR = targetScore / context.totalOvers;
+                
+                const urgency = reqRR - baseRR;
+
+                // Protect against early collapse if target is high
+                if (runsNeeded > ballsLeft * 0.8 && context.wicketsFallen >= 3) {
+                    wicketMult *= 0.1;
+                }
+
+                if (urgency > 2.0) { // Falling way behind
+                    boundaryMult *= 2.5;
+                    singleMult *= 1.5;
+                    dotMult *= 0.2;
+                    wicketMult *= 0.15;
+                } else if (urgency > 0.5) { // Falling behind
+                    boundaryMult *= 1.5;
+                    singleMult *= 1.2;
+                    dotMult *= 0.5;
+                    wicketMult *= 0.3;
+                } else if (urgency < -2.0) { // Scoring way too fast
+                    dotMult *= 2.5;
+                    wicketMult *= 2.5;
+                    boundaryMult *= 0.2;
+                } else if (urgency < -0.5) { // Scoring fast
+                    dotMult *= 1.5;
+                    wicketMult *= 1.5;
+                    boundaryMult *= 0.6;
+                }
+                
+                // Final over exact target forcing
+                if (ballsLeft <= 12 && Math.abs(runsNeeded) <= 15) {
+                    if (runsNeeded <= 2) {
+                        dotMult *= 3.0;
+                        wicketMult *= 2.0;
+                        boundaryMult *= 0.01;
+                    } else if (runsNeeded > ballsLeft) {
+                        boundaryMult *= 3.0;
+                        wicketMult *= 0.05;
+                    }
+                }
             }
         }
 
@@ -66,11 +89,16 @@ class SteeringModifierCalculator {
                     const runsRemaining = Math.max(0, context.target - context.currentScore);
                     const rrr = ballsRemaining > 0 ? (runsRemaining / ballsRemaining) * 6 : 0;
                     
-                    if (rrr > 8) {
-                        boundaryMult *= 1.6;
+                    if (rrr > 10) {
+                        boundaryMult *= 2.0;
+                        dotMult *= 0.3;
+                        wicketMult *= 0.1;
+                    } else if (rrr > 7) {
+                        boundaryMult *= 1.4;
                         dotMult *= 0.6;
+                        wicketMult *= 0.3;
                     }
-                    wicketMult *= 0.5;
+                    wicketMult *= 0.4; // Base protection for preferred chaser
                 } else {
                     boundaryMult *= 1.3;
                     wicketMult *= 0.7;
