@@ -34,11 +34,21 @@ class SteeringModifierCalculator {
             const currentRR = ballsDone > 0 ? (context.currentScore / (ballsDone / 6)) : expectedRR;
             
             const deviation = expectedRR - currentRR;
-            if (deviation > 1) { // Scoring too slowly
+            if (deviation > 2.0) { // Scoring WAY too slowly
+                boundaryMult *= 2.0;
+                singleMult *= 1.5;
+                dotMult *= 0.3;
+                wicketMult *= 0.4;
+            } else if (deviation > 0.5) { // Scoring slowly
                 boundaryMult *= 1.5;
                 singleMult *= 1.3;
                 dotMult *= 0.6;
-            } else if (deviation < -1) { // Scoring too fast
+                wicketMult *= 0.7;
+            } else if (deviation < -2.0) { // Scoring WAY too fast
+                dotMult *= 2.0;
+                wicketMult *= 2.0;
+                boundaryMult *= 0.3;
+            } else if (deviation < -0.5) { // Scoring fast
                 dotMult *= 1.5;
                 wicketMult *= 1.4;
                 boundaryMult *= 0.6;
@@ -71,9 +81,12 @@ class SteeringModifierCalculator {
                     dotMult *= 1.5;
                     boundaryMult *= 0.5;
                 } else {
-                    wicketMult *= 1.4;
-                    dotMult *= 1.3;
-                    boundaryMult *= 0.7;
+                    // Only penalize the first innings if there is NO specific target score we are trying to reach
+                    if (!targetScore) {
+                        wicketMult *= 1.4;
+                        dotMult *= 1.3;
+                        boundaryMult *= 0.7;
+                    }
                 }
             }
         }
@@ -99,8 +112,10 @@ class SteeringModifierCalculator {
                             boundaryMult *= 1.6;
                             wicketMult *= 0.4;
                         } else {
-                            wicketMult *= 1.8;
-                            dotMult *= 1.5;
+                            if (!targetScore || context.isChasing) {
+                                wicketMult *= 1.8;
+                                dotMult *= 1.5;
+                            }
                         }
                     }
                     break;
@@ -113,15 +128,19 @@ class SteeringModifierCalculator {
                     break;
                 case "low-scoring":
                 case "low scoring":
-                    dotMult *= 1.5;
-                    wicketMult *= 1.4;
-                    boundaryMult *= 0.5;
+                    if (!targetScore || context.isChasing) {
+                        dotMult *= 1.5;
+                        wicketMult *= 1.4;
+                        boundaryMult *= 0.5;
+                    }
                     break;
                 case "high-scoring":
                 case "high scoring":
-                    boundaryMult *= 1.6;
-                    dotMult *= 0.5;
-                    wicketMult *= 0.6;
+                    if (!targetScore || context.isChasing) {
+                        boundaryMult *= 1.6;
+                        dotMult *= 0.5;
+                        wicketMult *= 0.6;
+                    }
                     break;
                 case "last-over-finish":
                 case "last over finish":
