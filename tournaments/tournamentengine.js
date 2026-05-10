@@ -262,10 +262,10 @@ async function advanceToPlayoffs(tournamentId) {
       console.warn("Not enough teams in groups for semi-finals. Advancing top winners.");
     }
 
-    const A1 = groupA[0];
-    const A2 = groupA[1];
-    const B1 = groupB[0];
-    const B2 = groupB[1];
+    const A1 = groupA[0] || { teamId: "TBD", teamName: "TBD" };
+    const A2 = groupA[1] || { teamId: "TBD", teamName: "TBD" };
+    const B1 = groupB[0] || { teamId: "TBD", teamName: "TBD" };
+    const B2 = groupB[1] || { teamId: "TBD", teamName: "TBD" };
 
     // Semi Finals (Cross-group: A1 vs B2, B1 vs A2)
     const playoffs = [
@@ -303,18 +303,22 @@ async function advanceToPlayoffs(tournamentId) {
     // IPL Style Playoffs
     const sorted = standingsEngine.sortStandings(tournament.standings);
     const top4 = sorted.slice(0, 4);
+    const t1 = top4[0] || { teamId: "TBD", teamName: "TBD" };
+    const t2 = top4[1] || { teamId: "TBD", teamName: "TBD" };
+    const t3 = top4[2] || { teamId: "TBD", teamName: "TBD" };
+    const t4 = top4[3] || { teamId: "TBD", teamName: "TBD" };
 
     const playoffs = [
       { 
         matchId: `PLY_Q1`, 
-        teamA: { id: top4[0].teamId, name: top4[0].teamName }, 
-        teamB: { id: top4[1].teamId, name: top4[1].teamName }, 
+        teamA: { id: t1.teamId, name: t1.teamName }, 
+        teamB: { id: t2.teamId, name: t2.teamName }, 
         stage: "Qualifier 1", status: "scheduled", utcTimestamp: new Date().toISOString() 
       },
       { 
         matchId: `PLY_EL`, 
-        teamA: { id: top4[2].teamId, name: top4[2].teamName }, 
-        teamB: { id: top4[3].teamId, name: top4[3].teamName }, 
+        teamA: { id: t3.teamId, name: t3.teamName }, 
+        teamB: { id: t4.teamId, name: t4.teamName }, 
         stage: "Eliminator", status: "scheduled", utcTimestamp: new Date().toISOString() 
       },
       { 
