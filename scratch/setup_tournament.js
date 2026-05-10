@@ -65,10 +65,11 @@ async function setup() {
   const tournamentSnap = await db.ref(`tournaments/${tournamentId}`).once("value");
   const tournament = tournamentSnap.val();
   
-  if (tournament && tournament.fixtures && tournament.fixtures.length > 0) {
+  if (tournament && tournament.matchOrder && tournament.matchOrder.length > 0) {
+    const firstMatchId = tournament.matchOrder[0];
     // Set the first match to 5 minutes ago
     const pastDate = new Date(Date.now() - 5 * 60000).toISOString();
-    await db.ref(`tournaments/${tournamentId}/fixtures/0`).update({
+    await db.ref(`tournaments/${tournamentId}/matches/${firstMatchId}`).update({
       utcTimestamp: pastDate
     });
     console.log("Updated the first match to start immediately.");

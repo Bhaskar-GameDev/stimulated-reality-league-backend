@@ -914,10 +914,13 @@ const server = http.createServer(async (req, res) => {
           country: "India"
         });
 
-        const pastDate = new Date(Date.now() - 5 * 60000).toISOString();
-        await db.ref(`tournaments/${tournamentId}/fixtures/0`).update({
-          utcTimestamp: pastDate
-        });
+        if (tournament && tournament.matchOrder && tournament.matchOrder.length > 0) {
+          const firstMatchId = tournament.matchOrder[0];
+          const pastDate = new Date(Date.now() - 5 * 60000).toISOString();
+          await db.ref(`tournaments/${tournamentId}/matches/${firstMatchId}`).update({
+            utcTimestamp: pastDate
+          });
+        }
 
         jsonResponse(res, 200, { message: "Tournament created and first match scheduled for now.", tournamentId });
       } catch (error) {

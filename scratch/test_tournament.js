@@ -46,17 +46,16 @@ async function runTest() {
   const tournamentSnap = await db.ref(`tournaments/${tournamentId}`).once("value");
   const tournament = tournamentSnap.val();
   
-  if (tournament && tournament.fixtures) {
-    console.log(`Scheduling ${tournament.fixtures.length} matches sequentially...`);
+  if (tournament && tournament.matchOrder) {
+    console.log(`Scheduling ${tournament.matchOrder.length} matches sequentially...`);
     
     const now = Date.now();
     const updates = {};
     
-    tournament.fixtures.forEach((fixture, index) => {
+    tournament.matchOrder.forEach((matchId, index) => {
       // Each match scheduled 1 minute after the previous one, starting from now
-      // This ensures they are "due" for the runner
       const scheduledTime = new Date(now + (index * 60000)).toISOString();
-      updates[`fixtures/${index}/utcTimestamp`] = scheduledTime;
+      updates[`matches/${matchId}/utcTimestamp`] = scheduledTime;
     });
 
     await db.ref(`tournaments/${tournamentId}`).update(updates);
