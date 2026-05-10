@@ -7,6 +7,10 @@ const statsEngine = require("./statsengine");
 const fixtureGenerator = require("./fixturegenerator");
 const templates = require("./tournamenttemplates");
 
+// In-memory lock: prevents the 30s poll and the autoMode setTimeout chain from
+// running two matches simultaneously for the same tournament.
+const _runningTournaments = new Set();
+
 async function createTournament({ templateKey, season, teams, tournamentName, fixtures, startDate, country, overs, autoMode }) {
   const template = templates[templateKey];
   const tournamentId = `TOURN_${Date.now()}`;
@@ -71,56 +75,67 @@ async function createTournament({ templateKey, season, teams, tournamentName, fi
 }
 
 async function runNextMatch(tournamentId) {
-  const tournamentSnap = await db.ref(`tournaments/${tournamentId}`).once("value");
-  const tournament = tournamentSnap.val();
-  if (tournament.status === "completed") return;
-
-  const matches = tournament.matches;
-  const scheduledMatchId = tournament.matchOrder.find(id => matches[id].status === "scheduled");
-  const liveMatchId = tournament.matchOrder.find(id => matches[id].status === "live");
-
-  if (!scheduledMatchId) {
-    if (liveMatchId) {
-      console.log(`Tournament ${tournamentId} is waiting for live match ${liveMatchId} to complete.`);
-      return { status: "waiting", message: "Live match in progress" };
-    }
-
-    if (tournament.stage === "league") {
-      return advanceToPlayoffs(tournamentId);
-    }
-    await db.ref(`tournaments/${tournamentId}/status`).set("completed");
-    await db.ref(`tournaments_list/${tournamentId}/status`).set("completed");
-    return;
+  // --- Concurrency guard ---
+  // Prevents the 30s background poll and the autoMode setTimeout chain from
+  // both picking up the same "scheduled" match and running it twice.
+  if (_runningTournaments.has(tournamentId)) {
+    console.log(`[Tournament ${tournamentId}] runNextMatch skipped — already in progress.`);
+    return { status: "locked", message: "Match already being processed" };
   }
-
-  const fixture = matches[scheduledMatchId];
-  
-  // REAL-TIME CHECK: Only run if the match is due (unless autoMode is on)
-  const now = new Date();
-  const scheduledTime = new Date(fixture.utcTimestamp);
-  
-  if (!tournament.autoMode && now < scheduledTime) {
-    console.log(`Match ${fixture.matchId} is scheduled for ${fixture.utcTimestamp}. Waiting...`);
-    return { status: "waiting", scheduledTime: fixture.utcTimestamp };
-  }
-
-  // Safety check: Don't run if teams are not yet decided (TBD)
-  if (fixture.teamA.id === "TBD" || fixture.teamB.id === "TBD") {
-    console.log(`Match ${fixture.matchId} is waiting for teams to be decided.`);
-    return { status: "waiting", message: "Teams not yet decided" };
-  }
+  _runningTournaments.add(tournamentId);
 
   try {
+    const tournamentSnap = await db.ref(`tournaments/${tournamentId}`).once("value");
+    const tournament = tournamentSnap.val();
+    if (!tournament || tournament.status === "completed") return;
+
+    const matches = tournament.matches;
+    const scheduledMatchId = tournament.matchOrder.find(id => matches[id].status === "scheduled");
+    const liveMatchId = tournament.matchOrder.find(id => matches[id].status === "live");
+
+    if (!scheduledMatchId) {
+      if (liveMatchId) {
+        console.log(`Tournament ${tournamentId} is waiting for live match ${liveMatchId} to complete.`);
+        return { status: "waiting", message: "Live match in progress" };
+      }
+
+      if (tournament.stage === "league") {
+        return advanceToPlayoffs(tournamentId);
+      }
+      await db.ref(`tournaments/${tournamentId}/status`).set("completed");
+      await db.ref(`tournaments_list/${tournamentId}/status`).set("completed");
+      return;
+    }
+
+    const fixture = matches[scheduledMatchId];
+
+    // REAL-TIME CHECK: Only run if the match is due (unless autoMode is on)
+    const now = new Date();
+    const scheduledTime = new Date(fixture.utcTimestamp);
+
+    if (!tournament.autoMode && now < scheduledTime) {
+      console.log(`Match ${fixture.matchId} is scheduled for ${fixture.utcTimestamp}. Waiting...`);
+      return { status: "waiting", scheduledTime: fixture.utcTimestamp };
+    }
+
+    // Safety check: Don't run if teams are not yet decided (TBD)
+    if (fixture.teamA.id === "TBD" || fixture.teamB.id === "TBD") {
+      console.log(`Match ${fixture.matchId} is waiting for teams to be decided.`);
+      return { status: "waiting", message: "Teams not yet decided" };
+    }
+
     await db.ref(`tournaments/${tournamentId}/status`).set("live");
     await db.ref(`tournaments_list/${tournamentId}/status`).set("live");
     await db.ref(`tournaments/${tournamentId}/matches/${fixture.matchId}/status`).set("live");
-    
+
     // Resolve players for both teams
     const teamAEntry = getTeamByName(fixture.teamA.name);
     const teamBEntry = getTeamByName(fixture.teamB.name);
-    
+
     if (!teamAEntry || !teamBEntry) {
-      throw new Error(`Teams ${fixture.teamA.name} or ${fixture.teamB.name} not found in catalog.`);
+      await db.ref(`tournaments/${tournamentId}/matches/${fixture.matchId}/status`).set("failed");
+      console.error(`Teams not found: ${fixture.teamA.name} / ${fixture.teamB.name}`);
+      return { status: "failed", error: "Teams not found" };
     }
 
     const format = tournament.overs === 20 ? "T20" : (tournament.overs === 50 ? "ODI" : "TEST");
@@ -140,16 +155,35 @@ async function runNextMatch(tournamentId) {
     });
 
     await processMatchResult(tournamentId, fixture.matchId, result);
-    
-    if (tournament.autoMode) {
+
+    // Re-read autoMode from Firebase (fresh snapshot) so we don't rely on the
+    // stale local variable captured at the start of this invocation.
+    const autoModeSnap = await db.ref(`tournaments/${tournamentId}/autoMode`).once("value");
+    const autoMode = autoModeSnap.val();
+
+    if (autoMode) {
+      // Release lock BEFORE scheduling next match so the 2s timer can acquire it
+      _runningTournaments.delete(tournamentId);
       setTimeout(() => runNextMatch(tournamentId), 2000);
+      return { status: "completed", matchId: fixture.matchId };
     }
 
     return { status: "completed", matchId: fixture.matchId };
+
   } catch (error) {
-    console.error("Match simulation failed", error);
-    await db.ref(`tournaments/${tournamentId}/matches/${fixture.matchId}/status`).set("failed");
+    console.error(`[Tournament ${tournamentId}] Match simulation failed:`, error);
+    try {
+      const snap = await db.ref(`tournaments/${tournamentId}/matches`).once("value");
+      const matches = snap.val() || {};
+      const liveId = Object.keys(matches).find(id => matches[id].status === "live");
+      if (liveId) {
+        await db.ref(`tournaments/${tournamentId}/matches/${liveId}/status`).set("failed");
+      }
+    } catch (_) { /* ignore secondary error */ }
     return { status: "failed", error: error.message };
+  } finally {
+    // Always release the lock when done (unless already released for autoMode chaining)
+    _runningTournaments.delete(tournamentId);
   }
 }
 
