@@ -568,6 +568,12 @@ module.exports = `
         matchSection.style.display = "none";
         tournamentSection.style.display = "none";
         maintenanceSection.style.display = "none";
+        const internationalSection = document.getElementById("internationalSection");
+        if (internationalSection) internationalSection.style.display = "none";
+        const rankingsSection = document.getElementById("rankingsSection");
+        if (rankingsSection) rankingsSection.style.display = "none";
+        const worldSection = document.getElementById("worldSection");
+        if (worldSection) worldSection.style.display = "none";
 
         if (tab === "matches") {
           matchSection.style.display = "grid";
@@ -575,6 +581,12 @@ module.exports = `
           tournamentSection.style.display = "grid";
           renderTournamentTeamSelection();
           refreshTournaments();
+        } else if (tab === "international") {
+          if (internationalSection) internationalSection.style.display = "grid";
+        } else if (tab === "rankings") {
+          if (rankingsSection) rankingsSection.style.display = "grid";
+        } else if (tab === "world") {
+          if (worldSection) worldSection.style.display = "grid";
         } else if (tab === "maintenance") {
           maintenanceSection.style.display = "grid";
         }

@@ -37,14 +37,25 @@ ${styles}
         <span class="loading">Connecting</span>
       </div>
     </header>
-    <div id="summaryNote" class="note" style="margin-bottom: 1.5rem; text-align: center; opacity: 0.8;">
+    <div id="summaryNote" class="note" style="margin-bottom: 0.5rem; text-align: center; opacity: 0.8;">
       Initializing system...
     </div>
 
-    <nav class="nav-tabs" style="display: flex; gap: 1rem; margin-bottom: 2rem; padding: 0.65rem; background: rgba(255,255,255,0.05); border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); box-shadow: var(--shadow-lg);">
-      <button class="btn tab-btn active" data-tab="matches" style="flex: 1; border-radius: 10px; font-size: 0.9rem;">Match Management</button>
-      <button class="btn tab-btn" data-tab="tournaments" style="flex: 1; border-radius: 10px; font-size: 0.9rem; background: transparent; box-shadow: none;">Tournament Engine</button>
-      <button class="btn tab-btn" data-tab="maintenance" style="flex: 1; border-radius: 10px; font-size: 0.9rem; background: transparent; box-shadow: none;">Maintenance</button>
+    <div id="worldStateBanner" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(90deg, rgba(30,64,175,0.2) 0%, rgba(30,64,175,0.05) 100%); border: 1px solid rgba(30,64,175,0.3); border-radius: 12px; padding: 0.75rem 1.5rem; font-size: 0.85rem; color: var(--gray-200);">
+      <span style="font-weight: 800; color: #60a5fa; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px;">Season 2027</span>
+      <span style="display: flex; gap: 0.5rem; align-items: center;"><span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: inline-block; box-shadow: 0 0 8px #10b981;"></span> Active Tours: <strong id="bannerActiveTours" style="color: white;">4</strong></span>
+      <span style="display: flex; gap: 0.5rem; align-items: center;"><span style="width: 8px; height: 8px; background: #ef4444; border-radius: 50%; display: inline-block; box-shadow: 0 0 8px #ef4444;"></span> Live Matches: <strong id="bannerLiveMatches" style="color: white;">2</strong></span>
+      <span>ODI #1: <strong id="bannerOdiTop" style="color: white;">India</strong></span>
+      <span>T20I #1: <strong id="bannerT20Top" style="color: white;">Australia</strong></span>
+    </div>
+
+    <nav class="nav-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 2rem; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); box-shadow: var(--shadow-lg); overflow-x: auto;">
+      <button class="btn tab-btn active" data-tab="matches" style="flex: 1; border-radius: 8px; font-size: 0.85rem; min-width: 120px;">Match Management</button>
+      <button class="btn tab-btn" data-tab="tournaments" style="flex: 1; border-radius: 8px; font-size: 0.85rem; min-width: 120px; background: transparent; box-shadow: none;">Tournament Engine</button>
+      <button class="btn tab-btn" data-tab="international" style="flex: 1; border-radius: 8px; font-size: 0.85rem; min-width: 120px; background: transparent; box-shadow: none;">International Cricket</button>
+      <button class="btn tab-btn" data-tab="rankings" style="flex: 1; border-radius: 8px; font-size: 0.85rem; min-width: 130px; background: transparent; box-shadow: none;">Rankings & Careers</button>
+      <button class="btn tab-btn" data-tab="world" style="flex: 1; border-radius: 8px; font-size: 0.85rem; min-width: 130px; background: transparent; box-shadow: none;">World Management</button>
+      <button class="btn tab-btn" data-tab="maintenance" style="flex: 1; border-radius: 8px; font-size: 0.85rem; min-width: 100px; background: transparent; box-shadow: none;">Maintenance</button>
     </nav>
 
     <main class="dashboard" id="matchSection">
@@ -258,6 +269,328 @@ ${styles}
           <div id="activeTournamentList" class="match-card-list">
             <p class="note">No tournaments found.</p>
           </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- NEW: INTERNATIONAL CRICKET DASHBOARD -->
+    <main class="dashboard" id="internationalSection" style="display: none;">
+      <div class="primary-column">
+        <div class="card highlight">
+          <h2 class="card-title">International Tour Manager</h2>
+          <p class="card-description">Create and schedule bilateral tours with multiple series formats.</p>
+          <form id="tourForm">
+            <div class="form-grid">
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="tourName">Tour Name</label>
+                  <input type="text" id="tourName" class="form-control" placeholder="e.g. India Tour of Australia 2027" />
+                </div>
+                <div class="form-group">
+                  <label for="tourSeason">Season Year</label>
+                  <input type="number" id="tourSeason" class="form-control" value="2027" />
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="tourHost">Host Nation</label>
+                  <select id="tourHost" class="form-control"><option>Australia</option><option>India</option><option>England</option></select>
+                </div>
+                <div class="form-group">
+                  <label for="tourVisitor">Visiting Nation</label>
+                  <select id="tourVisitor" class="form-control"><option>India</option><option>England</option><option>Australia</option></select>
+                </div>
+              </div>
+              <div class="form-row" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed rgba(255,255,255,0.1);">
+                <div class="form-group">
+                  <label for="odiCount">ODI Series Matches</label>
+                  <input type="number" id="odiCount" class="form-control" value="3" min="0" max="7" />
+                </div>
+                <div class="form-group">
+                  <label for="t20Count">T20I Series Matches</label>
+                  <input type="number" id="t20Count" class="form-control" value="5" min="0" max="7" />
+                </div>
+              </div>
+              <div class="form-group" style="margin-top: 1rem; display: grid; gap: 0.5rem; background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px;">
+                <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;"><input type="checkbox" checked /> Auto Generate Venues</label>
+                <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;"><input type="checkbox" checked /> Auto Generate Schedule & Rest Days</label>
+                <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; color: var(--primary);"><input type="checkbox" id="autoSimTour" /> Enable Automated Simulation</label>
+              </div>
+            </div>
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+              <button type="button" class="btn btn-secondary" style="flex: 1;">Save Draft</button>
+              <button type="button" class="btn btn-primary" style="flex: 2;">Generate Tour Fixtures</button>
+            </div>
+          </form>
+        </div>
+        
+        <div class="card" style="margin-top: 1.5rem;">
+          <h2 class="card-title">Live International Series</h2>
+          <div id="liveSeriesContainer" class="match-card-list" style="display: grid; gap: 1rem;">
+            <div class="match-card" style="background: linear-gradient(145deg, var(--gray-900) 0%, var(--dark) 100%);">
+              <div style="width: 100%;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                  <h4 style="color: var(--primary-light);">ODI Series: AUS vs IND</h4>
+                  <span class="pill running">LIVE</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-size: 1.2rem; font-weight: 700;">Australia lead 2-1</span>
+                  <span style="color: var(--gray-400); font-size: 0.85rem;">Match 4 of 5</span>
+                </div>
+                <div style="margin-top: 1rem; padding-top: 0.5rem; border-top: 1px solid var(--gray-800); display: flex; justify-content: space-between; font-size: 0.8rem;">
+                  <span>Player of Series Race: <strong>S. Smith (210 runs)</strong></span>
+                  <span style="color: #f59e0b;">Momentum: AUS 🔥</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="secondary-column">
+        <div class="card small-card">
+          <h2 class="card-title">Active Tours</h2>
+          <div id="activeToursList" class="match-card-list">
+            <div class="match-card" style="border-left: 4px solid var(--primary);">
+              <div>
+                <h4 style="margin-bottom: 0.2rem;">India Tour of Australia</h4>
+                <p style="color: var(--gray-400); font-size: 0.8rem;">ODI: AUS lead 2-1 | T20I: Upcoming</p>
+              </div>
+            </div>
+            <div class="match-card" style="border-left: 4px solid var(--success);">
+              <div>
+                <h4 style="margin-bottom: 0.2rem;">England Tour of West Indies</h4>
+                <p style="color: var(--gray-400); font-size: 0.8rem;">T20I Series Tied 1-1</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card">
+          <h2 class="card-title">Global Calendar</h2>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+            <button class="btn btn-sm btn-secondary">Timeline</button>
+            <button class="btn btn-sm btn-secondary">Monthly</button>
+          </div>
+          <div class="calendar-timeline" style="border-left: 2px solid var(--gray-700); padding-left: 1rem; margin-left: 0.5rem;">
+            <div style="position: relative; margin-bottom: 1.5rem;">
+              <div style="position: absolute; left: -1.35rem; top: 0.2rem; width: 10px; height: 10px; background: var(--primary); border-radius: 50%;"></div>
+              <strong style="color: var(--gray-200);">March 2027</strong>
+              <p style="color: var(--gray-400); font-size: 0.85rem; margin-top: 0.2rem;">ICC T20 World Cup</p>
+            </div>
+            <div style="position: relative; margin-bottom: 1.5rem;">
+              <div style="position: absolute; left: -1.35rem; top: 0.2rem; width: 10px; height: 10px; background: var(--gray-500); border-radius: 50%;"></div>
+              <strong style="color: var(--gray-200);">April 2027</strong>
+              <p style="color: var(--gray-400); font-size: 0.85rem; margin-top: 0.2rem;">South Africa Tour of New Zealand</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- NEW: RANKINGS & CAREERS DASHBOARD -->
+    <main class="dashboard" id="rankingsSection" style="display: none;">
+      <div class="primary-column">
+        <div class="card highlight">
+          <h2 class="card-title">Player Career Center</h2>
+          <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem;">
+            <input type="text" class="form-control" placeholder="Search player (e.g. Virat Kohli)..." style="flex: 1;" />
+            <button class="btn btn-primary">Search</button>
+          </div>
+          
+          <div style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 1.5rem; border: 1px solid rgba(255,255,255,0.05);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+              <div>
+                <h3 style="font-size: 1.5rem; margin: 0; color: white;">Virat Kohli</h3>
+                <span style="color: var(--gray-400); font-size: 0.9rem;">India • Top Order Batter</span>
+              </div>
+              <span class="pill" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981;">Form: HOT 🔥</span>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+              <div style="background: var(--dark); padding: 1rem; border-radius: 8px; text-align: center;">
+                <div style="color: var(--gray-400); font-size: 0.8rem; text-transform: uppercase;">Matches</div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: white; margin-top: 0.25rem;">292</div>
+              </div>
+              <div style="background: var(--dark); padding: 1rem; border-radius: 8px; text-align: center;">
+                <div style="color: var(--gray-400); font-size: 0.8rem; text-transform: uppercase;">Runs</div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: white; margin-top: 0.25rem;">13,848</div>
+              </div>
+              <div style="background: var(--dark); padding: 1rem; border-radius: 8px; text-align: center;">
+                <div style="color: var(--gray-400); font-size: 0.8rem; text-transform: uppercase;">Average</div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: white; margin-top: 0.25rem;">58.67</div>
+              </div>
+              <div style="background: var(--dark); padding: 1rem; border-radius: 8px; text-align: center;">
+                <div style="color: var(--gray-400); font-size: 0.8rem; text-transform: uppercase;">100s/50s</div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: white; margin-top: 0.25rem;">50 / 72</div>
+              </div>
+            </div>
+            
+            <div>
+              <h4 style="margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--gray-300);">Recent Timeline</h4>
+              <div style="display: flex; gap: 0.5rem;">
+                <span style="padding: 0.25rem 0.5rem; background: var(--success); color: white; border-radius: 4px; font-size: 0.8rem; font-weight: 700;">103</span>
+                <span style="padding: 0.25rem 0.5rem; background: var(--gray-600); color: white; border-radius: 4px; font-size: 0.8rem; font-weight: 700;">44</span>
+                <span style="padding: 0.25rem 0.5rem; background: var(--success); color: white; border-radius: 4px; font-size: 0.8rem; font-weight: 700;">91</span>
+                <span style="padding: 0.25rem 0.5rem; background: var(--success); color: white; border-radius: 4px; font-size: 0.8rem; font-weight: 700;">82</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 1.5rem;">
+          <h2 class="card-title">Form & Fatigue Monitor</h2>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div style="background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 8px; padding: 1rem;">
+              <h3 style="font-size: 1rem; color: #ef4444; margin: 0 0 1rem 0; display: flex; align-items: center; gap: 0.5rem;">⚠ High Fatigue Alerts</h3>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem;">
+                <span>Jasprit Bumrah</span><strong style="color: #ef4444;">88%</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span>Pat Cummins</span><strong style="color: #f59e0b;">76%</strong>
+              </div>
+            </div>
+            <div style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 8px; padding: 1rem;">
+              <h3 style="font-size: 1rem; color: #10b981; margin: 0 0 1rem 0; display: flex; align-items: center; gap: 0.5rem;">🔥 Hot Form Watch</h3>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem;">
+                <span>Travis Head</span><strong style="color: #10b981;">94 Conf</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span>Virat Kohli</span><strong style="color: #10b981;">92 Conf</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="secondary-column">
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 class="card-title" style="margin: 0;">ICC Team Rankings</h2>
+            <select class="form-control" style="width: auto; padding: 0.2rem 0.5rem; font-size: 0.8rem;"><option>ODI</option><option>T20I</option></select>
+          </div>
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+            <thead><tr style="color: var(--gray-400); text-align: left; border-bottom: 1px solid var(--gray-700);"><th style="padding-bottom: 0.5rem;">Rank</th><th>Team</th><th>Rating</th></tr></thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid var(--gray-800);"><td style="padding: 0.75rem 0;">1 <span style="color: #10b981;">▲</span></td><td><strong>India</strong></td><td>121</td></tr>
+              <tr style="border-bottom: 1px solid var(--gray-800);"><td style="padding: 0.75rem 0;">2 <span style="color: #ef4444;">▼</span></td><td><strong>Australia</strong></td><td>118</td></tr>
+              <tr style="border-bottom: 1px solid var(--gray-800);"><td style="padding: 0.75rem 0;">3 <span style="color: var(--gray-500);">-</span></td><td><strong>England</strong></td><td>114</td></tr>
+              <tr><td style="padding: 0.75rem 0;">4 <span style="color: #10b981;">▲</span></td><td><strong>South Africa</strong></td><td>110</td></tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="card" style="margin-top: 1.5rem;">
+          <h2 class="card-title">Recent Milestones</h2>
+          <div class="match-card-list">
+            <div class="match-card" style="padding: 0.75rem;">
+              <p style="font-size: 0.85rem; margin: 0;"><strong>Rohit Sharma</strong> crossed 10,000 ODI runs.</p>
+              <span style="font-size: 0.7rem; color: var(--gray-500);">2 days ago</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- NEW: WORLD MANAGEMENT DASHBOARD -->
+    <main class="dashboard" id="worldSection" style="display: none;">
+      <div class="primary-column">
+        <div class="card highlight">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <h2 class="card-title" style="color: #ef4444; display: flex; align-items: center; gap: 0.5rem;"><span style="width:10px;height:10px;background:#ef4444;border-radius:50%;box-shadow:0 0 10px #ef4444;display:inline-block;"></span> Live Match Operations Center</h2>
+              <p class="card-description">Broadcast-level control room for inspecting AI decisions, momentum, and venue intelligence in real-time.</p>
+            </div>
+            <span class="pill running" style="font-size: 0.9rem; padding: 0.4rem 1rem;">MATCH IN PROGRESS</span>
+          </div>
+          
+          <div style="margin-top: 1.5rem; background: var(--dark); border-radius: 12px; padding: 1.5rem; border: 1px solid var(--gray-800);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+              <div style="text-align: center;">
+                <h3 style="margin: 0; color: var(--gray-300);">IND</h3>
+                <span style="font-size: 2rem; font-weight: 800; color: white;">245/4</span>
+                <div style="color: var(--gray-400); font-size: 0.9rem;">42.3 Overs</div>
+              </div>
+              <div style="flex: 1; margin: 0 2rem;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.5rem; font-weight: 700;">
+                  <span style="color: #60a5fa;">IND 68%</span>
+                  <span style="color: var(--gray-400);">Win Probability</span>
+                  <span style="color: #f59e0b;">AUS 32%</span>
+                </div>
+                <div style="height: 8px; background: #f59e0b; border-radius: 4px; overflow: hidden; display: flex;">
+                  <div style="width: 68%; background: #60a5fa; height: 100%;"></div>
+                </div>
+              </div>
+              <div style="text-align: center; opacity: 0.5;">
+                <h3 style="margin: 0; color: var(--gray-300);">AUS</h3>
+                <span style="font-size: 1.2rem; font-weight: 800; color: white;">Yet to bat</span>
+              </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+              <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px;">
+                <div style="color: var(--gray-400); font-size: 0.75rem; text-transform: uppercase; margin-bottom: 0.5rem;">Pressure Index</div>
+                <div style="font-size: 1.25rem; font-weight: 700; color: #ef4444;">High (8.5/10)</div>
+              </div>
+              <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px;">
+                <div style="color: var(--gray-400); font-size: 0.75rem; text-transform: uppercase; margin-bottom: 0.5rem;">Venue Impact</div>
+                <div style="font-size: 1.25rem; font-weight: 700; color: #10b981;">Spin +30%</div>
+              </div>
+              <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px;">
+                <div style="color: var(--gray-400); font-size: 0.75rem; text-transform: uppercase; margin-bottom: 0.5rem;">Fatigue Modifier</div>
+                <div style="font-size: 1.25rem; font-weight: 700; color: #f59e0b;">Bowler -15%</div>
+              </div>
+            </div>
+            
+            <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+              <button class="btn btn-secondary" style="flex: 1;"><svg style="width:16px;height:16px;fill:currentColor;vertical-align:middle;margin-right:0.2rem" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg> Pause Simulation</button>
+              <button class="btn btn-secondary" style="flex: 1;">1x Speed</button>
+              <button class="btn btn-secondary" style="flex: 1;">Inspect AI</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 1.5rem;">
+          <h2 class="card-title">Venue Intelligence</h2>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div style="border: 1px solid var(--gray-800); border-radius: 8px; padding: 1rem;">
+              <h4 style="margin: 0 0 1rem 0; color: white;">Wankhede Stadium</h4>
+              <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.85rem; color: var(--gray-300); display: grid; gap: 0.5rem;">
+                <li style="display: flex; justify-content: space-between;"><span>Avg 1st Innings (ODI)</span><strong>310</strong></li>
+                <li style="display: flex; justify-content: space-between;"><span>Pace Assist</span><strong style="color: #f59e0b;">High</strong></li>
+                <li style="display: flex; justify-content: space-between;"><span>Dew Factor</span><strong style="color: #60a5fa;">Heavy (2nd Inn)</strong></li>
+              </ul>
+              <button class="btn btn-sm btn-secondary" style="width: 100%; margin-top: 1rem;">Edit Conditions</button>
+            </div>
+            <div style="border: 1px solid var(--gray-800); border-radius: 8px; padding: 1rem;">
+              <h4 style="margin: 0 0 1rem 0; color: white;">Lord's</h4>
+              <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.85rem; color: var(--gray-300); display: grid; gap: 0.5rem;">
+                <li style="display: flex; justify-content: space-between;"><span>Avg 1st Innings (ODI)</span><strong>280</strong></li>
+                <li style="display: flex; justify-content: space-between;"><span>Pace Assist</span><strong style="color: #10b981;">Very High</strong></li>
+                <li style="display: flex; justify-content: space-between;"><span>Dew Factor</span><strong style="color: var(--gray-500);">None</strong></li>
+              </ul>
+              <button class="btn btn-sm btn-secondary" style="width: 100%; margin-top: 1rem;">Edit Conditions</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="secondary-column">
+        <div class="card">
+          <h2 class="card-title">World History Timeline</h2>
+          <div class="calendar-timeline" style="border-left: 2px solid var(--gray-700); padding-left: 1rem; margin-left: 0.5rem;">
+            <div style="position: relative; margin-bottom: 1.5rem;">
+              <div style="position: absolute; left: -1.35rem; top: 0.2rem; width: 10px; height: 10px; background: var(--primary); border-radius: 50%;"></div>
+              <strong style="color: var(--gray-200);">2026</strong>
+              <p style="color: var(--gray-400); font-size: 0.85rem; margin-top: 0.2rem;">India won ICC T20 World Cup</p>
+            </div>
+            <div style="position: relative; margin-bottom: 1.5rem;">
+              <div style="position: absolute; left: -1.35rem; top: 0.2rem; width: 10px; height: 10px; background: var(--primary); border-radius: 50%;"></div>
+              <strong style="color: var(--gray-200);">2025</strong>
+              <p style="color: var(--gray-400); font-size: 0.85rem; margin-top: 0.2rem;">Australia won ICC Champions Trophy</p>
+            </div>
+          </div>
+          <button class="btn btn-sm btn-secondary btn-full" style="margin-top: 1rem;">Browse Archives</button>
         </div>
       </div>
     </main>
