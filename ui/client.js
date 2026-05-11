@@ -532,13 +532,33 @@ module.exports = `
 
     // --- Setup & Initial Load ---
     async function init() {
+      // Parse URL parameters to pre-fill the form
+      const params = new URLSearchParams(window.location.search);
+      if (params.has("matchType")) matchTypeSelect.value = params.get("matchType");
+      if (params.has("overs")) oversInput.value = params.get("overs");
+      if (params.has("delayMs")) document.getElementById("delayMs").value = params.get("delayMs");
+      if (params.has("teamA")) {
+        // We'll set this after the dropdown is built in updateTeamDropdowns
+      }
+
       updateTeamDropdowns();
+      
+      // Secondary pass for team selection after updateTeamDropdowns builds the options
+      if (params.has("teamA")) teamASelect.value = params.get("teamA");
+      if (params.has("teamB")) teamBSelect.value = params.get("teamB");
+
       if (tourForm) tourForm.addEventListener("submit", handleTourSubmit);
       genderToggle.addEventListener("change", updateTeamDropdowns);
       matchTypeSelect.addEventListener("change", updateTeamDropdowns);
       
       await refresh();
       updateInternationalDashboard();
+      
+      // Auto-schedule if params are complete
+      if (params.has("teamA") && params.has("teamB") && params.has("auto")) {
+        submitButton.click();
+      }
+
       setInterval(refresh, 5000);
       setInterval(updateInternationalDashboard, 60000);
     }
