@@ -1,4 +1,4 @@
-﻿module.exports = `
+module.exports = `
     :root {
       --primary: #1e40af;
       --primary-light: #3b82f6;
@@ -124,14 +124,14 @@
     }
 
     .card.highlight {
-      background: linear-gradient(180deg, rgba(59, 130, 246, 0.08), rgba(255, 255, 255, 0.98));
-      border-color: rgba(59, 130, 246, 0.24);
-      box-shadow: 0 30px 60px rgba(59, 130, 246, 0.08);
+      background: linear-gradient(180deg, rgba(30, 64, 175, 0.15) 0%, rgba(15, 23, 42, 0.9) 100%);
+      border-color: rgba(59, 130, 246, 0.4);
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
     }
 
     .card-description {
       margin: 0 0 1.5rem;
-      color: var(--gray-600);
+      color: var(--gray-400);
       line-height: 1.8;
       font-size: 1rem;
     }
@@ -153,26 +153,32 @@
     }
 
     .match-card {
-      background: var(--gray-50);
+      background: rgba(255, 255, 255, 0.03);
       padding: 1rem 1.25rem;
       border-radius: var(--border-radius-lg);
-      border: 1px solid var(--gray-200);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       display: grid;
       grid-template-columns: 1fr auto;
       gap: 0.75rem;
       align-items: center;
+      transition: all 0.2s ease;
+    }
+
+    .match-card:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(59, 130, 246, 0.3);
     }
 
     .match-card h4 {
       margin: 0;
       font-size: 1rem;
-      color: var(--dark);
+      color: var(--light);
       font-weight: 700;
     }
 
     .match-card p {
       margin: 0.35rem 0;
-      color: var(--gray-700);
+      color: var(--gray-400);
       font-size: 0.95rem;
     }
 
@@ -209,13 +215,19 @@
     }
 
     .summary-stat {
-      background: linear-gradient(180deg, white 0%, var(--gray-50) 100%);
+      background: rgba(255, 255, 255, 0.04);
       border-radius: var(--border-radius-lg);
-      border: 1px solid var(--gray-200);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       padding: 1rem;
       display: grid;
       gap: 0.35rem;
       box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+    }
+
+    .summary-stat:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(59, 130, 246, 0.3);
     }
 
     .summary-label {
@@ -227,7 +239,7 @@
     }
 
     .summary-value {
-      color: var(--dark);
+      color: var(--light);
       font-size: 1.8rem;
       font-weight: 800;
       line-height: 1;
@@ -247,15 +259,15 @@
 
     .active-match-card {
       width: 100%;
-      border: 1px solid var(--gray-200);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: var(--border-radius-lg);
-      background: linear-gradient(135deg, var(--gray-50) 0%, white 100%);
+      background: rgba(255, 255, 255, 0.03);
       padding: 1rem;
       display: grid;
       gap: 0.45rem;
       text-align: left;
       cursor: pointer;
-      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
     }
 
     .active-match-card:hover {
@@ -278,14 +290,14 @@
 
     .active-match-card h4 {
       margin: 0;
-      color: var(--dark);
+      color: var(--light);
       font-size: 1rem;
       font-weight: 700;
     }
 
     .active-match-card p {
       margin: 0;
-      color: var(--gray-600);
+      color: var(--gray-400);
       font-size: 0.92rem;
     }
 
@@ -313,15 +325,16 @@
     }
 
     .card {
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(20px);
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(16px);
       border-radius: var(--border-radius-xl);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: var(--shadow-2xl);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
       padding: 2rem;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       overflow: hidden;
+      color: var(--light);
     }
 
     .card::before {
@@ -343,7 +356,7 @@
       font-size: 1.5rem;
       font-weight: 700;
       margin: 0 0 1.5rem;
-      color: var(--dark);
+      color: var(--light);
       display: flex;
       align-items: center;
       gap: 0.75rem;
@@ -361,7 +374,7 @@
     .form-group label {
       display: block;
       font-weight: 600;
-      color: var(--gray-700);
+      color: var(--gray-300);
       margin-bottom: 0.5rem;
       font-size: 0.95rem;
     }
@@ -369,12 +382,12 @@
     .form-control {
       width: 100%;
       padding: 0.875rem 1rem;
-      border: 2px solid var(--gray-200);
+      border: 1.5px solid rgba(255, 255, 255, 0.1);
       border-radius: var(--border-radius);
       font-size: 1rem;
-      background: white;
+      background: rgba(0, 0, 0, 0.2);
       transition: all 0.2s ease;
-      color: var(--dark);
+      color: white;
     }
 
     .form-control:focus {
@@ -453,15 +466,15 @@
     }
 
     .lineup {
-      background: var(--gray-50);
+      background: rgba(255, 255, 255, 0.03);
       border-radius: var(--border-radius-lg);
       padding: 1.5rem;
-      border: 1px solid var(--gray-200);
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .lineup h3 {
       margin: 0 0 1rem;
-      color: var(--dark);
+      color: var(--light);
       font-size: 1.2rem;
       font-weight: 600;
     }
@@ -498,17 +511,17 @@
       align-items: flex-start;
       gap: 0.75rem;
       padding: 0.85rem 0.95rem;
-      border: 1px solid var(--gray-200);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: var(--border-radius);
-      background: white;
+      background: rgba(255, 255, 255, 0.02);
       cursor: pointer;
-      transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+      transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
     }
 
     .player-option label:hover {
       border-color: var(--primary-light);
+      background: rgba(255, 255, 255, 0.05);
       transform: translateY(-1px);
-      box-shadow: var(--shadow-sm);
     }
 
     .player-option input {
@@ -523,7 +536,7 @@
     }
 
     .player-name {
-      color: var(--dark);
+      color: var(--light);
       font-weight: 700;
     }
 
@@ -558,11 +571,11 @@
     }
 
     .match-info {
-      background: linear-gradient(135deg, var(--gray-50) 0%, white 100%);
+      background: rgba(255, 255, 255, 0.03);
       border-radius: var(--border-radius-lg);
       padding: 1.5rem;
       margin-bottom: 1rem;
-      border: 1px solid var(--gray-200);
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .match-info-grid {
@@ -574,8 +587,8 @@
     .match-info-item {
       padding: 0.9rem 1rem;
       border-radius: var(--border-radius);
-      border: 1px solid var(--gray-200);
-      background: white;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.2);
     }
 
     .match-info-label {
@@ -589,13 +602,13 @@
     }
 
     .match-info-value {
-      color: var(--dark);
+      color: var(--light);
       font-weight: 700;
       font-size: 1rem;
     }
 
     .match-info-value.subtle {
-      color: var(--gray-700);
+      color: var(--gray-400);
       font-weight: 600;
     }
 
@@ -609,34 +622,30 @@
       width: 100%;
       border-collapse: collapse;
       margin-top: 1rem;
-      background: white;
+      background: rgba(15, 23, 42, 0.5);
       border-radius: var(--border-radius-lg);
       overflow: hidden;
-      box-shadow: var(--shadow);
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .schedule-table th,
     .schedule-table td {
       padding: 1rem;
       text-align: left;
-      border-bottom: 1px solid var(--gray-100);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .schedule-table th {
-      background: var(--gray-50);
+      background: rgba(255, 255, 255, 0.05);
       font-weight: 700;
-      color: var(--dark);
+      color: var(--light);
       font-size: 0.9rem;
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
 
-    .schedule-table tbody tr {
-      transition: all 0.2s ease;
-    }
-
     .schedule-table tbody tr:hover {
-      background: var(--gray-50);
+      background: rgba(255, 255, 255, 0.03);
       transform: translateX(4px);
     }
 
@@ -759,5 +768,4 @@
         padding: 0.75rem 0.5rem;
       }
     }
-`;
-
+\`;

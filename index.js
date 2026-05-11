@@ -17,6 +17,10 @@ const fixtureGenerator = require("./tournaments/fixturegenerator");
 const standingsEngine = require("./tournaments/standingsengine");
 const statsEngine = require("./tournaments/statsengine");
 const templates = require("./tournaments/tournamenttemplates");
+const tourEngine = require("./services/tourEngine");
+const careerEngine = require("./services/careerEngine");
+const rankingEngine = require("./services/rankingEngine");
+const seriesEngine = require("./services/seriesEngine");
 
 let PORT = Number(process.env.PORT || 3000);
 const serverStartedAt = new Date().toISOString();
@@ -1078,6 +1082,72 @@ const server = http.createServer(async (req, res) => {
         const snap = await db.ref(`tournaments/${tid}/stats`).once("value");
         const stats = snap.val() || { playerStats: {} };
         jsonResponse(res, 200, statsEngine.getLeaderboard(stats));
+      } catch (error) {
+        jsonResponse(res, 500, { error: error.message });
+      }
+      return;
+    }
+
+    // --- International Ecosystem Endpoints ---
+    if (req.method === "POST" && requestUrl.pathname === "/api/international/tour/create") {
+      try {
+        const { host, visitor, season, seriesConfigs } = await parseRequestBody(req);
+        const tourId = await tourEngine.createTour(host, visitor, season, seriesConfigs);
+        jsonResponse(res, 200, { message: "Tour created successfully.", tourId });
+      } catch (error) {
+        jsonResponse(res, 400, { error: error.message });
+      }
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/international/rankings") {
+      try {
+        const snap = await db.ref("international/rankings").once("value");
+        jsonResponse(res, 200, snap.val() || {});
+      } catch (error) {
+        jsonResponse(res, 500, { error: error.message });
+      }
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/international/career") {
+      try {
+        const playerId = requestUrl.searchParams.get("playerId");
+        const snap = await db.ref(`international/careers/${playerId}`).once("value");
+        jsonResponse(res, 200, snap.val() || { error: "Player not found" });
+      } catch (error) {
+        jsonResponse(res, 500, { error: error.message });
+      }
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/international/status") {
+      try {
+        const [toursSnap, seriesSnap, rankingsSnap] = await Promise.all([
+          db.ref("international/tours").once("value"),
+          db.ref("international/series").once("value"),
+          db.ref("international/rankings").once("value")
+        ]);
+        
+        const tours = toursSnap.val() || {};
+        const series = seriesSnap.val() || {};
+        const rankings = rankingsSnap.val() || {};
+        
+        const activeTours = Object.values(tours).filter(t => t.status !== "completed");
+        const liveSeries = Object.values(series).filter(s => s.status === "running" || s.status === "scheduled").slice(0, 5);
+        
+        // Enrich live series with score text
+        const enrichedLiveSeries = liveSeries.map(s => ({
+          ...s,
+          scoreText: `${s.teamA} ${s.score[s.teamA]} - ${s.score[s.teamB]} ${s.teamB}`
+        }));
+
+        jsonResponse(res, 200, {
+          activeTours: activeTours.length,
+          activeToursData: activeTours.slice(0, 5),
+          liveSeries: enrichedLiveSeries,
+          rankings
+        });
       } catch (error) {
         jsonResponse(res, 500, { error: error.message });
       }
