@@ -312,4 +312,4 @@ module.exports = `
     }
 
     init();
-\`;
+`;
