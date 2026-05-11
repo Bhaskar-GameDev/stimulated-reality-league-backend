@@ -160,6 +160,46 @@ module.exports = `
       } catch (e) { console.error("Failed to update international dashboard", e); }
     }
 
+    const playerSearchBtn = document.getElementById("playerSearchBtn");
+    if (playerSearchBtn) {
+      playerSearchBtn.addEventListener("click", async () => {
+        const input = document.getElementById("playerSearchInput").value.trim();
+        if (!input) return;
+        
+        try {
+          playerSearchBtn.disabled = true;
+          playerSearchBtn.textContent = "Searching...";
+          const res = await fetch("/api/international/career?playerId=" + encodeURIComponent(input));
+          const data = await res.json();
+          
+          if (data.error || !data.matches) {
+            alert("Player not found in international database.");
+            return;
+          }
+          
+          document.getElementById("careerCardContainer").style.display = "block";
+          document.getElementById("careerCardContainer").innerHTML = 
+            '<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">'
+            + '<div><h3 style="font-size: 1.5rem; margin: 0; color: white;">' + escapeHtml(input) + '</h3>'
+            + '<span style="color: var(--gray-400); font-size: 0.9rem;">International Player</span></div>'
+            + '<span class="pill" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981;">Form: ACTIVE</span>'
+            + '</div>'
+            + '<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem;">'
+            + '<div style="background: var(--dark); padding: 1rem; border-radius: 8px; text-align: center;"><div style="color: var(--gray-400); font-size: 0.8rem; text-transform: uppercase;">Matches</div><div style="font-size: 1.5rem; font-weight: 700; color: white; margin-top: 0.25rem;">' + (data.matches || 0) + '</div></div>'
+            + '<div style="background: var(--dark); padding: 1rem; border-radius: 8px; text-align: center;"><div style="color: var(--gray-400); font-size: 0.8rem; text-transform: uppercase;">Runs</div><div style="font-size: 1.5rem; font-weight: 700; color: white; margin-top: 0.25rem;">' + (data.runs || 0) + '</div></div>'
+            + '<div style="background: var(--dark); padding: 1rem; border-radius: 8px; text-align: center;"><div style="color: var(--gray-400); font-size: 0.8rem; text-transform: uppercase;">Wickets</div><div style="font-size: 1.5rem; font-weight: 700; color: white; margin-top: 0.25rem;">' + (data.wickets || 0) + '</div></div>'
+            + '<div style="background: var(--dark); padding: 1rem; border-radius: 8px; text-align: center;"><div style="color: var(--gray-400); font-size: 0.8rem; text-transform: uppercase;">High Score</div><div style="font-size: 1.5rem; font-weight: 700; color: white; margin-top: 0.25rem;">' + (data.highScore || 0) + '</div></div>'
+            + '</div>';
+            
+        } catch (err) {
+          alert("Failed to fetch player stats.");
+        } finally {
+          playerSearchBtn.disabled = false;
+          playerSearchBtn.textContent = "Search";
+        }
+      });
+    }
+
     async function handleTourSubmit(e) {
       e.preventDefault();
       const btn = e.target.querySelector('.btn-primary');
@@ -266,17 +306,48 @@ module.exports = `
     document.querySelectorAll(".tab-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         const tab = btn.getAttribute("data-tab");
-        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        
+        // Fix active styling discrepancy by resetting inline styles from HTML
+        document.querySelectorAll(".tab-btn").forEach(b => {
+          b.classList.remove("active");
+          b.style.background = "transparent";
+          b.style.boxShadow = "none";
+          b.style.color = "var(--gray-400)";
+        });
+        
         btn.classList.add("active");
+        btn.style.background = "linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%)";
+        btn.style.color = "white";
+        btn.style.boxShadow = "0 4px 14px rgba(30, 64, 175, 0.3)";
 
-        [document.getElementById("matchSection"), 
-         document.getElementById("tournamentSection"), 
-         internationalSection, rankingsSection, worldSection, maintenanceSection].forEach(s => { if (s) s.style.display = "none"; });
+        const sectionMap = {
+          "matches": "matchSection",
+          "tournaments": "tournamentSection",
+          "international": "internationalSection",
+          "rankings": "rankingsSection",
+          "world": "worldSection",
+          "maintenance": "maintenanceSection"
+        };
 
-        const target = document.getElementById(tab + "Section");
+        const targetId = sectionMap[tab];
+
+        [
+          document.getElementById("matchSection"), 
+          document.getElementById("tournamentSection"), 
+          document.getElementById("internationalSection"), 
+          document.getElementById("rankingsSection"), 
+          document.getElementById("worldSection"), 
+          document.getElementById("maintenanceSection")
+        ].forEach(s => { if (s) s.style.display = "none"; });
+
+        const target = document.getElementById(targetId);
         if (target) {
           target.style.display = "grid";
           if (tab === "international") updateInternationalDashboard();
+          if (tab === "tournaments") {
+            renderTournamentTeamSelection();
+            refreshTournaments();
+          }
         }
       });
     });
@@ -297,6 +368,167 @@ module.exports = `
       else selectedTournamentTeams.add(name);
       document.getElementById("teamCountLabel").textContent = selectedTournamentTeams.size + " teams selected";
     };
+
+    let generatedFixtures = [];
+    
+    const generateTournamentBtn = document.getElementById("generateTournamentBtn");
+    if (generateTournamentBtn) {
+      generateTournamentBtn.addEventListener("click", async () => {
+        if (selectedTournamentTeams.size < 2) {
+          alert("Please select at least 2 teams.");
+          return;
+        }
+
+        const template = document.getElementById("tournamentTemplate").value;
+        const season = document.getElementById("tournamentSeason").value;
+        const name = document.getElementById("tournamentNameInput").value;
+
+        try {
+          generateTournamentBtn.disabled = true;
+          generateTournamentBtn.textContent = "Generating...";
+          
+          const result = await postJson("/api/tournaments/generate", {
+            templateKey: template,
+            season: Number(season),
+            tournamentName: name,
+            teams: Array.from(selectedTournamentTeams).map(name => ({ id: name, name }))
+          });
+
+          generatedFixtures = result.fixtures;
+          document.getElementById("fixturesList").innerHTML = generatedFixtures.map((f, i) => (
+            '<div class="match-card" style="margin-bottom: 0.5rem; background: white; border: 1px solid var(--gray-200);">'
+              + '<div><strong style="color: var(--primary); font-size: 0.8rem; text-transform: uppercase;">' + (f.stage === "league" ? "Round " + f.round : f.stage) + '</strong>'
+              + '<p style="margin: 0.2rem 0; font-weight: 700; color: var(--dark);">' + escapeHtml(f.teamA.name) + ' vs ' + escapeHtml(f.teamB.name) + '</p></div>'
+              + '<div><span class="pill scheduled">Pending</span></div>'
+            + '</div>'
+          )).join("");
+          document.getElementById("tournamentFixturesCard").style.display = "block";
+          document.getElementById("tournamentFixturesCard").scrollIntoView({ behavior: "smooth" });
+        } catch (error) {
+          alert(error.message);
+        } finally {
+          generateTournamentBtn.disabled = false;
+          generateTournamentBtn.textContent = "Generate Season Fixtures";
+        }
+      });
+    }
+
+    const saveTournamentBtn = document.getElementById("saveTournamentBtn");
+    if (saveTournamentBtn) {
+      saveTournamentBtn.addEventListener("click", async () => {
+        if (!generatedFixtures.length) return;
+
+        try {
+          saveTournamentBtn.disabled = true;
+          saveTournamentBtn.textContent = "Finalizing...";
+
+          const template = document.getElementById("tournamentTemplate").value;
+          const season = document.getElementById("tournamentSeason").value;
+          const name = document.getElementById("tournamentNameInput").value;
+          const autoMode = document.getElementById("autoSimTournament")?.checked || false;
+
+          await postJson("/api/tournaments/save", {
+            templateKey: template,
+            season: Number(season),
+            tournamentName: name,
+            autoMode: autoMode,
+            teams: Array.from(selectedTournamentTeams).map(name => ({ id: name, name })),
+            fixtures: generatedFixtures
+          });
+
+          alert("Tournament scheduled successfully!");
+          document.getElementById("tournamentFixturesCard").style.display = "none";
+          selectedTournamentTeams.clear();
+          renderTournamentTeamSelection();
+          refreshTournaments();
+        } catch (error) {
+          alert(error.message);
+        } finally {
+          saveTournamentBtn.disabled = false;
+          saveTournamentBtn.textContent = "Finalize & Schedule Tournament";
+        }
+      });
+    }
+
+    async function refreshTournaments() {
+      try {
+        const res = await fetch("/api/tournaments/list");
+        const tournaments = await res.json();
+        
+        document.getElementById("activeTournamentList").innerHTML = tournaments.map(t => (
+          '<button type="button" class="active-match-card" onclick="selectTournament(\\'' + escapeHtml(t.id) + '\\')">'
+            + '<div class="active-match-card-header">'
+              + '<h4>' + escapeHtml(t.name) + '</h4>'
+              + '<span class="pill ' + (t.status === "completed" ? "completed" : "running") + '">' + escapeHtml(t.status) + '</span>'
+            + '</div>'
+            + '<div class="active-match-meta">'
+              + '<span>Season ' + escapeHtml(t.season) + '</span>'
+              + '<span>' + escapeHtml(t.format) + '</span>'
+            + '</div>'
+          + '</button>'
+        )).join("") || "<p class='note'>No tournaments found.</p>";
+      } catch (err) {
+        console.error("Failed to load tournaments");
+      }
+    }
+
+    window.selectTournament = (tid) => {
+      fetchStandings(tid);
+      fetchLeaders(tid);
+    };
+
+    async function fetchStandings(tid) {
+      const container = document.getElementById("standingsContainer");
+      try {
+        container.innerHTML = "<p class='note'>Loading points table...</p>";
+        const res = await fetch("/api/tournaments/standings/" + tid);
+        const standings = await res.json();
+
+        container.innerHTML = (
+          '<table class="schedule-table" style="font-size: 0.8rem; width: 100%; border-collapse: collapse;">'
+            + '<thead style="background: var(--gray-50);"><tr><th style="padding: 0.5rem;">Team</th><th style="padding: 0.5rem;">P</th><th style="padding: 0.5rem;">Pts</th><th style="padding: 0.5rem;">NRR</th></tr></thead>'
+            + '<tbody>'
+              + standings.map(s => (
+                '<tr style="border-bottom: 1px solid var(--gray-100);">'
+                  + '<td style="padding: 0.6rem 0.5rem;"><strong>' + escapeHtml(s.teamName) + '</strong></td>'
+                  + '<td style="padding: 0.6rem 0.5rem;">' + s.played + '</td>'
+                  + '<td style="padding: 0.6rem 0.5rem;"><strong>' + s.points + '</strong></td>'
+                  + '<td style="padding: 0.6rem 0.5rem;">' + (s.nrr >= 0 ? "+" : "") + s.nrr.toFixed(3) + '</td>'
+                + '</tr>'
+              )).join("")
+            + '</tbody>'
+          + '</table>'
+        );
+      } catch (err) {
+        container.innerHTML = "<p class='note'>Failed to load standings.</p>";
+      }
+    }
+
+    async function fetchLeaders(tid) {
+      const container = document.getElementById("leadersContainer");
+      try {
+        container.innerHTML = "<p class='note'>Loading stats...</p>";
+        const res = await fetch("/api/tournaments/leaders/" + tid);
+        const data = await res.json();
+
+        const orangeHtml = data.orangeCap.map((p, i) => 
+          '<tr><td style="padding: 0.4rem;">' + (i+1) + '. ' + escapeHtml(p.name) + '</td><td style="padding: 0.4rem; text-align:right;"><strong>' + p.runs + '</strong></td></tr>'
+        ).join("");
+
+        const purpleHtml = data.purpleCap.map((p, i) => 
+          '<tr><td style="padding: 0.4rem;">' + (i+1) + '. ' + escapeHtml(p.name) + '</td><td style="padding: 0.4rem; text-align:right;"><strong>' + p.wickets + '</strong></td></tr>'
+        ).join("");
+
+        container.innerHTML = (
+          '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">'
+            + '<div><h4 style="color: #f59e0b; margin-bottom: 0.5rem; font-size: 0.8rem;">Orange Cap</h4><table style="width:100%; font-size: 0.75rem;">' + orangeHtml + '</table></div>'
+            + '<div><h4 style="color: #8b5cf6; margin-bottom: 0.5rem; font-size: 0.8rem;">Purple Cap</h4><table style="width:100%; font-size: 0.75rem;">' + purpleHtml + '</table></div>'
+          + '</div>'
+        );
+      } catch (err) {
+        container.innerHTML = "<p class='note'>Failed to load stats.</p>";
+      }
+    }
 
     // --- Setup & Initial Load ---
     async function init() {

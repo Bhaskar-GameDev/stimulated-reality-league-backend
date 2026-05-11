@@ -394,11 +394,11 @@ ${styles}
         <div class="card highlight">
           <h2 class="card-title">Player Career Center</h2>
           <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem;">
-            <input type="text" class="form-control" placeholder="Search player (e.g. Virat Kohli)..." style="flex: 1;" />
-            <button class="btn btn-primary">Search</button>
+            <input type="text" id="playerSearchInput" class="form-control" placeholder="Search player (e.g. Virat Kohli)..." style="flex: 1;" />
+            <button id="playerSearchBtn" class="btn btn-primary">Search</button>
           </div>
           
-          <div style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 1.5rem; border: 1px solid rgba(255,255,255,0.05);">
+          <div id="careerCardContainer" style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 1.5rem; border: 1px solid rgba(255,255,255,0.05); display: none;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
               <div>
                 <h3 style="font-size: 1.5rem; margin: 0; color: white;">Virat Kohli</h3>
