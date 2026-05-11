@@ -1112,7 +1112,32 @@ const server = http.createServer(async (req, res) => {
       try {
         const { host, visitor, season, seriesConfigs } = await parseRequestBody(req);
         const tourId = await tourEngine.createTour(host, visitor, season, seriesConfigs);
-        jsonResponse(res, 200, { message: "Tour created successfully.", tourId });
+        
+        // Schedule initial matches for each series
+        for (const config of seriesConfigs) {
+          const matchCount = parseInt(config.matches);
+          const format = config.format; // "ODI" or "T20"
+          
+          for (let i = 1; i <= matchCount; i++) {
+            const startAt = new Date();
+            // Stagger matches by 1 minute for simulation purposes if started immediately
+            startAt.setMinutes(startAt.getMinutes() + (i * 1)); 
+            
+            await scheduleMatch({
+              teamA: host,
+              teamB: visitor,
+              matchType: format,
+              overs: format === "ODI" ? 50 : 20,
+              delayMs: 3000,
+              startAt: startAt.toISOString(),
+              tourId: tourId,
+              isTourMatch: true,
+              matchLabel: `${format} Series - Match ${i}`
+            });
+          }
+        }
+
+        jsonResponse(res, 200, { message: "Tour created and fixtures generated successfully.", tourId });
       } catch (error) {
         jsonResponse(res, 400, { error: error.message });
       }
@@ -1165,6 +1190,7 @@ const server = http.createServer(async (req, res) => {
           activeTours: activeTours.length,
           activeToursData: activeTours.slice(0, 5),
           liveSeries: enrichedLiveSeries,
+          liveMatches: Array.from(activeMatches.values()).length,
           rankings
         });
       } catch (error) {
