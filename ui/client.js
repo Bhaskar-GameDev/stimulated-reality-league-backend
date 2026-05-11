@@ -46,6 +46,13 @@ module.exports = `
     const cleanupTournamentsCb = document.getElementById("cleanupTournaments");
     const cleanupStartInput = document.getElementById("cleanupStart");
     const cleanupEndInput = document.getElementById("cleanupEnd");
+    
+    // Guided Simulation Selectors
+    const guidedSimToggle = document.getElementById("guidedSimToggle");
+    const guidedSimOptions = document.getElementById("guidedSimOptions");
+    const intensityInput = document.getElementById("intensity");
+    const intensityVal = document.getElementById("intensityVal");
+    const matchForm = document.getElementById("matchForm");
 
     let selectedActiveMatchId = null;
     let lastStatusData = null;
@@ -120,7 +127,7 @@ module.exports = `
     function updateFormState() {
       const sameTeams = teamASelect.value === teamBSelect.value;
       submitButton.disabled = sameTeams;
-      submitButton.textContent = sameTeams ? "Select different teams" : "Schedule match";
+      submitButton.textContent = sameTeams ? "Select different teams" : "SCHEDULE MATCH";
     }
 
     // --- International Logic ---
@@ -234,6 +241,45 @@ module.exports = `
           btn.disabled = false;
           btn.textContent = "Generate Tour Fixtures";
         }
+      }
+    }
+
+    async function handleSubmit(e) {
+      e.preventDefault();
+      
+      const btn = submitButton;
+      btn.disabled = true;
+      btn.textContent = "Scheduling...";
+
+      try {
+        const payload = {
+          teamA: teamASelect.value,
+          teamB: teamBSelect.value,
+          matchType: matchTypeSelect.value,
+          overs: oversInput.value,
+          delayMs: document.getElementById("delayMs").value,
+          startAt: document.getElementById("startAt").value || null
+        };
+
+        // Add Guided Simulation settings if enabled
+        if (guidedSimToggle && guidedSimToggle.checked) {
+          payload.guidedSimulationSettings = {
+            enabled: true,
+            preferredWinner: document.getElementById("preferredWinner").value || null,
+            targetScore: parseInt(document.getElementById("targetScore").value) || null,
+            narrativeType: document.getElementById("narrativeType").value || "random",
+            intensity: parseFloat(intensityInput.value) || 0.5
+          };
+        }
+
+        const result = await postJson("/api/schedule", payload);
+        alert(result.message);
+        refresh();
+      } catch (err) {
+        alert("Scheduling failed: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Schedule Match";
       }
     }
 
@@ -548,6 +594,20 @@ module.exports = `
       if (params.has("teamB")) teamBSelect.value = params.get("teamB");
 
       if (tourForm) tourForm.addEventListener("submit", handleTourSubmit);
+      if (matchForm) matchForm.addEventListener("submit", handleSubmit);
+      
+      if (guidedSimToggle) {
+        guidedSimToggle.addEventListener("change", () => {
+          guidedSimOptions.style.display = guidedSimToggle.checked ? "block" : "none";
+        });
+      }
+      
+      if (intensityInput) {
+        intensityInput.addEventListener("input", () => {
+          intensityVal.textContent = intensityInput.value;
+        });
+      }
+
       genderToggle.addEventListener("change", updateTeamDropdowns);
       matchTypeSelect.addEventListener("change", updateTeamDropdowns);
       
