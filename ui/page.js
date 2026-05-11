@@ -319,7 +319,7 @@ ${styles}
             </div>
             <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
               <button type="button" class="btn btn-secondary" style="flex: 1;">Save Draft</button>
-              <button type="button" class="btn btn-primary" style="flex: 2;">Generate Tour Fixtures</button>
+              <button type="submit" class="btn btn-primary" style="flex: 2;">Generate Tour Fixtures</button>
             </div>
           </form>
         </div>
