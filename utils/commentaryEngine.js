@@ -82,6 +82,14 @@ const COMMENTARY_POOL = {
     "consecutive_boundaries": [
         { text: "**BACK TO BACK!** {batsman} is in the zone now. {bowler} is under serious pressure.", weight: 10 },
         { text: "Another one! {batsman} is finding the gaps with ease. This is masterclass batting.", weight: 10 }
+    ],
+    "international_milestone": [
+        { text: "What an incredible career milestone for {batsman}! He's writing history today on the international stage.", weight: 10 },
+        { text: "The whole stadium is on its feet for {batsman}! A massive international career achievement.", weight: 10 }
+    ],
+    "series_context": [
+        { text: "This is crucial for the series context! Every run counts right now for {battingTeam}.", weight: 10 },
+        { text: "With the series on the line, the pressure is immense on {batsman}.", weight: 10 }
     ]
 };
 

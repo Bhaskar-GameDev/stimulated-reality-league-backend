@@ -2,6 +2,13 @@ const db = require("./firebase");
 const commentaryEngine = require("./utils/commentaryEngine");
 const { createSeededRandom } = require("./utils/random");
 const GuidedSimulationController = require("./guidedSimulationController");
+const WinPredictor = require("./services/winPredictor");
+const CareerEngine = require("./services/careerEngine");
+const FormEngine = require("./services/formEngine");
+const FatigueEngine = require("./services/fatigueEngine");
+const RankingEngine = require("./services/rankingEngine");
+const SeriesEngine = require("./services/seriesEngine");
+
 
 const DEFAULT_PROBABILITIES = {
   dot: 0.35,
@@ -198,36 +205,6 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
 
   let lastBowlerId = null;
 
-  const calculateWinProbability = (runs, wickets, over, ball, target) => {
-    const isODI = oversLimit === 50 || matchType === "ODI";
-    if (target === null) {
-      // 1st Innings: Heuristic based on projected score
-      const totalBalls = oversLimit * 6;
-      const ballsDone = (over * 6) + ball;
-      const baseProjected = isODI ? 270 : 160;
-      const projected = ballsDone > 0 ? (runs / ballsDone) * totalBalls : baseProjected;
-      let prob = 50 + (projected - baseProjected) / (isODI ? 4 : 2.5);
-      prob -= (wickets * (isODI ? 4 : 3)); 
-      return Math.max(15, Math.min(85, Math.round(prob)));
-    } else {
-      // 2nd Innings: Based on RRR and Wickets
-      const totalBalls = oversLimit * 6;
-      const ballsDone = (over * 6) + ball;
-      const ballsLeft = Math.max(1, totalBalls - ballsDone);
-      const runsLeft = target - runs;
-      if (runsLeft <= 0) return 100;
-      const rrr = (runsLeft / ballsLeft) * 6;
-      const wicketsLeft = 10 - wickets;
-      
-      const rrrFactor = isODI ? 5 : 8;
-      const wktFactor = isODI ? 5 : 4;
-      
-      let prob = 100 - (rrr * rrrFactor) + (wicketsLeft * wktFactor) - (isODI ? 10 : 20);
-      return Math.max(0, Math.min(100, Math.round(prob)));
-    }
-  };
-
-
 
   while (currentOver < oversLimit && wickets < 10 && (chaseTarget === null || runs < chaseTarget)) {
     // Select bowler for the over
@@ -408,6 +385,14 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
       updates[`match_balls/${matchId}/${inningNumber}/${ballId}`] = ballData;
       
       // 2. The live snapshot for the dashboard/main UI
+      const predictorContext = {
+        runs, wickets, over: currentOver, ball: legalBallsInOver,
+        target: chaseTarget, oversLimit, matchType,
+        striker: batting[strikerIdx], nonStriker: batting[nonStrikerIdx],
+        bowler, recentBalls, partnership: currentPartnership,
+        venueProfile: options.venueProfile || null
+      };
+
       updates[`matches/${matchId}/snapshot`] = {
         inning: inningNumber, 
         runs, 
@@ -419,7 +404,7 @@ async function simulateInnings(matchId, inningNumber, batting, bowling, options 
         bowler: bowler.name,
         recentBalls,
         partnership: currentPartnership, // ADDED: Active partnership data
-        winProbability: calculateWinProbability(runs, wickets, currentOver, legalBallsInOver, chaseTarget),
+        winProbability: WinPredictor.calculate(predictorContext),
         milestone: currentMilestone,
         lastWicket: lastWicket,
         target: chaseTarget,
@@ -555,6 +540,39 @@ async function startMatch(matchId, teamA, teamB, options = {}) {
     scoreB: `${secondInnings.runs}/${secondInnings.wickets}`,
     oversB: secondInnings.overs
   });
+
+  // Process International Ecosystem updates if part of a series
+  if (options.seriesId) {
+      try {
+          await SeriesEngine.processMatchResult(options.seriesId, result.winner);
+          if (result.winner !== "Tie") {
+             await RankingEngine.updateTeamRanking(teamAName, teamBName, result.winner, options.matchType || "T20");
+          }
+          
+          const format = options.matchType || "T20";
+
+          const processEcosystemStats = async (inningsStats) => {
+              for (const p of Object.values(inningsStats.battingStats || {})) {
+                  const pid = p.id || p.name;
+                  await CareerEngine.updateCareerStats(pid, p);
+                  await FormEngine.updateForm(pid, { runs: p.runs });
+                  await FatigueEngine.addWorkload(pid, 0, p.runs, format);
+              }
+              for (const p of Object.values(inningsStats.bowlingStats || {})) {
+                  const pid = p.id || p.name;
+                  // balls might be recorded as balls or overs in bowlingStats, assuming 'balls'
+                  await CareerEngine.updateCareerStats(pid, { wickets: p.wickets, ballsBowled: p.balls, runsConceded: p.runs });
+                  await FormEngine.updateForm(pid, { wickets: p.wickets });
+                  await FatigueEngine.addWorkload(pid, p.balls ? p.balls / 6 : 0, 0, format);
+              }
+          };
+
+          await processEcosystemStats(firstInnings);
+          await processEcosystemStats(secondInnings);
+      } catch (e) {
+          console.error("Failed to process international ecosystem updates:", e);
+      }
+  }
 
   return { matchId, result, firstInnings, secondInnings };
 }
