@@ -311,12 +311,20 @@ async function getActiveMatchesSummary() {
 }
 
 function jsonResponse(res, status, payload) {
-  res.writeHead(status, { "Content-Type": "application/json; charset=utf-8" });
+  res.writeHead(status, {
+    "Content-Type": "application/json; charset=utf-8",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type"
+  });
   res.end(JSON.stringify(payload));
 }
 
 function textResponse(res, status, body) {
-  res.writeHead(status, { "Content-Type": "text/html; charset=utf-8" });
+  res.writeHead(status, {
+    "Content-Type": "text/html; charset=utf-8",
+    "Access-Control-Allow-Origin": "*"
+  });
   res.end(body);
 }
 
@@ -709,6 +717,17 @@ const server = http.createServer(async (req, res) => {
     const requestUrl = new URL(req.url, baseUrl);
 
     logger.info(`${req.method} ${requestUrl.pathname}`, { traceId });
+    
+    // Handle CORS preflight
+    if (req.method === "OPTIONS") {
+      res.writeHead(204, {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, x-trace-id"
+      });
+      res.end();
+      return;
+    }
 
     // Middleware to inject traceId and end timer
     const originalEnd = res.end;
